@@ -1,3 +1,16 @@
+
+
+import streamlit as st
+import requests
+import time
+import io
+from datetime import datetime
+import random
+import os
+import mimetypes
+
+st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
+
 # -------------------------------
 # WORKVIVO BRANDING HEADER BAR
 # -------------------------------
@@ -39,17 +52,6 @@ header_html = f"""
 
 st.markdown(header_html, unsafe_allow_html=True)
 
-
-import streamlit as st
-import requests
-import time
-import io
-from datetime import datetime
-import random
-import os
-import mimetypes
-
-st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 st.title("🚀 Workvivo Migration Tool")
 st.write("Run internal Workvivo migrations without touching Python scripts.")
