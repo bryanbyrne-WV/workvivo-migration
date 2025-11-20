@@ -77,7 +77,7 @@ SPACE_CREATOR_EXTERNAL_ID = st.text_input(
 )
 
 
-    submitted = st.form_submit_button("Save Configuration")
+submitted = st.form_submit_button("Save Configuration")
 
 if not submitted:
     st.stop()
