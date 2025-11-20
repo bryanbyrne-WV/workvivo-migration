@@ -398,8 +398,26 @@ phase = st.selectbox(
 # Phase 1 – no options
 # ------------------------------
 if phase.startswith("Phase 1"):
+
+    st.subheader("Phase 1 Options")
+
+    company_name = st.text_input(
+        "🏢 Company Name (for Global Space Creation)",
+        placeholder="e.g. Workvivo"
+    )
+
+    active_choice = st.radio(
+        "Which users to migrate?",
+        ["Active Only", "All Users"]
+    )
+    active_only = (active_choice == "Active Only")
+
     if st.button("▶ Run Phase 1"):
-        run_phase_1()
+        if not company_name:
+            st.error("❌ Please enter a Company Name before running Phase 1.")
+        else:
+            run_phase_1(company_name, active_only)
+            st.success("Phase 1 finished!")
 
 # ------------------------------
 # Phase 2 – no options
