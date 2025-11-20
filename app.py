@@ -6,77 +6,111 @@ from datetime import datetime
 import random
 import os
 
-# =========================================================
-# STREAMLIT CONFIG
-# =========================================================
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 st.title("🚀 Workvivo Migration Tool")
 st.write("Run internal Workvivo migrations without touching Python scripts.")
 
+# =========================================================
+# 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
+# =========================================================
+
+if "config_saved" not in st.session_state:
+
+    with st.form("config_form"):
+        st.header("🔐 Environment Configuration")
+
+        st.subheader("Source Environment")
+        SOURCE_SCIM_URL = st.text_input(
+            "Source SCIM URL",
+            value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
+        )
+        SOURCE_API_URL = st.text_input(
+            "Source API URL",
+            value="https://api.workvivo.com/v1"
+        )
+        SOURCE_SCIM_TOKEN = st.text_input(
+            "Source SCIM Token",
+            value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
+            type="password"
+        )
+        SOURCE_API_TOKEN = st.text_input(
+            "Source API Token",
+            value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
+            type="password"
+        )
+        SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-ID", value="50")
+
+        st.subheader("Target Environment")
+        TARGET_SCIM_URL = st.text_input(
+            "Target SCIM URL",
+            value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
+        )
+        TARGET_API_URL = st.text_input(
+            "Target API URL",
+            value="https://api.eu2.workvivo.com/v1"
+        )
+        TARGET_SCIM_TOKEN = st.text_input(
+            "Target SCIM Token",
+            value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
+            type="password"
+        )
+        TARGET_API_TOKEN = st.text_input(
+            "Target API Token",
+            value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
+            type="password"
+        )
+        TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="3000384")
+
+        SPACE_CREATOR_EXTERNAL_ID = st.text_input(
+            "Migration External ID (Space Creator)",
+            value="workvivo-migration-user"
+        )
+
+        submitted = st.form_submit_button("Save Configuration")
+
+    if submitted:
+        # Save everything into session state
+        st.session_state["config_saved"] = True
+        st.session_state["SOURCE_SCIM_URL"] = SOURCE_SCIM_URL
+        st.session_state["SOURCE_API_URL"] = SOURCE_API_URL
+        st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
+        st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
+        st.session_state["SOURCE_WORKVIVO_ID"] = SOURCE_WORKVIVO_ID
+
+        st.session_state["TARGET_SCIM_URL"] = TARGET_SCIM_URL
+        st.session_state["TARGET_API_URL"] = TARGET_API_URL
+        st.session_state["TARGET_SCIM_TOKEN"] = TARGET_SCIM_TOKEN
+        st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
+        st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
+
+        st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
+
+        st.success("✅ Configuration saved! You can now run migrations.")
+        st.stop()
+
+    st.stop()  # prevent loading rest of the app UNTIL config is saved
 
 # =========================================================
-# 1) ENVIRONMENT CONFIG FORM
+# CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
 # =========================================================
 
-with st.form("config_form"):
-    st.header("🔐 Environment Configuration")
+SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
+SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
+SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
+SOURCE_API_TOKEN = st.session_state["SOURCE_API_TOKEN"]
+SOURCE_WORKVIVO_ID = st.session_state["SOURCE_WORKVIVO_ID"]
 
-    st.subheader("Source Environment")
-    SOURCE_SCIM_URL = st.text_input(
-        "Source SCIM URL",
-        value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
-    )
-    SOURCE_API_URL = st.text_input(
-        "Source API URL",
-        value="https://api.workvivo.com/v1"
-    )
-    SOURCE_SCIM_TOKEN = st.text_input(
-        "Source SCIM Token",
-        value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
-        type="password"
-    )
-    SOURCE_API_TOKEN = st.text_input(
-        "Source API Token",
-        value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
-        type="password"
-    )
-    SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-ID", value="50")
+TARGET_SCIM_URL = st.session_state["TARGET_SCIM_URL"]
+TARGET_API_URL = st.session_state["TARGET_API_URL"]
+TARGET_SCIM_TOKEN = st.session_state["TARGET_SCIM_TOKEN"]
+TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
+TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
 
-    st.subheader("Target Environment")
-    TARGET_SCIM_URL = st.text_input(
-        "Target SCIM URL",
-        value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
-    )
-    TARGET_API_URL = st.text_input(
-        "Target API URL",
-        value="https://api.eu2.workvivo.com/v1"
-    )
-    TARGET_SCIM_TOKEN = st.text_input(
-        "Target SCIM Token",
-        value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
-        type="password"
-    )
-    TARGET_API_TOKEN = st.text_input(
-        "Target API Token",
-        value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
-        type="password"
-    )
-    TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="3000384")
+SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
-    SPACE_CREATOR_EXTERNAL_ID = st.text_input(
-        "Migration External ID (Space Creator)",
-        value="workvivo-migration-user"
-    )
+st.success("🔐 Configuration active — ready to run migrations.")
 
-    submitted = st.form_submit_button("Save Configuration")
-
-
-# STOP HERE UNTIL CONFIG IS SAVED
-if not submitted:
-    st.stop()
-
-st.success("✅ Environment configuration saved!")
 
 
 # =========================================================
