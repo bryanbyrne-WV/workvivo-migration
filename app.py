@@ -5,6 +5,7 @@ import io
 from datetime import datetime
 import random
 import os
+import mimetypes
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
@@ -178,6 +179,46 @@ def ui_log(message):
 # =========================================================
 # HELPER: Fetch users
 # =========================================================
+def paginated_fetch(url, headers, take=100):
+    """Fetch paginated results from Workvivo API."""
+    results = []
+    skip = 0
+
+    while True:
+        final_url = f"{url}?skip={skip}&take={take}"
+        resp = requests.get(final_url, headers=headers)
+
+        if resp.status_code != 200:
+            ui_log(f"❌ Failed to fetch: {resp.status_code}")
+            return results
+
+        batch = resp.json().get("data", [])
+        results.extend(batch)
+
+        if len(batch) < take:
+            break
+
+        skip += take
+
+    return results
+
+
+def download_file(url, filename):
+    """Download a file from a URL to /tmp."""
+    try:
+        resp = requests.get(url, stream=True)
+        if resp.status_code != 200:
+            return None
+
+        path = f"/tmp/{filename}"
+        with open(path, "wb") as f:
+            f.write(resp.content)
+
+        return path
+    except:
+        return None
+
+
 def fetch_users(active_only=True):
     """Fetch users from SCIM in pages."""
     users = []
@@ -256,6 +297,164 @@ def migrate_users(active_only):
 
     ui_log(f"=== USER MIGRATION END — migrated={migrated}, skipped={skipped} ===")
 
+def create_global_space_and_enroll(company_name):
+    """Creates the Global Space and enrolls all users."""
+    ui_log(f"🌍 Creating Global Space: {company_name}")
+
+    payload = {
+        "user_external_id": SPACE_CREATOR_EXTERNAL_ID,
+        "name": company_name,
+        "visibility": "company_wide",
+        "enable_news": "true",
+        "enable_events": "true",
+        "enable_documents": "true",
+        "enable_qa": "true",
+        "enable_pages": "true",
+    }
+
+    resp = requests.post(
+        f"{TARGET_API_URL}/spaces",
+        headers=target_headers,
+        data=payload
+    )
+
+    if resp.status_code not in (200, 201):
+        ui_log(f"❌ Failed to create Global Space: {resp.text}")
+        return None
+
+    space_id = resp.json()["data"]["id"]
+    ui_log(f"✅ Created Global Space (ID {space_id})")
+
+    # Now fetch all target users and enroll them
+    ui_log("👥 Enrolling all users into Global Space…")
+
+    users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
+
+    numeric_ids = [u["id"] for u in users]
+    chunks = [numeric_ids[i:i+50] for i in range(0, len(numeric_ids), 50)]
+
+    for chunk in chunks:
+        resp2 = requests.patch(
+            f"{TARGET_API_URL}/spaces/{space_id}/users",
+            headers=target_headers,
+            json={"ids_to_add": chunk}
+        )
+        if resp2.status_code not in (200, 201):
+            ui_log(f"⚠️ Failed batch enroll: {resp2.text}")
+
+    ui_log("✅ Global Space enrollment complete!")
+    return space_id
+
+def migrate_user_avatars():
+    ui_log("=== USER AVATAR MIGRATION START ===")
+
+    users = paginated_fetch(f"{SOURCE_API_URL}/users", source_headers)
+
+    for u in users:
+        ext = u.get("external_id")
+        src_url = u.get("avatar_url")
+
+        if not ext or not src_url:
+            continue
+
+        path = download_file(src_url, f"avatar_{ext}.jpg")
+        if not path:
+            ui_log(f"⚠️ Failed to download avatar for {ext}")
+            continue
+
+        mime_type = mimetypes.guess_type(path)[0] or "image/jpeg"
+
+        with open(path, "rb") as f:
+            files = {"image": (os.path.basename(path), f, mime_type)}
+
+            resp = requests.put(
+                f"{TARGET_API_URL}/users/by-external-id/{ext}/profile-photo",
+                headers={
+                    "Authorization": f"Bearer {TARGET_API_TOKEN}",
+                    "Workvivo-Id": TARGET_WORKVIVO_ID,
+                    "Accept": "application/json"
+                },
+                files=files
+            )
+
+        if resp.status_code in (200,201):
+            ui_log(f"🖼️ Uploaded avatar for {ext}")
+        else:
+            ui_log(f"⚠️ Avatar failed for {ext}: {resp.status_code}")
+
+    ui_log("=== USER AVATAR MIGRATION END ===")
+
+def migrate_spaces():
+    ui_log("=== SPACE MIGRATION START ===")
+
+    source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
+    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
+
+    target_names = {s["name"].strip().lower() for s in target_spaces}
+
+    for s in source_spaces:
+        name = s.get("name", "").strip()
+
+        if name.lower() in target_names:
+            ui_log(f"⚠️ Space exists, skipping: {name}")
+            continue
+
+        payload = {
+            "user_external_id": SPACE_CREATOR_EXTERNAL_ID,
+            "name": name,
+            "visibility": s.get("visibility") or "private",
+            "description": s.get("description") or ""
+        }
+
+        resp = requests.post(
+            f"{TARGET_API_URL}/spaces",
+            headers=target_headers,
+            data=payload
+        )
+
+        if resp.status_code in (200,201):
+            ui_log(f"✅ Created space: {name}")
+        else:
+            ui_log(f"❌ Failed to create space {name}: {resp.text}")
+
+    ui_log("=== SPACE MIGRATION END ===")
+
+def migrate_memberships():
+    ui_log("=== MEMBERSHIP MIGRATION START ===")
+
+    source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
+    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
+
+    name_to_target = {s["name"].lower(): s["id"] for s in target_spaces}
+
+    for s in source_spaces:
+        name = s["name"].lower()
+        if name not in name_to_target:
+            continue
+
+        target_id = name_to_target[name]
+
+        members = paginated_fetch(
+            f"{SOURCE_API_URL}/spaces/{s['id']}/users",
+            source_headers
+        )
+
+        numeric_ids = [m["user"]["id"] for m in members if m.get("user")]
+
+        chunks = [numeric_ids[i:i+50] for i in range(0, len(numeric_ids), 50)]
+
+        for chunk in chunks:
+            resp = requests.patch(
+                f"{TARGET_API_URL}/spaces/{target_id}/users",
+                headers=target_headers,
+                json={"ids_to_add": chunk}
+            )
+            if resp.status_code not in (200,201):
+                ui_log(f"⚠️ Failed to enroll batch for space {name}")
+
+        ui_log(f"👥 Memberships migrated for {name}")
+
+    ui_log("=== MEMBERSHIP MIGRATION END ===")
 
 # =========================================================
 # PHASE 1 RUNNER
@@ -263,10 +462,22 @@ def migrate_users(active_only):
 def run_phase_1(company_name, active_only):
     ui_log("▶ Starting Phase 1…")
 
+    # 1. Global Space
+    create_global_space_and_enroll(company_name)
+
+    # 2. Users
     migrate_users(active_only)
 
-    ui_log("🎉 Phase 1 completed successfully!")
+    # 3. Avatars
+    migrate_user_avatars()
 
+    # 4. Spaces
+    migrate_spaces()
+
+    # 5. Memberships
+    migrate_memberships()
+
+    ui_log("🎉 Phase 1 fully completed!")
 
 # =========================================================
 # 2) PHASE SELECTION UI
