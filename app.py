@@ -111,6 +111,23 @@ SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
 st.success("🔐 Configuration active — ready to run migrations.")
 
+# ============================================================
+# Streamlit session state setup
+# ============================================================
+if "phase_running" not in st.session_state:
+    st.session_state.phase_running = False
+
+if "current_phase" not in st.session_state:
+    st.session_state.current_phase = None
+
+if "phase_log" not in st.session_state:
+    st.session_state.phase_log = ""
+
+if "phase1_company" not in st.session_state:
+    st.session_state.phase1_company = ""
+
+if "phase1_active_only" not in st.session_state:
+    st.session_state.phase1_active_only = True
 
 
 # =========================================================
@@ -144,12 +161,18 @@ target_headers = {
 # =========================================================
 log_buffer = io.StringIO()
 
-def ui_log(message: str):
-    """Log message to in-memory buffer and Streamlit output."""
+def ui_log(message):
     ts = datetime.utcnow().strftime("%H:%M:%S")
     line = f"[{ts}] {message}"
-    log_buffer.write(line + "\n")
-    st.session_state["log_output"] = log_buffer.getvalue()
+
+    # Store into ONE variable
+    if "log_output" not in st.session_state:
+        st.session_state["log_output"] = ""
+
+    st.session_state["log_output"] += line + "\n"
+
+    # Immediately show the update
+    st.write(line)
 
 
 # =========================================================
@@ -252,9 +275,11 @@ st.header("🚦 Run Migration")
 
 phase = st.selectbox(
     "Choose migration phase",
-    ["Phase 1 — Users, Avatars, Spaces, Memberships (simplified)",
-     "Phase 2 — Updates, Comments, Likes",
-     "Phase 3 — Articles, Kudos, Events"]
+    ["Phase 1 – Users, Avatars, Spaces, Memberships",
+     "Phase 2 – Updates, Comments, Likes",
+     "Phase 3 – Articles, Kudos, Events"],
+    index=0,
+    disabled=st.session_state.phase_running   # 🔒 Lock if running
 )
 
 if phase.startswith("Phase 1"):
@@ -282,11 +307,11 @@ else:
 # =========================================================
 st.header("📜 Migration Log Output")
 
-if "log_output" not in st.session_state:
-    st.session_state["log_output"] = ""
-
+# Always render the latest log output
 st.text_area(
     label="Log Output",
-    value=st.session_state["log_output"],
-    height=400
+    value=st.session_state.get("log_output", ""),
+    height=400,
+    disabled=True
 )
+
