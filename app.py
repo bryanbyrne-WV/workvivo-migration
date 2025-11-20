@@ -1,3 +1,45 @@
+# -------------------------------
+# WORKVIVO BRANDING HEADER BAR
+# -------------------------------
+WORKVIVO_LOGO = "https://assets-global.website-files.com/5db06f883fe98384f8e59870/60df4cf0e95f707221207050_workvivo-logo.svg"
+
+header_html = f"""
+<style>
+    .header-bar {{
+        background-color: #0052CC;
+        padding: 16px 24px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        border-radius: 6px;
+        margin-bottom: 25px;
+    }}
+    .header-logo {{
+        height: 38px;
+        margin-right: 18px;
+    }}
+    .header-title {{
+        color: white;
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        margin-top: 4px;
+    }}
+    .section-title {{
+        color: #0052CC !important;
+        font-weight: 700 !important;
+    }}
+</style>
+
+<div class="header-bar">
+    <img src="{WORKVIVO_LOGO}" class="header-logo">
+    <div class="header-title">Migration Utility</div>
+</div>
+"""
+
+st.markdown(header_html, unsafe_allow_html=True)
+
+
 import streamlit as st
 import requests
 import time
