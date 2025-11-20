@@ -11,21 +11,30 @@ import mimetypes
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
-# -------------------------------
-# WORKVIVO BRANDING HEADER BAR
-# -------------------------------
+# ---------------------------------------
+# WORKVIVO FULL UI BRANDING & GLOBAL CSS
+# ---------------------------------------
+
 WORKVIVO_LOGO = "https://assets-global.website-files.com/5db06f883fe98384f8e59870/60df4cf0e95f707221207050_workvivo-logo.svg"
 
-header_html = f"""
+custom_css = f"""
 <style>
+
+    /* Main Page Background */
+    .main {{
+        background-color: #F7F9FC;
+    }}
+
+    /* Header Bar */
     .header-bar {{
         background-color: #0052CC;
-        padding: 16px 24px;
+        padding: 16px 26px;
         width: 100%;
         display: flex;
         align-items: center;
-        border-radius: 6px;
-        margin-bottom: 25px;
+        border-radius: 8px;
+        margin-bottom: 28px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.18);
     }}
     .header-logo {{
         height: 38px;
@@ -35,22 +44,74 @@ header_html = f"""
         color: white;
         font-size: 26px;
         font-weight: 600;
-        letter-spacing: -0.5px;
-        margin-top: 4px;
+        letter-spacing: -0.6px;
+        margin-top: 3px;
     }}
+
+    /* Section Title */
     .section-title {{
         color: #0052CC !important;
         font-weight: 700 !important;
+        font-size: 20px !important;
+        margin-top: 18px !important;
+        margin-bottom: 4px !important;
     }}
+
+    /* White Card Containers */
+    .card {{
+        background-color: white;
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        margin-bottom: 24px;
+    }}
+
+    /* Buttons (Workvivo blue) */
+    div.stButton > button {{
+        background-color: #0052CC !important;
+        color: white !important;
+        border-radius: 6px !important;
+        padding: 10px 20px !important;
+        border: none !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    }}
+    div.stButton > button:hover {{
+        background-color: #003FA3 !important;
+    }}
+    div.stButton > button:disabled {{
+        background-color: #AABBD6 !important;
+        color: #EEE !important;
+        cursor: not-allowed !important;
+    }}
+
+    /* Log Output Styling */
+    .log-box {{
+        background-color: #111;
+        color: #0AFF95;
+        padding: 18px;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 14px;
+        height: 420px;
+        overflow-y: scroll;
+        border: 1px solid #333;
+        box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
+        white-space: pre-wrap;
+    }}
+
 </style>
 
+<!-- HEADER BAR -->
 <div class="header-bar">
     <img src="{WORKVIVO_LOGO}" class="header-logo">
     <div class="header-title">Migration Utility</div>
 </div>
 """
 
-st.markdown(header_html, unsafe_allow_html=True)
+st.markdown(custom_css, unsafe_allow_html=True)
+
 
 
 st.title("🚀 Workvivo Migration Tool")
