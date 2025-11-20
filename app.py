@@ -12,72 +12,73 @@ st.write("Run internal migrations without touching Python scripts.")
 # 1) ENVIRONMENT CONFIGURATION
 # =====================================================================
 
-st.header("🔐 Environment Configuration")
-st.subheader("Source Workvivo Environment")
+with st.form("config_form"):
 
-SOURCE_SCIM_URL = st.text_input(
-    "Source SCIM URL",
-    value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
-)
+    st.header("🔐 Environment Configuration")
+    st.subheader("Source Workvivo Environment")
 
-SOURCE_API_URL = st.text_input(
-    "Source API URL",
-    value="https://api.workvivo.com/v1"
-)
+    SOURCE_SCIM_URL = st.text_input(
+        "Source SCIM URL",
+        value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
+    )
 
-SOURCE_SCIM_TOKEN = st.text_input(
-    "Source SCIM Token",
-    value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
-    type="password"
-)
+    SOURCE_API_URL = st.text_input(
+        "Source API URL",
+        value="https://api.workvivo.com/v1"
+    )
 
-SOURCE_API_TOKEN = st.text_input(
-    "Source API Token",
-    value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
-    type="password"
-)
+    SOURCE_SCIM_TOKEN = st.text_input(
+        "Source SCIM Token",
+        value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
+        type="password"
+    )
 
-SOURCE_WORKVIVO_ID = st.text_input(
-    "Source Workvivo-ID",
-    value="50"
-)
+    SOURCE_API_TOKEN = st.text_input(
+        "Source API Token",
+        value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
+        type="password"
+    )
 
-st.subheader("Target Workvivo Environment")
+    SOURCE_WORKVIVO_ID = st.text_input(
+        "Source Workvivo-ID",
+        value="50"
+    )
 
-TARGET_SCIM_URL = st.text_input(
-    "Target SCIM URL",
-    value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
-)
+    st.subheader("Target Workvivo Environment")
 
-TARGET_API_URL = st.text_input(
-    "Target API URL",
-    value="https://api.eu2.workvivo.com/v1"
-)
+    TARGET_SCIM_URL = st.text_input(
+        "Target SCIM URL",
+        value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
+    )
 
-TARGET_SCIM_TOKEN = st.text_input(
-    "Target SCIM Token",
-    value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
-    type="password"
-)
+    TARGET_API_URL = st.text_input(
+        "Target API URL",
+        value="https://api.eu2.workvivo.com/v1"
+    )
 
-TARGET_API_TOKEN = st.text_input(
-    "Target API Token",
-    value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
-    type="password"
-)
+    TARGET_SCIM_TOKEN = st.text_input(
+        "Target SCIM Token",
+        value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
+        type="password"
+    )
 
-TARGET_WORKVIVO_ID = st.text_input(
-    "Target Workvivo-ID",
-    value="3000384"
-)
+    TARGET_API_TOKEN = st.text_input(
+        "Target API Token",
+        value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
+        type="password"
+    )
 
-SPACE_CREATOR_EXTERNAL_ID = st.text_input(
-    "Migration External ID (Space Creator)",
-    value="workvivo-migration-user"
-)
+    TARGET_WORKVIVO_ID = st.text_input(
+        "Target Workvivo-ID",
+        value="3000384"
+    )
 
+    SPACE_CREATOR_EXTERNAL_ID = st.text_input(
+        "Migration External ID (Space Creator)",
+        value="workvivo-migration-user"
+    )
 
-submitted = st.form_submit_button("Save Configuration")
+    submitted = st.form_submit_button("Save Configuration")
 
 if not submitted:
     st.stop()
