@@ -1,134 +1,79 @@
 import streamlit as st
 
-st.set_page_config(
-    page_title="Workvivo Migration Tool",
-    layout="wide",
-)
-
-# ---------------------------------------------------------
-# Placeholder migration functions
-# Replace these with your actual migration code
-# ---------------------------------------------------------
-
-def run_phase1():
-    st.info("Running Phase 1: Users, Spaces, Memberships...")
-    # call your real code here
-
-def run_phase1a():
-    st.info("Running Phase 1A: Users + Avatars...")
-    # call your real code here
-
-def run_phase1b():
-    st.info("Running Phase 1B: Spaces + Memberships...")
-    # call your real code here
-
-def run_phase2_updates():
-    st.info("Running Phase 2A: Updates migration...")
-    # call your real code here
-
-def run_phase2_comments():
-    st.info("Running Phase 2B: Comments migration...")
-    # call your real code here
-
-def run_phase2_likes():
-    st.info("Running Phase 2C: Likes migration...")
-    # call your real code here
-
-def run_phase3_articles():
-    st.info("Running Phase 3: Articles migration...")
-    # call your real code here
-
-def run_phase4_global_pages():
-    st.info("Running Phase 4: Global Pages Migration...")
-    # call your real code here
-
-def run_phase5_space_pages():
-    st.info("Running Phase 5: Space Pages Migration...")
-    # call your real code here
-
-def run_phase6_events():
-    st.info("Running Phase 6: Events Migration...")
-    # call your real code here
-
-def run_phase7_kudos():
-    st.info("Running Phase 7: Kudos Migration...")
-    # call your real code here
-
-
-# ---------------------------------------------------------
-# Streamlit UI
-# ---------------------------------------------------------
+st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 st.title("🚀 Workvivo Migration Tool")
-st.markdown("A simple interface to run migration phases without touching Python code.")
+st.write("Fill in your Source & Target credentials below to unlock migration options.")
 
-st.sidebar.title("Navigation")
+# ===============================
+# SECTION 1 — AUTHENTICATION INPUTS
+# ===============================
+st.header("🔐 Source & Target Configuration")
 
-phase = st.sidebar.selectbox(
-    "Select Migration Phase",
-    [
-        "Phase 1 - Users / Spaces / Memberships",
-        "Phase 1A - Users + Avatars",
-        "Phase 1B - Spaces + Memberships",
-        "Phase 2A - Updates",
-        "Phase 2B - Comments",
-        "Phase 2C - Likes",
-        "Phase 3 - Articles",
-        "Phase 4 - Global Pages",
-        "Phase 5 - Space Pages",
-        "Phase 6 - Events",
-        "Phase 7 - Kudos",
-    ]
-)
+with st.container():
+    st.subheader("📥 Source System Credentials")
 
-st.write("---")
+    source_api_url = st.text_input("Source API Base URL", placeholder="https://api.workvivo.com/v1")
+    source_token = st.text_input("Source API Token", type="password")
+    source_wvid = st.text_input("Source Workvivo-ID", placeholder="Required for Kudos")
 
-# Display phase description
-phase_descriptions = {
-    "Phase 1 - Users / Spaces / Memberships": "Full user + space migration.",
-    "Phase 1A - Users + Avatars": "User migration only (with avatars).",
-    "Phase 1B - Spaces + Memberships": "Space migration only.",
-    "Phase 2A - Updates": "Stage 1 of content migration.",
-    "Phase 2B - Comments": "Stage 2 of content migration.",
-    "Phase 2C - Likes": "Stage 3 of content migration.",
-    "Phase 3 - Articles": "Article migration including comments + likes.",
-    "Phase 4 - Global Pages": "Global pages (top-level) migration.",
-    "Phase 5 - Space Pages": "Pages within spaces.",
-    "Phase 6 - Events": "Events, RSVP data, etc.",
-    "Phase 7 - Kudos": "Kudos (Recognitions) migration.",
-}
+    st.subheader("📤 Target System Credentials")
 
-st.subheader("📘 " + phase)
-st.markdown(phase_descriptions.get(phase, ""))
+    target_api_url = st.text_input("Target API Base URL", placeholder="https://api.workvivo.com/v1")
+    target_token = st.text_input("Target API Token", type="password")
+    target_wvid = st.text_input("Target Workvivo-ID", placeholder="Required for Kudos")
 
-st.write("---")
+st.markdown("---")
 
-# Run the appropriate function when the user clicks "Run"
-if st.button("Run Migration", type="primary"):
-    st.success("Migration started... check the output below.")
+# ===============================
+# SECTION 2 — MIGRATION SETTINGS
+# ===============================
+st.header("⚙️ Migration Settings")
 
-    if phase == "Phase 1 - Users / Spaces / Memberships":
-        run_phase1()
-    elif phase == "Phase 1A - Users + Avatars":
-        run_phase1a()
-    elif phase == "Phase 1B - Spaces + Memberships":
-        run_phase1b()
-    elif phase == "Phase 2A - Updates":
-        run_phase2_updates()
-    elif phase == "Phase 2B - Comments":
-        run_phase2_comments()
-    elif phase == "Phase 2C - Likes":
-        run_phase2_likes()
-    elif phase == "Phase 3 - Articles":
-        run_phase3_articles()
-    elif phase == "Phase 4 - Global Pages":
-        run_phase4_global_pages()
-    elif phase == "Phase 5 - Space Pages":
-        run_phase5_space_pages()
-    elif phase == "Phase 6 - Events":
-        run_phase6_events()
-    elif phase == "Phase 7 - Kudos":
-        run_phase7_kudos()
+migration_user_ext = st.text_input("Migration User External ID (used when no creator found)")
+global_space_id = st.text_input("Global Space ID (fallback for articles, kudos, updates)")
 
-st.write("---")
-st.info("Tip: Logs and output will appear here once the backend functions are wired in.")
+# Button is disabled until required fields are complete
+credentials_ready = all([
+    source_api_url, source_token, target_api_url, target_token,
+    migration_user_ext, global_space_id
+])
+
+if not credentials_ready:
+    st.warning("⚠️ Fill in all required fields above to unlock migration phases.")
+
+st.markdown("---")
+
+# ===============================
+# SECTION 3 — MIGRATION PHASE SELECTOR
+# ===============================
+st.header("📦 Migration Phases")
+
+if credentials_ready:
+    phase = st.selectbox(
+        "Choose a migration phase:",
+        [
+            "Phase 1 — Users & Spaces",
+            "Phase 2 — Updates & Comments",
+            "Phase 3 — Articles",
+            "Phase 4 — Global Pages",
+            "Phase 5 — Space Pages",
+            "Phase 6 — Events",
+            "Phase 7 — Kudos",
+        ]
+    )
+
+    st.success(f"Selected: **{phase}**")
+    
+    st.write("⬇️ When your migration functions are added, the button below will trigger them.")
+
+    if st.button("Run Migration"):
+        st.info("Migration would start here. Function hooks not yet connected.")
+else:
+    st.stop()
+
+# ===============================
+# FOOTER
+# ===============================
+st.markdown("---")
+st.caption("Workvivo Migration Tool — Streamlit UI Prototype")
