@@ -1,112 +1,139 @@
 import streamlit as st
+import os
+import time
+import requests
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
+
 st.title("🚀 Workvivo Migration Tool")
+st.write("Run internal migrations without touching Python scripts.")
 
-st.markdown("---")
+# =====================================================================
+# 1) ENVIRONMENT CONFIGURATION
+# =====================================================================
 
-# =========================================================
-# CONFIGURATION INPUTS
-# =========================================================
+st.header("🔐 Environment Configuration")
 
-st.header("🔐 Configuration — Source & Target Environments")
-
-with st.expander("📥 Source Environment", expanded=True):
+with st.form("env_form"):
+    st.subheader("Source Environment")
     SOURCE_SCIM_URL = st.text_input("Source SCIM URL")
     SOURCE_API_URL = st.text_input("Source API URL")
     SOURCE_SCIM_TOKEN = st.text_input("Source SCIM Token", type="password")
     SOURCE_API_TOKEN = st.text_input("Source API Token", type="password")
-    SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-Id Header")
+    SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-Id")
 
-with st.expander("📤 Target Environment", expanded=True):
+    st.subheader("Target Environment")
     TARGET_SCIM_URL = st.text_input("Target SCIM URL")
     TARGET_API_URL = st.text_input("Target API URL")
     TARGET_SCIM_TOKEN = st.text_input("Target SCIM Token", type="password")
     TARGET_API_TOKEN = st.text_input("Target API Token", type="password")
-    TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-Id Header")
+    TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-Id")
 
-with st.expander("⚙️ Additional Settings", expanded=True):
     SPACE_CREATOR_EXTERNAL_ID = st.text_input(
-        "Space Creator External ID",
-        placeholder="workvivo-migration-user"
+        "Migration External ID (Space Creator)",
+        value="workvivo-migration-user"
     )
 
+    submitted = st.form_submit_button("Save Configuration")
+
+if not submitted:
+    st.stop()
+
+# Validate all fields
 required = [
-    SOURCE_SCIM_URL, SOURCE_API_URL,
-    SOURCE_SCIM_TOKEN, SOURCE_API_TOKEN,
-    SOURCE_WORKVIVO_ID,
-    TARGET_SCIM_URL, TARGET_API_URL,
-    TARGET_SCIM_TOKEN, TARGET_API_TOKEN,
-    TARGET_WORKVIVO_ID,
+    SOURCE_SCIM_URL, SOURCE_API_URL, SOURCE_SCIM_TOKEN, SOURCE_API_TOKEN, SOURCE_WORKVIVO_ID,
+    TARGET_SCIM_URL, TARGET_API_URL, TARGET_SCIM_TOKEN, TARGET_API_TOKEN, TARGET_WORKVIVO_ID,
     SPACE_CREATOR_EXTERNAL_ID,
 ]
 
 if not all(required):
-    st.warning("⚠️ Fill out all fields to continue.")
+    st.error("❌ All fields above must be filled before proceeding.")
     st.stop()
 
-st.success("✔️ Configuration Loaded Successfully")
-st.markdown("---")
+st.success("✅ Environment configuration loaded.")
 
-# =========================================================
-# PHASE SELECTOR
-# =========================================================
-st.header("📦 Select Migration Phase")
+# =====================================================================
+# 2) LOAD YOUR EXISTING MIGRATION CODE HERE
+# =====================================================================
 
-phase_choice = st.radio(
-    "Choose a migration phase:",
-    ["Phase 1 — Users / Spaces / Members", 
-     "Phase 2 — Updates / Comments / Likes / Articles / Kudos"]
+st.header("📦 Migration Engine")
+
+st.info("Paste your Python migration functions into the sections below.")
+
+# -------------------------------------------------------
+# 📌 PHASE 1 Placeholder
+# -------------------------------------------------------
+# Replace this block with your actual Phase 1 code:
+def run_phase_1():
+    """
+    🔹 Users
+    🔹 Avatars
+    🔹 Spaces
+    🔹 Memberships
+    """
+    st.write("Running Phase 1...")
+    time.sleep(1)
+    st.write("✅ Phase 1 completed (placeholder).")
+
+# -------------------------------------------------------
+# 📌 PHASE 2 Placeholder
+# -------------------------------------------------------
+def run_phase_2():
+    """
+    🔹 Updates
+    🔹 Comments
+    🔹 Likes
+    """
+    st.write("Running Phase 2...")
+    time.sleep(1)
+    st.write("✅ Phase 2 completed (placeholder).")
+
+# -------------------------------------------------------
+# 📌 PHASE 3 Placeholder
+# -------------------------------------------------------
+def run_phase_3(selected_modules):
+    """Article / Kudos / Events migration."""
+    st.write(f"Running Phase 3 modules: {selected_modules}")
+    time.sleep(1)
+    st.write("✅ Phase 3 completed (placeholder).")
+
+# =====================================================================
+# 3) MIGRATION PHASE SELECTION
+# =====================================================================
+
+st.header("🔧 Run Migration")
+
+phase = st.selectbox(
+    "Choose migration phase",
+    ["Phase 1 – Users, Avatars, Spaces, Memberships",
+     "Phase 2 – Updates, Comments, Likes",
+     "Phase 3 – Articles, Kudos, Events"]
 )
 
-st.markdown("---")
+# ------------------------------
+# Phase 1 – no options
+# ------------------------------
+if phase.startswith("Phase 1"):
+    if st.button("▶ Run Phase 1"):
+        run_phase_1()
 
-# =========================================================
-# PHASE ACTIONS
-# =========================================================
+# ------------------------------
+# Phase 2 – no options
+# ------------------------------
+elif phase.startswith("Phase 2"):
+    if st.button("▶ Run Phase 2"):
+        run_phase_2()
 
-if phase_choice.startswith("Phase 1"):
-    st.subheader("Phase 1 Options")
-    
-    if st.button("▶️ Migrate Users"):
-        st.info("Running `migrate_users()`…")
-        # CALL FUNCTION HERE: migrate_users()
+# ------------------------------
+# Phase 3 – user selects modules
+# ------------------------------
+else:
+    st.subheader("Select content to migrate")
+    modules = st.multiselect(
+        "Choose modules to run",
+        ["Articles", "Kudos", "Events"],
+        default=["Articles"]
+    )
 
-    if st.button("🖼️ Migrate User Avatars"):
-        st.info("Running `migrate_user_images()`…")
-        # CALL FUNCTION HERE: migrate_user_images()
-
-    if st.button("🏛️ Migrate Spaces"):
-        st.info("Running `migrate_spaces()`…")
-        # CALL FUNCTION HERE: migrate_spaces()
-
-    if st.button("👥 Migrate Space Memberships"):
-        st.info("Running `migrate_memberships()`…")
-        # CALL FUNCTION HERE: migrate_memberships()
-
-
-elif phase_choice.startswith("Phase 2"):
-    st.subheader("Phase 2 Options")
-
-    if st.button("⬆️ Migrate Updates"):
-        st.info("Would run Phase 2 — Updates")
-        # migrate_updates()
-
-    if st.button("💬 Migrate Comments"):
-        st.info("Would run Phase 2 — Comments")
-        # migrate_comments()
-
-    if st.button("❤️ Migrate Likes"):
-        st.info("Would run Phase 2 — Likes")
-        # migrate_likes()
-
-    if st.button("📰 Migrate Articles"):
-        st.info("Would run Phase 2 — Articles")
-        # migrate_articles()
-
-    if st.button("🏅 Migrate Kudos"):
-        st.info("Would run Phase 2 — Kudos")
-        # migrate_kudos()
-
-st.markdown("---")
-st.caption("Workvivo Migration Tool — Streamlit Edition")
+    if st.button("▶ Run Phase 3"):
+        run_phase_3(modules)
