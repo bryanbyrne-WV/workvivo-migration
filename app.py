@@ -13,21 +13,64 @@ st.write("Run internal migrations without touching Python scripts.")
 # =====================================================================
 
 st.header("🔐 Environment Configuration")
+st.subheader("Source Workvivo Environment")
 
-with st.form("env_form"):
-    st.subheader("Source Environment")
-    SOURCE_SCIM_URL = st.text_input("Source SCIM URL")
-    SOURCE_API_URL = st.text_input("Source API URL")
-    SOURCE_SCIM_TOKEN = st.text_input("Source SCIM Token", type="password")
-    SOURCE_API_TOKEN = st.text_input("Source API Token", type="password")
-    SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-Id")
+SOURCE_SCIM_URL = st.text_input(
+    "Source SCIM URL",
+    value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
+)
 
-    st.subheader("Target Environment")
-    TARGET_SCIM_URL = st.text_input("Target SCIM URL")
-    TARGET_API_URL = st.text_input("Target API URL")
-    TARGET_SCIM_TOKEN = st.text_input("Target SCIM Token", type="password")
-    TARGET_API_TOKEN = st.text_input("Target API Token", type="password")
-    TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-Id")
+SOURCE_API_URL = st.text_input(
+    "Source API URL",
+    value="https://api.workvivo.com/v1"
+)
+
+SOURCE_SCIM_TOKEN = st.text_input(
+    "Source SCIM Token",
+    value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
+    type="password"
+)
+
+SOURCE_API_TOKEN = st.text_input(
+    "Source API Token",
+    value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
+    type="password"
+)
+
+SOURCE_WORKVIVO_ID = st.text_input(
+    "Source Workvivo-ID",
+    value="50"
+)
+
+st.subheader("Target Workvivo Environment")
+
+TARGET_SCIM_URL = st.text_input(
+    "Target SCIM URL",
+    value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
+)
+
+TARGET_API_URL = st.text_input(
+    "Target API URL",
+    value="https://api.eu2.workvivo.com/v1"
+)
+
+TARGET_SCIM_TOKEN = st.text_input(
+    "Target SCIM Token",
+    value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
+    type="password"
+)
+
+TARGET_API_TOKEN = st.text_input(
+    "Target API Token",
+    value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
+    type="password"
+)
+
+TARGET_WORKVIVO_ID = st.text_input(
+    "Target Workvivo-ID",
+    value="3000384"
+)
+
 
     SPACE_CREATOR_EXTERNAL_ID = st.text_input(
         "Migration External ID (Space Creator)",
