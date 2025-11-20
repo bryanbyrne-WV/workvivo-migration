@@ -71,11 +71,11 @@ TARGET_WORKVIVO_ID = st.text_input(
     value="3000384"
 )
 
+SPACE_CREATOR_EXTERNAL_ID = st.text_input(
+    "Migration External ID (Space Creator)",
+    value="workvivo-migration-user"
+)
 
-    SPACE_CREATOR_EXTERNAL_ID = st.text_input(
-        "Migration External ID (Space Creator)",
-        value="workvivo-migration-user"
-    )
 
     submitted = st.form_submit_button("Save Configuration")
 
