@@ -248,6 +248,63 @@ def fetch_users(active_only=True):
 
     return users
 
+def create_global_space_and_enroll(company_name):
+    """Creates a private Global Feed space and enrolls all users."""
+    ui_log(f"🌍 Creating Global Feed space for: {company_name}")
+
+    global_space_name = f"{company_name.strip()} Global Feed"
+
+    # Step 1 — Check if already exists
+    existing_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
+    match = next((s for s in existing_spaces if s["name"] == global_space_name), None)
+
+    if match:
+        ui_log(f"⚠️ Global space already exists (ID {match['id']}) — using existing.")
+        space_id = match["id"]
+    else:
+        # Step 2 — CREATE SPACE with PRIVATE visibility (matching your Python script)
+        payload = {
+            "user_external_id": SPACE_CREATOR_EXTERNAL_ID,
+            "name": global_space_name,
+            "visibility": "private",   # <-- FIXED!!
+            "description": f"{company_name} Global Feed private space.",
+            "is_external": False
+        }
+
+        resp = requests.post(
+            f"{TARGET_API_URL}/spaces",
+            headers=target_headers,
+            json=payload
+        )
+
+        if resp.status_code not in (200,201):
+            ui_log(f"❌ Failed to create Global Space: {resp.text}")
+            return None
+
+        space_id = resp.json()["data"]["id"]
+        ui_log(f"✅ Created Global Space '{global_space_name}' (ID {space_id})")
+
+    # Step 3 — Enroll all target users
+    ui_log("👥 Enrolling users into Global Space…")
+
+    users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
+    numeric_ids = [u["id"] for u in users]
+
+    chunks = [numeric_ids[i:i+100] for i in range(0, len(numeric_ids), 100)]
+
+    for chunk in chunks:
+        resp = requests.patch(
+            f"{TARGET_API_URL}/spaces/{space_id}/users",
+            headers=target_headers,
+            json={"ids_to_add": chunk}
+        )
+
+        if resp.status_code not in (200,201):
+            ui_log(f"⚠️ Failed to add user chunk: {resp.text}")
+
+    ui_log("✅ Global Space enrollment complete!")
+    return space_id
+
 
 # =========================================================
 # PHASE 1 — USERS
