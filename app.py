@@ -11,128 +11,128 @@ import mimetypes
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
-# -------------------------------------------
-# WORKVIVO BRANDING & GLOBAL STYLES
-# -------------------------------------------
+# -------------------------------
+# WORKVIVO UI BRANDING + THEMING
+# -------------------------------
 
 WORKVIVO_LOGO = "https://assets-global.website-files.com/5db06f883fe98384f8e59870/60df4cf0e95f707221207050_workvivo-logo.svg"
 
-STYLE_CSS = f"""
+# Sidebar styling + header bar + global element tweaks
+workvivo_styles = f"""
 <style>
 
-html, body {{
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-}}
+    /* GLOBAL APP BACKGROUND */
+    .main {{
+        background-color: #F7F9FC !important;
+    }}
 
- /* -------------------------
-    HEADER BAR
- ------------------------- */
-.header-bar {{
-    background: linear-gradient(90deg, #0052CC 0%, #0A66E8 100%);
-    padding: 18px 28px;
-    width: 100%;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 28px;
-    box-shadow: 0px 4px 14px rgba(0,0,0,0.1);
-}}
+    /* HEADER BAR */
+    .header-bar {{
+        background-color: #0052CC;
+        padding: 16px 26px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        border-radius: 6px;
+        margin-bottom: 25px;
+        box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+    }}
+    .header-logo {{
+        height: 42px;
+        margin-right: 18px;
+    }}
+    .header-title {{
+        color: white;
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: -0.4px;
+        margin-top: 2px;
+    }}
 
-.header-logo {{
-    height: 44px;
-    margin-right: 20px;
-}}
+    /* SIDEBAR */
+    section[data-testid="stSidebar"] {{
+        background-color: #003A99 !important;
+    }}
 
-.header-title {{
-    color: white !important;
-    font-size: 30px !important;
-    font-weight: 700 !important;
-    margin-top: 4px;
-    letter-spacing: -0.3px;
-}}
+    /* SIDEBAR LOGO */
+    .sidebar-logo {{
+        width: 160px;
+        margin-bottom: 15px;
+        margin-top: 10px;
+    }}
 
+    /* SIDEBAR MENU TITLE */
+    .sidebar-title {{
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 15px;
+        margin-bottom: 8px;
+    }}
 
- /* -------------------------
-    SECTION TITLES
- ------------------------- */
-.section-title {{
-    color: #0052CC !important;
-    font-size: 22px !important;
-    font-weight: 700 !important;
-    margin-top: 30px !important;
-    margin-bottom: 10px !important;
-}}
+    /* SIDEBAR LINKS */
+    .sidebar-link {{
+        color: #ffffff !important;
+        padding: 8px 4px;
+        display: block;
+        font-size: 16px;
+        font-weight: 500;
+        border-radius: 4px;
+        text-decoration: none !important;
+    }}
 
- /* -------------------------
-    BUTTONS
- ------------------------- */
+    .sidebar-link:hover {{
+        background-color: rgba(255,255,255,0.15);
+    }}
 
-div.stButton > button {{
-    background-color: #0052CC;
-    color: white;
-    font-weight: 600;
-    border-radius: 8px;
-    border: none;
-    padding: 10px 22px;
-    font-size: 16px;
-    transition: 0.2s ease-in-out;
-}}
+    /* FOOTER */
+    .sidebar-footer {{
+        margin-top: 40px;
+        padding: 10px;
+        border-top: 1px solid rgba(255,255,255,0.25);
+        color: #d0d8e8;
+        font-size: 13px;
+        text-align: center;
+    }}
 
-div.stButton > button:hover {{
-    background-color: #0A66E8;
-    transform: translateY(-1px);
-}}
-
-
- /* -------------------------
-    INPUT FIELDS
- ------------------------- */
-
-.stTextInput > div > div > input {{
-    border-radius: 8px !important;
-    border: 1px solid #C6D2E3 !important;
-}}
-
-.stPasswordInput > div > div > input {{
-    border-radius: 8px !important;
-    border: 1px solid #C6D2E3 !important;
-}}
-
- /* -------------------------
-    LOG BOX / TEXT AREA
- ------------------------- */
-textarea {{
-    background: #F8F9FB !important;
-    border-radius: 10px !important;
-    border: 1px solid #DCE3EE !important;
-}}
-
- /* -------------------------
-    CARDS
- ------------------------- */
-.card {{
-    background: white;
-    border-radius: 12px;
-    padding: 22px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}}
-
- /* Fix padding for full-width */
-.block-container {{
-    padding-top: 1rem;
-}}
-
+    /* SECTION TITLES */
+    .section-title {{
+        color: #0052CC !important;
+        font-weight: 700 !important;
+        margin-top: 20px;
+    }}
 </style>
+"""
 
-<!-- HEADER -->
+# Render style block
+st.markdown(workvivo_styles, unsafe_allow_html=True)
+
+# Render Workvivo header bar
+header_html = f"""
 <div class="header-bar">
     <img src="{WORKVIVO_LOGO}" class="header-logo">
     <div class="header-title">Workvivo Migration Utility</div>
 </div>
 """
+st.markdown(header_html, unsafe_allow_html=True)
 
-st.markdown(STYLE_CSS, unsafe_allow_html=True)
+# SIDEBAR CONTENT
+with st.sidebar:
+    st.markdown(f"""<img src="{WORKVIVO_LOGO}" class="sidebar-logo">""", unsafe_allow_html=True)
+
+    st.markdown("""<div class="sidebar-title">Navigation</div>""", unsafe_allow_html=True)
+
+    st.markdown("""<a class="sidebar-link" href="#_config">⚙️ Configuration</a>""", unsafe_allow_html=True)
+    st.markdown("""<a class="sidebar-link" href="#_phase1">🚦 Phase 1 Migration</a>""", unsafe_allow_html=True)
+    st.markdown("""<a class="sidebar-link" href="#_phase2">📝 Phase 2</a>""", unsafe_allow_html=True)
+    st.markdown("""<a class="sidebar-link" href="#_phase3">📚 Phase 3</a>""", unsafe_allow_html=True)
+    st.markdown("""<a class="sidebar-link" href="#_logs">📜 Migration Logs</a>""", unsafe_allow_html=True)
+
+    st.markdown("""<div class="sidebar-footer">
+        Built internally for Workvivo migrations<br>
+        © Bryan Byrne
+    </div>""", unsafe_allow_html=True)
+
 
 
 st.title("🚀 Workvivo Migration Tool")
