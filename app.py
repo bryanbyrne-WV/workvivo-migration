@@ -173,49 +173,38 @@ advanced_styles = f"""
 </style>
 """
 
-st.markdown(advanced_styles, unsafe_allow_html=True)
-
 st.markdown("""
 <style>
-.glass-header {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: rgba(98,3,237,0.3);
-    padding: 30px;
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.25);
+.cool-header {
+    width: 100%;
+    background: linear-gradient(90deg, #6203ed, #8a3dfc);
+    padding: 28px 0;
+    border-radius: 14px;
     text-align: center;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 20px rgba(98,3,237,0.35);
     margin-bottom: 25px;
+    animation: fadeSlide 0.6s ease-out;
 }
 
-.glass-header-title {
+.cool-header-title {
+    color: white;
     font-size: 48px;
     font-weight: 800;
-    color: #ffffff;
-    text-shadow: 0px 2px 8px rgba(0,0,0,0.45);
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
+    text-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 </style>
 
-<div class="glass-header">
-    <div class="glass-header-title">🚀 Workvivo Migration Tool</div>
+<div class="cool-header">
+    <div class="cool-header-title">🚀 Workvivo Migration Tool</div>
 </div>
 """, unsafe_allow_html=True)
 
-
-with st.sidebar:
-    st.image(WORKVIVO_LOGO_URL, use_column_width=True)
-
-    st.markdown(
-        """<a class="sidebar-link" href="#_config">Configuration</a>""",
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """<a class="sidebar-link" href="#_migration">Data Migration</a>""",
-        unsafe_allow_html=True
-    )
 
 
 # =========================================================
