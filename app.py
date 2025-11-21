@@ -940,7 +940,7 @@ def check_cancel():
 # ============================================================
 # Migrate Workvivo Data
 # ============================================================
-st.markdown("## 🚀 Migrate Workvivo Data")
+st.markdown("## Migrate Workvivo Data")
 
 # ============================================================
 # 📅 Date Range for Content Migration
