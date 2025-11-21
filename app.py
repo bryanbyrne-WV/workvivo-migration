@@ -363,6 +363,9 @@ target_headers = {
     "Accept": "application/json"
 }
 
+# Global live console placeholder
+if "console_placeholder" not in st.session_state:
+    st.session_state.console_placeholder = st.empty()
 
 # =========================================================
 # LOGGING AREA
@@ -373,10 +376,20 @@ def ui_log(message):
     ts = datetime.utcnow().strftime("%H:%M:%S")
     line = f"[{ts}] {message}"
 
+    # append to session log
     if "log_output" not in st.session_state:
         st.session_state["log_output"] = ""
 
     st.session_state["log_output"] += line + "\n"
+
+    # 🔥 LIVE UPDATE CONSOLE every log
+    if st.session_state.get("phase1_running", False):
+        st.session_state.console_placeholder.text_area(
+            "Live Console Output",
+            st.session_state["log_output"],
+            height=350,
+            disabled=True
+        )
 
 
 # =========================================================
