@@ -841,24 +841,28 @@ phase = st.selectbox(
 # ============================================================
 # 🔧 PHASE 1 — STATE INITIALIZATION
 # ============================================================
+
 if "phase1_running" not in st.session_state:
     st.session_state.phase1_running = False
 
-if "phase1_show_console" not in st.session_state:
-    st.session_state.phase1_show_console = False
+if "phase1_cancel" not in st.session_state:
+    st.session_state.phase1_cancel = False
 
-if "start_phase_1" not in st.session_state:
-    st.session_state.start_phase_1 = False
+if "phase1_trigger" not in st.session_state:
+    st.session_state.phase1_trigger = False
 
-# --------------------------
-# Phase 1 UI Controls
-# --------------------------
+# ============================================================
+# 🔧 PHASE 1 — UI + LOGIC
+# ============================================================
+
 if phase.startswith("Phase 1"):
 
     st.subheader("Phase 1 Options")
 
-    disabled = st.session_state.phase_running
+    # Disable inputs while running
+    disabled = st.session_state.phase1_running
 
+    # Inputs
     company = st.text_input(
         "Company Name for Global Space",
         value=st.session_state.get("phase1_company", "My Company"),
@@ -873,46 +877,40 @@ if phase.startswith("Phase 1"):
         disabled=disabled
     )
 
-    # -----------------------------------------------------
-    # RUN BUTTON — visible only when NOT running
-    # -----------------------------------------------------
-    if not st.session_state.phase_running:
-        if st.button("▶ Run Phase 1 Now"):
-            st.session_state.phase_running = True
-            st.session_state.cancel_requested = False
-            st.session_state.start_phase_1 = True
+    # ---------------------------------------------------------
+    # RUN BUTTON (ONLY WHEN NOT RUNNING)
+    # ---------------------------------------------------------
+    if not st.session_state.phase1_running:
+        if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
+            # Lock UI and trigger next rerun
+            st.session_state.phase1_running = True
+            st.session_state.phase1_cancel = False
+            st.session_state.phase1_trigger = True
             st.rerun()
 
-    # -----------------------------------------------------
-    # CANCEL BUTTON — visible ONLY when running
-    # -----------------------------------------------------
-    if st.session_state.phase_running:
-        st.warning("Migration is running...")
-        if st.button("🖥️ Cancel Migration"):
+    # ---------------------------------------------------------
+    # CANCEL BUTTON (ONLY WHEN RUNNING)
+    # ---------------------------------------------------------
+    if st.session_state.phase1_running:
+        st.warning("Phase 1 migration is running…")
+        if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
+            st.session_state.phase1_cancel = True
             cancel_migration()
 
-    # -----------------------------------------------------
-    # RUN PHASE 1 FOR REAL (AFTER UI RERUN)
-    # -----------------------------------------------------
-    if st.session_state.get("start_phase_1", False):
-        run_phase_1(company, active_only)
-        st.session_state.start_phase_1 = False
-
-onsole"
-        )
-
-    # --------------------------------------------------------
-    # 🚀 EXECUTE PHASE 1 LOGIC AFTER RERUN
-    # --------------------------------------------------------
-    if st.session_state.start_phase_1:
+    # ---------------------------------------------------------
+    # EXECUTE PHASE 1 (AFTER RERUN)
+    # ---------------------------------------------------------
+    if st.session_state.phase1_trigger:
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
 
+        # Run actual work
         run_phase_1(company, active_only)
 
-        # Reset flags
-        st.session_state.start_phase_1 = False
+        # Reset flags after completion
+        st.session_state.phase1_trigger = False
         st.session_state.phase1_running = False
-        st.session_state.phase1_show_console = False
+        st.session_state.phase1_cancel = False
+
         st.rerun()
 
 
