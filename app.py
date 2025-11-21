@@ -17,38 +17,38 @@ st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 WORKVIVO_LOGO = "https://assets-global.website-files.com/5db06f883fe98384f8e59870/60df4cf0e95f707221207050_workvivo-logo.svg"
 
-advanced_styles = """
+advanced_styles = f"""
 <style>
 
     /* GLOBAL PAGE BACKGROUND */
-    .main {
+    .main {{
         background-color: #F7F9FC !important;
-    }
+    }}
 
     /* DARK MODE SUPPORT */
-    @media (prefers-color-scheme: dark) {
-        .main {
+    @media (prefers-color-scheme: dark) {{
+        .main {{
             background-color: #0d1117 !important;
-        }
-        .header-bar {
-            background-color: #4d02be !important;
-        }
-        .header-title {
+        }}
+        .header-bar {{
+            background-color: #3d0199 !important;
+        }}
+        .header-title {{
             color: #ffffff !important;
-        }
-        section[data-testid="stSidebar"] {
-            background-color: #2a0066 !important;
-        }
-        .sidebar-link {
+        }}
+        section[data-testid="stSidebar"] {{
+            background-color: #1a0638 !important;
+        }}
+        .sidebar-link {{
             color: #cbd5e1 !important;
-        }
-        .sidebar-footer {
+        }}
+        .sidebar-footer {{
             color: #94a3b8 !important;
-        }
-    }
+        }}
+    }}
 
     /* HEADER BAR */
-    .header-bar {
+    .header-bar {{
         background-color: #6203ed;
         padding: 18px 28px;
         width: 100%;
@@ -58,53 +58,53 @@ advanced_styles = """
         margin-bottom: 25px;
         box-shadow: 0px 3px 12px rgba(0,0,0,0.18);
         animation: fade-slide-down 0.6s ease-out;
-    }
+    }}
 
-    .header-logo {
+    .header-logo {{
         height: 46px;
         margin-right: 18px;
-    }
+    }}
 
-    .header-title {
+    .header-title {{
         color: white;
         font-size: 30px;
         font-weight: 650;
         letter-spacing: -0.5px;
         margin-top: 2px;
-    }
+    }}
 
-    @keyframes fade-slide-down {
-        0% { opacity: 0; transform: translateY(-10px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fade-slide-down {{
+        0% {{ opacity: 0; transform: translateY(-10px); }}
+        100% {{ opacity: 1; transform: translateY(0); }}
+    }}
 
     /* SIDEBAR */
-    section[data-testid="stSidebar"] {
-        background-color: #4d02be !important;
+    section[data-testid="stSidebar"] {{
+        background-color: #4502b4 !important;
         padding: 20px 15px;
-    }
+    }}
 
-    .sidebar-logo {
+    .sidebar-logo {{
         width: 170px;
         margin-bottom: 20px;
         margin-top: 10px;
         animation: fade-in 0.8s;
-    }
+    }}
 
-    @keyframes fade-in {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-    }
+    @keyframes fade-in {{
+        0% {{ opacity: 0; }}
+        100% {{ opacity: 1; }}
+    }}
 
-    .sidebar-title {
+    .sidebar-title {{
         color: #ffffff;
         font-size: 20px;
         font-weight: 600;
         margin-top: 10px;
         margin-bottom: 10px;
-    }
+    }}
 
-    .sidebar-link {
+    .sidebar-link {{
         color: #ffffff !important;
         padding: 10px 6px;
         display: block;
@@ -114,14 +114,14 @@ advanced_styles = """
         margin-bottom: 6px;
         text-decoration: none !important;
         transition: 0.2s;
-    }
+    }}
 
-    .sidebar-link:hover {
+    .sidebar-link:hover {{
         background-color: rgba(255,255,255,0.18);
         padding-left: 12px;
-    }
+    }}
 
-    .sidebar-footer {
+    .sidebar-footer {{
         margin-top: 40px;
         padding: 12px;
         border-top: 1px solid rgba(255,255,255,0.25);
@@ -129,10 +129,10 @@ advanced_styles = """
         font-size: 14px;
         text-align: center;
         line-height: 1.4;
-    }
+    }}
 
     /* BEAUTIFUL BUTTONS */
-    .stButton > button {
+    .stButton > button {{
         border-radius: 6px;
         height: 48px;
         background-color: #6203ed;
@@ -143,36 +143,36 @@ advanced_styles = """
         padding: 8px 20px;
         box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
         transition: 0.2s;
-    }
+    }}
 
-    .stButton > button:hover {
-        background-color: #4d02be;
+    .stButton > button:hover {{
+        background-color: #4c02b5;
         transform: translateY(-1px);
-    }
+    }}
 
-    .stButton > button:active {
+    .stButton > button:active {{
         transform: scale(0.98);
-    }
+    }}
 
     /* COLLAPSIBLE LOG CONTAINER */
-    details {
+    details {{
         background: #ffffff;
         border-radius: 8px;
         padding: 10px 14px;
         box-shadow: 0px 2px 6px rgba(0,0,0,0.12);
         margin-bottom: 10px;
-    }
+    }}
 
-    summary {
+    summary {{
         font-size: 18px;
         font-weight: 600;
         cursor: pointer;
         color: #6203ed;
         padding: 6px;
-    }
+    }}
 
     /* LOADING SPINNER */
-    .loading {
+    .loading {{
         border: 5px solid #e3e3e3;
         border-top: 5px solid #6203ed;
         border-radius: 50%;
@@ -180,15 +180,15 @@ advanced_styles = """
         height: 38px;
         animation: spin 0.8s linear infinite;
         margin: auto;
-    }
+    }}
 
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
+    @keyframes spin {{
+        0% {{ transform: rotate(0deg); }}
+        100% {{ transform: rotate(360deg); }}
+    }}
 
 </style>
-
+"""
 
 st.markdown(advanced_styles, unsafe_allow_html=True)
 
