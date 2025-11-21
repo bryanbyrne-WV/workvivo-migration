@@ -205,9 +205,13 @@ st.markdown("<div id='_config'></div>", unsafe_allow_html=True)
 if "config_saved" not in st.session_state:
 
     with st.form("config_form"):
-        st.header("🔐 Environment Configuration")
+    st.header("🔐 Environment Configuration")
 
-        st.subheader("Source Environment")
+    # -----------------------------
+    # SOURCE ENVIRONMENT (Collapsible)
+    # -----------------------------
+    with st.expander("📥 Source Environment Settings", expanded=True):
+
         SOURCE_SCIM_URL = st.text_input(
             "Source SCIM URL",
             value="https://migration-testing.workvivo.com/scim/v2/scim/Users/"
@@ -231,7 +235,11 @@ if "config_saved" not in st.session_state:
             value="3000380"
         )
 
-        st.subheader("Target Environment")
+    # -----------------------------
+    # TARGET ENVIRONMENT (Collapsible)
+    # -----------------------------
+    with st.expander("📤 Target Environment Settings", expanded=True):
+
         TARGET_SCIM_URL = st.text_input(
             "Target SCIM URL",
             value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
@@ -255,12 +263,16 @@ if "config_saved" not in st.session_state:
             value="3000384"
         )
 
+    # -----------------------------
+    # MIGRATION USER
+    # -----------------------------
+    with st.expander("👤 Migration User Settings", expanded=False):
         SPACE_CREATOR_EXTERNAL_ID = st.text_input(
             "Migration External ID (Space Creator)",
             value="workvivo-migration-user"
         )
 
-        submitted = st.form_submit_button("Save Configuration")
+    submitted = st.form_submit_button("Save Configuration")
 
     # ---------------------------
     # HANDLE SUBMISSION
