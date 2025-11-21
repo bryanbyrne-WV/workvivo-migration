@@ -874,11 +874,12 @@ if phase.startswith("Phase 1"):
     # --------------------------------------------------------
     # RUN BUTTON (only shown when not running)
     # --------------------------------------------------------
-    if not st.session_state.phase1_running:
-        if st.button("▶ Run Phase 1 Now"):
-            st.session_state.phase1_running = True
-            st.session_state.start_phase_1 = True
-            st.rerun()
+    if st.button("▶ Run Phase 1 Now"):
+    st.session_state.phase_running = True
+    st.session_state.cancel_requested = False
+    st.session_state.phase1_started = True   # <-- ADD THIS
+    st.session_state.start_phase_1 = True
+    st.rerun()
 
     # --------------------------------------------------------
     # CANCEL BUTTON (shown only while running)
@@ -967,25 +968,30 @@ elif phase.startswith("Phase 2"):
 
 
 # =========================================================
-# 📜 MIGRATION LOG OUTPUT (Collapsible)
+# 📜 MIGRATION LOG OUTPUT (Visible ONLY After Phase 1 Starts)
 # =========================================================
-st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
 
-st.markdown("""
-<details>
-  <summary style="font-size:20px; font-weight:600; cursor:pointer;">
-    📡 View Live Console Output
-  </summary>
-  <div style="margin-top:15px;">
-""", unsafe_allow_html=True)
+# Show log console only when Phase 1 has started at least once
+if st.session_state.get("phase1_started", False):
 
-st.text_area(
-    label="Live Console Log",
-    value=st.session_state.get("log_output", ""),
-    height=350,
-    disabled=True
-)
+    st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
 
-st.markdown("</div></details>", unsafe_allow_html=True)
+    st.markdown("""
+    <details open>
+      <summary style="font-size:20px; font-weight:600; cursor:pointer;">
+        🖥️ View Live Console Output
+      </summary>
+      <div style="margin-top:15px;">
+    """, unsafe_allow_html=True)
+
+    st.text_area(
+        label="Live Console Log",
+        value=st.session_state.get("log_output", ""),
+        height=350,
+        disabled=True
+    )
+
+    st.markdown("</div></details>", unsafe_allow_html=True)
+
 
 
