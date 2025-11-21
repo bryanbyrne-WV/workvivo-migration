@@ -832,33 +832,6 @@ def check_cancel():
 # ============================
 st.markdown("<div id='_migration'></div>", unsafe_allow_html=True)
 
-st.markdown("""
-<style>
-.phase-card {
-    background: white;
-    padding: 20px 25px;
-    border-radius: 14px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-    border-left: 6px solid #6203ed;
-    margin-top: 15px;
-    margin-bottom: 25px;
-}
-
-.phase-card-label {
-    font-size: 24px;
-    font-weight: 700;
-    color: #6203ed;
-    margin-bottom: 8px;
-    display: block;
-}
-
-.phase-card-help {
-    font-size: 14px;
-    color: #666;
-    margin-top: -5px;
-    margin-bottom: 10px;
-}
-</style>
 
 disabled = st.session_state.phase_running
 
