@@ -218,6 +218,21 @@ st.markdown("""
 }
 </style>
 
+# === SIDEBAR ===
+with st.sidebar:
+    st.image("https://www.festivalofwork.com/media/Workvivo%20(1).png", use_column_width=True)
+
+    st.markdown(
+        """<a class="sidebar-link" href="#_config">⚙️ Configuration</a>""",
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """<a class="sidebar-link" href="#_migration">📦 Data Migration</a>""",
+        unsafe_allow_html=True
+    )
+
+
 <div class="cool-header">
     <div class="cool-header-title">🚀 Workvivo Migration Tool</div>
 </div>
