@@ -231,7 +231,7 @@ if "config_saved" not in st.session_state:
         # SOURCE ENVIRONMENT (Collapsible)
         # ----------------------------------------------------
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-        with st.expander("🔵 Source Environment", expanded=True):
+        with st.expander("Source Environment", expanded=True):
 
             SOURCE_SCIM_URL = st.text_input(
                 "Source SCIM URL",
@@ -258,7 +258,7 @@ if "config_saved" not in st.session_state:
         # TARGET ENVIRONMENT (Collapsible)
         # ----------------------------------------------------
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-        with st.expander("🟣 Target Environment", expanded=True):
+        with st.expander("Target Environment", expanded=True):
 
             TARGET_SCIM_URL = st.text_input(
                 "Target SCIM URL",
