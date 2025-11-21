@@ -938,7 +938,7 @@ def check_cancel():
 
 
 # ============================================================
-# 🚀 Migrate Workvivo Data
+# Migrate Workvivo Data
 # ============================================================
 st.markdown("## 🚀 Migrate Workvivo Data")
 
