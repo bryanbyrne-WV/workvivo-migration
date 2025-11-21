@@ -173,7 +173,9 @@ advanced_styles = f"""
 </style>
 """
 
-# Brand Logo (Centered)
+# ============================================
+# BRAND LOGO (Top Center)
+# ============================================
 st.markdown("""
 <div style="text-align:center; margin-top:10px; margin-bottom:5px;">
     <img src="https://www.festivalofwork.com/media/Workvivo%20(1).png" 
@@ -181,18 +183,39 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Cool Gradient Header (ONLY)
+
+# ============================================
+# COOL GRADIENT HEADER WITH GLOW
+# ============================================
 st.markdown("""
 <style>
+
 .cool-header {
     width: 100%;
     background: linear-gradient(90deg, #6203ed, #8a3dfc);
     padding: 28px 0;
     border-radius: 14px;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(98,3,237,0.35);
     margin-bottom: 25px;
+    position: relative;
     animation: fadeSlide 0.6s ease-out;
+    box-shadow: 0 4px 20px rgba(98,3,237,0.35);
+}
+
+/* ANIMATED GLOW RING */
+.cool-header::after {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border-radius: 18px;
+    background: radial-gradient(circle, rgba(136,72,255,0.6), transparent 60%);
+    filter: blur(18px);
+    opacity: 0.55;
+    animation: glowPulse 3s ease-in-out infinite;
+    z-index: -1;
 }
 
 .cool-header-title {
@@ -207,12 +230,20 @@ st.markdown("""
     from { opacity: 0; transform: translateY(-10px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes glowPulse {
+    0%   { opacity: 0.35; transform: scale(0.97); }
+    50%  { opacity: 0.75; transform: scale(1.03); }
+    100% { opacity: 0.35; transform: scale(0.97); }
+}
+
 </style>
 
 <div class="cool-header">
     <div class="cool-header-title">🚀 Workvivo Migration Tool</div>
 </div>
 """, unsafe_allow_html=True)
+
 
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
