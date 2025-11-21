@@ -891,27 +891,44 @@ if phase.startswith("Phase 1"):
         disabled=disabled
     )
 
-# ------------------------
-# RUN BUTTON (when not running)
-# ------------------------
-if not st.session_state.phase1_running:
-    if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
-        st.session_state.phase1_running = True
-        st.session_state.phase1_cancel = False
-        st.session_state.phase1_trigger = True
-        st.session_state["log_output"] = ""
-        st.session_state.phase1_console_visible = True
-        st.rerun()
+if phase.startswith("Phase 1"):
 
+    st.subheader("Phase 1 Options")
 
-# ------------------------
-# CANCEL BUTTON (visible when running)
-# ------------------------
-if st.session_state.phase1_running:
-    st.warning("Phase 1 migration is running…")
-    if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
-        st.session_state.phase1_cancel = True
-        cancel_migration()
+    disabled = st.session_state.phase1_running
+
+    # Inputs
+    company = st.text_input(
+        "Company Name for Global Space",
+        value=st.session_state.get("phase1_company", "My Company"),
+        key="phase1_company",
+        disabled=disabled
+    )
+
+    active_only = st.checkbox(
+        "Migrate ONLY active users",
+        value=st.session_state.get("phase1_active_only", True),
+        key="phase1_active_only",
+        disabled=disabled
+    )
+
+    # RUN BUTTON
+    if not st.session_state.phase1_running:
+        if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
+            st.session_state.phase1_running = True
+            st.session_state.phase1_cancel = False
+            st.session_state.phase1_trigger = True
+            st.session_state["log_output"] = ""
+            st.session_state.phase1_console_visible = True
+            st.rerun()
+
+    # CANCEL BUTTON (NOW WILL SHOW CORRECTLY)
+    if st.session_state.phase1_running:
+        st.warning("Phase 1 migration is running…")
+        if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
+            st.session_state.phase1_cancel = True
+            cancel_migration()
+
 
 
 # ---------------------------------------------------------
