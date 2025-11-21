@@ -967,17 +967,25 @@ elif phase.startswith("Phase 2"):
 
 
 # =========================================================
-# BOTTOM LOG OUTPUT
+# 📜 MIGRATION LOG OUTPUT (Collapsible)
 # =========================================================
 st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
 
-st.header("📜 Migration Log Output")
+st.markdown("""
+<details>
+  <summary style="font-size:20px; font-weight:600; cursor:pointer;">
+    📡 View Live Console Output
+  </summary>
+  <div style="margin-top:15px;">
+""", unsafe_allow_html=True)
 
-# Always render the latest log output
 st.text_area(
-    label="Log Output",
+    label="Live Console Log",
     value=st.session_state.get("log_output", ""),
-    height=400,
+    height=350,
     disabled=True
 )
+
+st.markdown("</div></details>", unsafe_allow_html=True)
+
 
