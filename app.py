@@ -210,25 +210,25 @@ if "config_saved" not in st.session_state:
         st.subheader("Source Environment")
         SOURCE_SCIM_URL = st.text_input(
             "Source SCIM URL",
-            value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
+            value="https://migration-testing.workvivo.com/scim/v2/scim/Users/"
         )
         SOURCE_API_URL = st.text_input(
             "Source API URL",
-            value="https://api.workvivo.com/v1"
+            value="https://api.eu2.workvivo.com/v1"
         )
         SOURCE_SCIM_TOKEN = st.text_input(
             "Source SCIM Token",
-            value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
+            value="nt4JalDlDMnpW8UyfYZf1qoRod2gJSHPvAknQtiB",
             type="password"
         )
         SOURCE_API_TOKEN = st.text_input(
             "Source API Token",
-            value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
+            value="1009|c2ef4508f6e33c707ab6f5cc83a63d7128f3b346",
             type="password"
         )
         SOURCE_WORKVIVO_ID = st.text_input(
             "Source Workvivo-ID",
-            value="50"
+            value="3000380"
         )
 
         st.subheader("Target Environment")
