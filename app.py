@@ -178,7 +178,7 @@ st.markdown(advanced_styles, unsafe_allow_html=True)
 # Render Header
 st.markdown("""
 <div class="header-bar">
-    <div class="header-title">🚀 Workvivo Migration Tool</div>
+    <div class="header-title">Workvivo Migration Tool</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -204,35 +204,44 @@ st.markdown("<div id='_config'></div>", unsafe_allow_html=True)
 
 if "config_saved" not in st.session_state:
 
-    with st.form("config_form"):
+    # --- CSS to remove blank space between expanders ---
+    st.markdown("""
+    <style>
+        .config-card {
+            background: #ffffff;
+            padding: 18px 22px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 8px rgba(0,0,0,0.07);
+            margin-bottom: 0px !important;
+        }
 
+        /* Remove Streamlit expander spacing */
+        div.streamlit-expanderHeader {
+            margin: 0 !important;
+            padding-top: 4px !important;
+            padding-bottom: 4px !important;
+        }
+        div.streamlit-expanderContent {
+            margin: 0 !important;
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+        }
+
+        /* Remove default container gaps */
+        .block-container {
+            padding-top: 0rem;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    with st.form("config_form"):
         st.header("🔐 Environment Configuration")
 
-        st.markdown("""
-        <style>
-            .config-card {
-                background: #ffffff;
-                padding: 18px 22px;
-                border-radius: 10px;
-                box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
-                margin-bottom: 18px;
-            }
-            summary {
-                font-size: 18px;
-                font-weight: 600;
-                color: #6203ed;
-                cursor: pointer;
-                padding: 6px 0;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-
         # ----------------------------------------------------
-        # SOURCE ENVIRONMENT (Collapsible)
+        # SOURCE (Tight Card)
         # ----------------------------------------------------
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-        with st.expander("Source Environment", expanded=True):
-
+        with st.expander("🔵 Source Environment", expanded=True):
             SOURCE_SCIM_URL = st.text_input(
                 "Source SCIM URL",
                 value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
@@ -254,12 +263,13 @@ if "config_saved" not in st.session_state:
             SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-ID", value="50")
         st.markdown("</div>", unsafe_allow_html=True)
 
+        # --- NO GAP HERE ---
+
         # ----------------------------------------------------
-        # TARGET ENVIRONMENT (Collapsible)
+        # TARGET (Tight Card)
         # ----------------------------------------------------
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-        with st.expander("Target Environment", expanded=True):
-
+        with st.expander("🟣 Target Environment", expanded=True):
             TARGET_SCIM_URL = st.text_input(
                 "Target SCIM URL",
                 value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
@@ -281,8 +291,10 @@ if "config_saved" not in st.session_state:
             TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="3000384")
         st.markdown("</div>", unsafe_allow_html=True)
 
+        # --- NO GAP HERE ---
+
         # ----------------------------------------------------
-        # MIGRATION USER (Single small card)
+        # MIGRATION USER (Tight Card)
         # ----------------------------------------------------
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
         SPACE_CREATOR_EXTERNAL_ID = st.text_input(
@@ -291,12 +303,8 @@ if "config_saved" not in st.session_state:
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # SUBMIT BUTTON
         submitted = st.form_submit_button("Save Configuration")
 
-    # --------------------------------------------------------
-    # SAVE INTO SESSION STATE
-    # --------------------------------------------------------
     if submitted:
         st.session_state["config_saved"] = True
 
@@ -316,13 +324,13 @@ if "config_saved" not in st.session_state:
 
         st.success("Configuration saved! Click Next to continue.")
 
-        # NEXT BUTTON (Restored)
         if st.button("➡ Next"):
             st.rerun()
 
         st.stop()
 
     st.stop()
+
 
 # =========================================================
 # CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
