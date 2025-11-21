@@ -872,15 +872,71 @@ st.markdown("""
 
 disabled = st.session_state.phase_running
 
-phase = st.selectbox(
-    "",
-    [
-        "Phase 1 – Users & Spaces",
-        "Phase 2 – Content",
-    ],
-    index=0,
-    disabled=disabled
-)
+st.markdown("<div id='_migration'></div>", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+.phase-card {
+    border-radius: 10px;
+    padding: 20px;
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 2px solid transparent;
+}
+.phase-card:hover {
+    transform: translateY(-3px);
+    border-color: #6203ed;
+}
+.phase-card.selected {
+    border-color: #6203ed;
+    background: #f6f0ff;
+}
+.phase-title {
+    font-size: 22px;
+    font-weight: 650;
+    color: #6203ed;
+    margin-bottom: 5px;
+}
+.phase-subtitle {
+    font-size: 15px;
+    color: #555;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Default selected
+if "phase" not in st.session_state:
+    st.session_state.phase = "Phase 1 – Users & Spaces"
+
+phase_col1, phase_col2 = st.columns(2)
+
+with phase_col1:
+    if st.button("", key="phase1_card"):
+        st.session_state.phase = "Phase 1 – Users & Spaces"
+
+    st.markdown(f"""
+    <div class="phase-card {'selected' if st.session_state.phase.startswith('Phase 1') else ''}">
+        <div class="phase-title">Phase 1</div>
+        <div class="phase-subtitle">Users & Spaces</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with phase_col2:
+    if st.button("", key="phase2_card"):
+        st.session_state.phase = "Phase 2 – Content"
+
+    st.markdown(f"""
+    <div class="phase-card {'selected' if st.session_state.phase.startswith('Phase 2') else ''}">
+        <div class="phase-title">Phase 2</div>
+        <div class="phase-subtitle">Content Migration</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Provide variable for rest of app
+phase = st.session_state.phase
 
 
 # ============================================================
