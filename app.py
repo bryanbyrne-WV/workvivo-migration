@@ -829,7 +829,7 @@ def check_cancel():
 # =========================================================
 st.markdown("<div id='_migration'></div>", unsafe_allow_html=True)
 
-st.header("🚦 Run Migration")
+st.header("Run Migration")
 
 # 🔒 Disable all UI during migration
 disabled = st.session_state.phase_running
