@@ -939,7 +939,7 @@ def check_cancel():
 # ============================================================
 # 🏢 Organisation settings and information
 # ============================================================
-st.markdown("##Organisation settings and information")
+st.markdown("## Organisation settings and information")
 
 st.markdown("""
 This section migrates the core organisational setup in Workvivo including users, spaces, and all related details such as descriptions, logos, visibility settings, and memberships.
@@ -955,7 +955,7 @@ st.markdown("---")
 # ============================================================
 # 👥 User activity on Workvivo
 # ============================================================
-st.markdown("##User activity on Workvivo")
+st.markdown("## User activity on Workvivo")
 
 st.markdown("""
 Information and activity across key Workvivo features such as posts, comments, likes, and interactions within spaces will be collected and mapped to the correct users.
