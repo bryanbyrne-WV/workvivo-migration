@@ -14,7 +14,7 @@ st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 # ============================================================
 # WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
 # ============================================================
-WORKVIVO_LOGO_URL = "https://www.google.com/https://www.festivalofwork.com/media/Workvivo%20%281%29.png"
+WORKVIVO_LOGO_URL = "https://www.festivalofwork.com/media/Workvivo%20(1).png"
 
 advanced_styles = f"""
 <style>
