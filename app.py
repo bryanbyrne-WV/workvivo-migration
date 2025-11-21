@@ -9,7 +9,7 @@ import random
 import os
 import mimetypes
 
-st.set_page_config(page_title="Internal Migration Tool v1.0", layout="wide")
+st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 # ============================================================
 # WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
@@ -173,49 +173,26 @@ advanced_styles = f"""
 </style>
 """
 
-# ============================================
-# BRAND LOGO (Top Center)
-# ============================================
+# Brand Logo (Centered)
 st.markdown("""
 <div style="text-align:center; margin-top:10px; margin-bottom:5px;">
-    <img src="https://www.festivalofwork.com/media/%20(1).png" 
+    <img src="https://www.festivalofwork.com/media/Workvivo%20(1).png" 
          style="height:80px;">
 </div>
 """, unsafe_allow_html=True)
 
-
-# ============================================
-# COOL GRADIENT HEADER WITH GLOW
-# ============================================
+# Cool Gradient Header (ONLY)
 st.markdown("""
 <style>
-
 .cool-header {
     width: 100%;
     background: linear-gradient(90deg, #6203ed, #8a3dfc);
     padding: 28px 0;
     border-radius: 14px;
     text-align: center;
-    margin-bottom: 25px;
-    position: relative;
-    animation: fadeSlide 0.6s ease-out;
     box-shadow: 0 4px 20px rgba(98,3,237,0.35);
-}
-
-/* ANIMATED GLOW RING */
-.cool-header::after {
-    content: "";
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    right: -8px;
-    bottom: -8px;
-    border-radius: 18px;
-    background: radial-gradient(circle, rgba(136,72,255,0.6), transparent 60%);
-    filter: blur(18px);
-    opacity: 0.55;
-    animation: glowPulse 3s ease-in-out infinite;
-    z-index: -1;
+    margin-bottom: 25px;
+    animation: fadeSlide 0.6s ease-out;
 }
 
 .cool-header-title {
@@ -230,20 +207,12 @@ st.markdown("""
     from { opacity: 0; transform: translateY(-10px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-
-@keyframes glowPulse {
-    0%   { opacity: 0.35; transform: scale(0.97); }
-    50%  { opacity: 0.75; transform: scale(1.03); }
-    100% { opacity: 0.35; transform: scale(0.97); }
-}
-
 </style>
 
 <div class="cool-header">
-    <div class="cool-header-title">I</div>
+    <div class="cool-header-title">🚀 Workvivo Migration Tool</div>
 </div>
 """, unsafe_allow_html=True)
-
 
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
@@ -283,11 +252,11 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_URL = st.text_input(
                 "Source SCIM URL",
-                value="https://..com/scim/v2/scim/Users/"
+                value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
             )
             SOURCE_API_URL = st.text_input(
                 "Source API URL",
-                value="https://api..com/v1"
+                value="https://api.workvivo.com/v1"
             )
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
@@ -299,7 +268,7 @@ if "config_saved" not in st.session_state:
                 value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
                 type="password"
             )
-            SOURCE__ID = st.text_input("Source -ID", value="50")
+            SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-ID", value="50")
         st.markdown("</div>", unsafe_allow_html=True)
 
         # ----------------------------------------------------
@@ -310,11 +279,11 @@ if "config_saved" not in st.session_state:
 
             TARGET_SCIM_URL = st.text_input(
                 "Target SCIM URL",
-                value="https://migration-test-1..com/scim/v2/scim/Users/"
+                value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
             )
             TARGET_API_URL = st.text_input(
                 "Target API URL",
-                value="https://api.eu2..com/v1"
+                value="https://api.eu2.workvivo.com/v1"
             )
             TARGET_SCIM_TOKEN = st.text_input(
                 "Target SCIM Token",
@@ -326,7 +295,7 @@ if "config_saved" not in st.session_state:
                 value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
                 type="password"
             )
-            TARGET__ID = st.text_input("Target -ID", value="3000384")
+            TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="3000384")
         st.markdown("</div>", unsafe_allow_html=True)
 
         # ----------------------------------------------------
@@ -335,7 +304,7 @@ if "config_saved" not in st.session_state:
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
         SPACE_CREATOR_EXTERNAL_ID = st.text_input(
             "Migration External ID (Space Creator)",
-            value="-migration-user"
+            value="workvivo-migration-user"
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -352,13 +321,13 @@ if "config_saved" not in st.session_state:
         st.session_state["SOURCE_API_URL"] = SOURCE_API_URL
         st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
         st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
-        st.session_state["SOURCE__ID"] = SOURCE__ID
+        st.session_state["SOURCE_WORKVIVO_ID"] = SOURCE_WORKVIVO_ID
 
         st.session_state["TARGET_SCIM_URL"] = TARGET_SCIM_URL
         st.session_state["TARGET_API_URL"] = TARGET_API_URL
         st.session_state["TARGET_SCIM_TOKEN"] = TARGET_SCIM_TOKEN
         st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
-        st.session_state["TARGET__ID"] = TARGET__ID
+        st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
 
         st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
 
@@ -381,13 +350,13 @@ SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
 SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
 SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
 SOURCE_API_TOKEN = st.session_state["SOURCE_API_TOKEN"]
-SOURCE__ID = st.session_state["SOURCE__ID"]
+SOURCE_WORKVIVO_ID = st.session_state["SOURCE_WORKVIVO_ID"]
 
 TARGET_SCIM_URL = st.session_state["TARGET_SCIM_URL"]
 TARGET_API_URL = st.session_state["TARGET_API_URL"]
 TARGET_SCIM_TOKEN = st.session_state["TARGET_SCIM_TOKEN"]
 TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
-TARGET__ID = st.session_state["TARGET_WORKVIVO_ID"]
+TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
 
 SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
