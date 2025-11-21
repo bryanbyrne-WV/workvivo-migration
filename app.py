@@ -255,7 +255,7 @@ if "config_saved" not in st.session_state:
         )
         TARGET_API_TOKEN = st.text_input(
             "Target API Token",
-            value="1006|fb9c50816d6db9bf14163146b8205538bdb3264e5",
+            value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
             type="password"
         )
         TARGET_WORKVIVO_ID = st.text_input(
@@ -272,8 +272,8 @@ if "config_saved" not in st.session_state:
             value="workvivo-migration-user"
         )
 
-    # Submit button
     submitted = st.form_submit_button("Save Configuration")
+
 
 
     # ---------------------------
