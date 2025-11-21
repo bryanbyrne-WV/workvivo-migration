@@ -17,8 +17,7 @@ st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 WORKVIVO_LOGO = "https://assets-global.website-files.com/5db06f883fe98384f8e59870/60df4cf0e95f707221207050_workvivo-logo.svg"
 
-advanced_styles = f"""
-
+advanced_styles = """
 <style>
 
     /* GLOBAL PAGE BACKGROUND */
