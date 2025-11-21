@@ -217,10 +217,6 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        """<div class="sidebar-footer">Built for internal Workvivo migrations<br>© Bryan Byrne</div>""",
-        unsafe_allow_html=True
-    )
 
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
