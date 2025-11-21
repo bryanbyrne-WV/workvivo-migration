@@ -200,9 +200,14 @@ st.markdown("""
 
 with st.sidebar:
     st.markdown(
-        f"""<img src="/mnt/data/wv.png" class="sidebar-logo">""",
+        f"""
+        <div style="text-align:center; padding-bottom:15px;">
+            <img src="file://{WORKVIVO_LOGO}" style="width:150px; border-radius:8px;" />
+        </div>
+        """,
         unsafe_allow_html=True
     )
+
 
     st.markdown("""<div class="sidebar-title">Navigation</div>""", unsafe_allow_html=True)
 
