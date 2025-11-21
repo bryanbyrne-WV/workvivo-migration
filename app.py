@@ -203,29 +203,32 @@ st.markdown("""
 
 with st.sidebar:
     st.markdown(
-        f"""<img src="{WORKVIVO_LOGO}" class="sidebar-logo">""",
+        f"""<img src="/mnt/data/wv.png" class="sidebar-logo">""",
         unsafe_allow_html=True
     )
 
     st.markdown("""<div class="sidebar-title">Navigation</div>""", unsafe_allow_html=True)
 
-    # CONFIGURATION
     st.markdown(
-        """<a class="sidebar-link" href="#_config">Configuration</a>""",
+        """<a class="sidebar-link" href="#_config">⚙️ Configuration</a>""",
         unsafe_allow_html=True
     )
 
-    # DATA MIGRATION (covers Phase 1 + Phase 2 + Phase 3)
     st.markdown(
         """<a class="sidebar-link" href="#_migration">📦 Data Migration</a>""",
         unsafe_allow_html=True
     )
 
-    # LOGS
     st.markdown(
         """<a class="sidebar-link" href="#_logs">📜 Logs</a>""",
         unsafe_allow_html=True
     )
+
+    st.markdown(
+        """<div class="sidebar-footer">Built for internal Workvivo migrations<br>© Bryan Byrne</div>""",
+        unsafe_allow_html=True
+    )
+
 
     st.markdown(
         """<div class="sidebar-footer">Built for internal Workvivo migrations<br>© Bryan Byrne</div>""",
