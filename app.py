@@ -271,8 +271,8 @@ if "config_saved" not in st.session_state:
             SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-ID", value="50")
         st.markdown("</div>", unsafe_allow_html=True)
 
-            # -------------------------------------------------------------
-    # 🔌 Test Source Connectivity
+               # -------------------------------------------------------------
+    # 🔌 Test Source Connectivity (form-safe)
     # -------------------------------------------------------------
     st.markdown("### 🔌 Test Source Connectivity")
 
@@ -286,11 +286,11 @@ if "config_saved" not in st.session_state:
         except Exception as exc:
             st.error(f"❌ {name}: Connection failed — {str(exc)}")
 
-    if st.button("Test Source Connectivity"):
+    if st.form_submit_button("Test Source Connectivity"):
         st.info("⏳ Testing source SCIM & API…")
-
         test_source_conn("Source SCIM", source_scim_url, source_scim_headers)
-        test_source_conn("Source API", f"{source_api_url}/org", source_api_headers)
+        test_source_conn("Source API",  f"{source_api_url}/org", source_api_headers)
+
 
 
         # ----------------------------------------------------
@@ -320,8 +320,8 @@ if "config_saved" not in st.session_state:
             TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="3000384")
         st.markdown("</div>", unsafe_allow_html=True)
 
-      # -------------------------------------------------------------
-    # 🔌 Test Target Connectivity
+       # -------------------------------------------------------------
+    # 🔌 Test Target Connectivity (form-safe)
     # -------------------------------------------------------------
     st.markdown("### 🔌 Test Target Connectivity")
 
@@ -335,11 +335,10 @@ if "config_saved" not in st.session_state:
         except Exception as exc:
             st.error(f"❌ {name}: Connection failed — {str(exc)}")
 
-    if st.button("Test Target Connectivity"):
+    if st.form_submit_button("Test Target Connectivity"):
         st.info("⏳ Testing target SCIM & API…")
-
         test_target_conn("Target SCIM", target_scim_url, target_scim_headers)
-        test_target_conn("Target API", f"{target_api_url}/org", target_api_headers)
+        test_target_conn("Target API",  f"{target_api_url}/org", target_api_headers)
 
         # ----------------------------------------------------
         # MIGRATION USER (Single small card)
