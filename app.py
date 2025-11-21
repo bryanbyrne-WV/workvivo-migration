@@ -827,15 +827,53 @@ def check_cancel():
 # =========================================================
 # 2) PHASE SELECTION UI
 # =========================================================
+# ============================
+# MIGRATION PHASE SELECTOR UI
+# ============================
 st.markdown("<div id='_migration'></div>", unsafe_allow_html=True)
 
-st.header("Run Migration")
+st.markdown("""
+<style>
+.phase-card {
+    background: white;
+    padding: 20px 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    border-left: 6px solid #6203ed;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
 
-# 🔒 Disable all UI during migration
+.phase-card-label {
+    font-size: 24px;
+    font-weight: 700;
+    color: #6203ed;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.phase-card-help {
+    font-size: 14px;
+    color: #666;
+    margin-top: -5px;
+    margin-bottom: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="phase-card">
+    <span class="phase-card-label">Choose Migration Phase</span>
+    <span class="phase-card-help">
+        Select the migration workflow you want to run.
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
 disabled = st.session_state.phase_running
 
 phase = st.selectbox(
-    "Choose migration phase",
+    "",
     [
         "Phase 1 – Users & Spaces",
         "Phase 2 – Content",
@@ -843,6 +881,7 @@ phase = st.selectbox(
     index=0,
     disabled=disabled
 )
+
 
 # ============================================================
 # 🔧 PHASE 1 — STATE INITIALIZATION
