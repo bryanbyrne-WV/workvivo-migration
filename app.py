@@ -845,7 +845,6 @@ if phase.startswith("Phase 1"):
 
     st.subheader("Phase 1 Options")
 
-    # Disable inputs if running
     disabled = st.session_state.phase_running
 
     company = st.text_input(
@@ -862,33 +861,49 @@ if phase.startswith("Phase 1"):
         disabled=disabled
     )
 
-    # ============================
-    # RUN BUTTON — triggers lock
-    # ============================
-    if not st.session_state.phase_running:
-        # Only visible when not running
+    # =====================================================
+    # RUN PHASE 1 BUTTON
+    # =====================================================
+    if not st.session_state.phase1_running:
         if st.button("▶ Run Phase 1 Now"):
-            st.session_state.phase_running = True
+            st.session_state.phase1_running = True
+            st.session_state.phase1_show_console = True   # console appears only AFTER run
             st.session_state.cancel_requested = False
-            st.session_state.start_phase_1 = True  # trigger for next cycle
+            st.session_state.start_phase_1 = True
             st.rerun()
 
-    # ============================
-    # CANCEL BUTTON — while running
-    # ============================
-    if st.session_state.phase_running:
-        st.warning("Migration is currently running…")
+    # =====================================================
+    # CANCEL BUTTON during phase 1 running
+    # =====================================================
+    if st.session_state.phase1_running:
+        st.warning("Phase 1 is running…")
 
-        if st.button("❌ Cancel Migration", key="cancel_phase1_button"):
+        if st.button("❌ Cancel Phase 1"):
             cancel_migration()
 
-    # ============================
-    # START MIGRATION AFTER RERUN
-    # ============================
+        # Console toggle visible ONLY during run
+        if st.checkbox("📟 Show Live Console", value=st.session_state.phase1_show_console):
+            st.session_state.phase1_show_console = True
+        else:
+            st.session_state.phase1_show_console = False
+
+        # Actual console
+        if st.session_state.phase1_show_console:
+            st.text_area(
+                label="Live Migration Log",
+                value=st.session_state.get("log_output", ""),
+                height=300,
+                disabled=True
+            )
+
+    # =====================================================
+    # Start process *after rerun*
+    # =====================================================
     if st.session_state.get("start_phase_1", False):
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
         run_phase_1(company, active_only)
         st.session_state.start_phase_1 = False
+
 
 # -------------------------------
 # Phase 2
@@ -944,23 +959,6 @@ elif phase.startswith("Phase 2"):
             cancel_migration()
 
 
-
-# ---------------------------------------------------------
-# Toggle show/hide for live logs
-# ---------------------------------------------------------
-if "show_console" not in st.session_state:
-    st.session_state.show_console = False
-
-if st.button("📟 View Live Console" if not st.session_state.show_console else "🙈 Hide Console"):
-    st.session_state.show_console = not st.session_state.show_console
-
-if st.session_state.show_console:
-    st.text_area(
-        "Real-time Output",
-        value=st.session_state.get("log_output", ""),
-        height=400,
-        disabled=True
-    )
 
 # =========================================================
 # BOTTOM LOG OUTPUT
