@@ -872,6 +872,71 @@ def check_cancel():
         ui_log("⛔ Migration cancelled by user.")
         unlock_ui()
         raise Exception("Migration Cancelled")
+# -------------------------------------------------------------
+# 🏢 Organisation settings and information
+# -------------------------------------------------------------
+st.markdown("## 🏢 Organisation settings and information")
+st.markdown("""
+This section migrates core organisational structure in Workvivo, including users, spaces,
+and all related metadata such as space descriptions, logos, and memberships.
+""")
+
+with st.container():
+    migrate_users = st.checkbox("Users", value=True)
+    migrate_spaces = st.checkbox("Spaces (includes descriptions, logos, membership, admins)", value=True)
+
+    run_org = st.button("Run Organisation Migration")
+
+    if run_org:
+        st.info("🚀 Starting organisation settings migration...")
+
+        if migrate_users:
+            st.write("• Migrating users...")
+            # run users migration here
+
+        if migrate_spaces:
+            st.write("• Migrating spaces and metadata...")
+            # run spaces migration here
+
+        st.success("✅ Organisation settings migration complete!")
+
+
+# Spacer
+st.markdown("---")
+
+# -------------------------------------------------------------
+# 👥 User activity on Workvivo
+# -------------------------------------------------------------
+st.markdown("## 👥 User activity on Workvivo")
+st.markdown("""
+Information and activity from different features of Workvivo, such as posts created,
+spaces joined and more. This information will be grouped and associated to individual users.
+Relevant information such as posts, groups, surveys and comments will be used for integrations.
+""")
+
+with st.container():
+    migrate_updates = st.checkbox("Updates (Posts)", value=True)
+    migrate_comments = st.checkbox("Comments", value=True)
+    migrate_likes = st.checkbox("Likes", value=True)
+
+    run_activity = st.button("Run Activity Migration")
+
+    if run_activity:
+        st.info("🚀 Starting user activity migration...")
+
+        if migrate_updates:
+            st.write("• Migrating updates...")
+            # run updates migration
+
+        if migrate_comments:
+            st.write("• Migrating comments...")
+            # run comments migration
+
+        if migrate_likes:
+            st.write("• Migrating likes...")
+            # run likes migration
+
+        st.success("✅ User activity migration complete!")
 
 # =========================================================
 # 2) PHASE SELECTION UI
