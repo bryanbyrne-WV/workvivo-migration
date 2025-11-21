@@ -937,7 +937,7 @@ elif phase.startswith("Phase 2"):
 
     # RUN BUTTON
     if not st.session_state.phase_running:
-        if st.button("▶ Run Phase 2 (Demo Mode)"):
+        if st.button("▶ Run Phase 2"):
             ui_log("📌 Phase 2 (Demo) triggered with:")
             for item, enabled in st.session_state.phase2_selection.items():
                 if enabled:
