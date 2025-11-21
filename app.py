@@ -970,16 +970,17 @@ elif phase.startswith("Phase 2"):
 
 
 # =========================================================
-# 📜 LIVE LOGS — Only visible once Phase 1 is running
+# 📜 LIVE LOGS — Collapsible expander (only after Phase 1 starts)
 # =========================================================
-if st.session_state.get("phase1_running") or st.session_state.get("phase1_trigger"):
+if st.session_state.get("phase_running") and st.session_state.get("start_phase_1"):
     st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
     st.header("🖥️ Live Console Output")
 
-    with st.expander("🖥️ View Live Console Logs", expanded=False):
+    with st.expander("📡 View Live Console Logs", expanded=False):
         st.text_area(
             "Console Output",
             value=st.session_state.get("log_output", ""),
             height=400,
             disabled=True
         )
+
