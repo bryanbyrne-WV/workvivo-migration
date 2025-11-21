@@ -845,26 +845,40 @@ if phase.startswith("Phase 1"):
         "Company Name for Global Space",
         value=st.session_state.get("phase1_company", "My Company"),
         key="phase1_company",
-        disabled=disabled
+        disabled=st.session_state.phase_running
     )
 
     active_only = st.checkbox(
         "Migrate ONLY active users",
         value=st.session_state.get("phase1_active_only", True),
         key="phase1_active_only",
-        disabled=disabled
+        disabled=st.session_state.phase_running
     )
 
-    # Run Phase 1
-    if st.button("▶ Run Phase 1 Now", disabled=disabled):
+    # RUN BUTTON (immediate lock)
+    if st.button("▶ Run Phase 1 Now", disabled=st.session_state.phase_running):
+        # Lock UI BEFORE script refresh
         st.session_state.phase_running = True
+        st.session_state.cancel_requested = False
+        st.session_state.start_phase_1 = True   # <-- Trigger for next rerun
+
+        st.rerun()  # <<< THIS is the key — forces immediate UI lock
+
+    # If a run was requested previously, start it on this run
+    if st.session_state.get("start_phase_1", False):
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
+
+        # Run phase 1
         run_phase_1(company, active_only)
 
-    # Cancel button (only while running)
+        # Clear trigger
+        st.session_state.start_phase_1 = False
+
+    # CANCEL BUTTON
     if st.session_state.phase_running:
         if st.button("❌ Cancel Migration"):
             cancel_migration()
+
 
 elif phase.startswith("Phase 2"):
     if st.button("▶ Run Phase 2"):
