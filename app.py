@@ -212,11 +212,6 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        """<a class="sidebar-link" href="#_logs">📜 Logs</a>""",
-        unsafe_allow_html=True
-    )
-
 
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
@@ -377,16 +372,14 @@ def ui_log(message):
 
     st.session_state["log_output"] += line + "\n"
 
-
-    # Update live console ONLY if Phase 1 is running
-    if st.session_state.get("phase1_running", False):
+    # If console UI exists, update in place
+    if st.session_state.console_placeholder:
         st.session_state.console_placeholder.text_area(
             "📡 Live Console Output",
             st.session_state["log_output"],
             height=400,
             disabled=True
         )
-
 
 # =========================================================
 # HELPER: Fetch users
@@ -987,15 +980,16 @@ if st.session_state.get("phase1_running", False) or st.session_state.get("log_ou
 
     with st.expander("📡 View Live Console Output", expanded=False):
 
-        # Re-render the log output on every rerun
-        console_placeholder = st.empty()
+    # Store placeholder in session for realtime updates
+    st.session_state.console_placeholder = st.empty()
 
-        console_placeholder.text_area(
-            "📡 Live Console Output",
-            st.session_state.get("log_output", ""),
-            height=400,
-            disabled=True
-        )
+    st.session_state.console_placeholder.text_area(
+        "📡 Live Console Output",
+        st.session_state.get("log_output", ""),
+        height=400,
+        disabled=True
+    )
+
 
 else:
     st.info("Console output will appear here once a migration starts.")
