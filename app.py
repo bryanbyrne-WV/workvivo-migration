@@ -332,6 +332,9 @@ if "phase1_company" not in st.session_state:
 if "phase1_active_only" not in st.session_state:
     st.session_state.phase1_active_only = True
 
+if "phase1_console_visible" not in st.session_state:
+    st.session_state.phase1_console_visible = False
+
 
 # =========================================================
 # GLOBAL HEADERS FOR API CALLS
@@ -885,11 +888,15 @@ if phase.startswith("Phase 1"):
     # RUN BUTTON (only when NOT running)
     # --------------------------------------
     if not st.session_state.phase1_running:
-        if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
-            st.session_state.phase1_running = True
-            st.session_state.phase1_cancel = False
-            st.session_state.phase1_trigger = True
-            st.rerun()
+    if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
+        st.session_state.phase1_running = True
+        st.session_state.phase1_cancel = False
+        st.session_state.phase1_trigger = True
+        
+        # 👇 SHOW console ONLY now
+        st.session_state.phase1_console_visible = True
+        
+        st.rerun()
 
     # --------------------------------------
     # CANCEL BUTTON (only when running)
@@ -973,19 +980,19 @@ elif phase.startswith("Phase 2"):
 
 
 # =========================================================
-# 📜 LIVE LOG CONSOLE — Single collapsible, real-time console
+# 📜 LIVE LOG CONSOLE — Only shows AFTER Run Phase 1 is pressed
 # =========================================================
 
 st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
 st.header("🖥️ Migration Console")
 
-# Show console only after Phase 1 has started or logs exist
-if st.session_state.get("phase1_running", False) or st.session_state.get("log_output"):
+if st.session_state.get("phase1_console_visible", False):
 
     with st.expander("📡 View Live Console Output", expanded=False):
 
-        # Store placeholder so ui_log() can update it live
-        st.session_state.console_placeholder = st.empty()
+        # Create placeholder if missing
+        if st.session_state.console_placeholder is None:
+            st.session_state.console_placeholder = st.empty()
 
         st.session_state.console_placeholder.text_area(
             "📡 Live Console Output",
@@ -995,5 +1002,6 @@ if st.session_state.get("phase1_running", False) or st.session_state.get("log_ou
         )
 
 else:
-    st.info("Console output will appear here once a migration starts.")
+    st.info("The console will appear here after you start Phase 1.")
+
 
