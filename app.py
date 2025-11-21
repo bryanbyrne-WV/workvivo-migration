@@ -902,7 +902,7 @@ if phase.startswith("Phase 1"):
 # -------------------------------
 elif phase.startswith("Phase 2"):
 
-    st.subheader("Phase 2 – Content Migration Options (Demo Only)")
+    st.subheader("Phase 2 – Content Migration Options")
 
     # Full list of Phase 2 items
     phase2_items = [
