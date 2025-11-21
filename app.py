@@ -196,7 +196,7 @@ st.markdown(advanced_styles, unsafe_allow_html=True)
 st.markdown(f"""
 <div class="header-bar">
     <img src="{WORKVIVO_LOGO}" class="header-logo">
-    <div class="header-title">Workvivo Migration Utility</div>
+    <div class="header-title">Workvivo Migration Tool</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -820,7 +820,18 @@ def check_cancel():
 # =========================================================
 st.header("🚦 Run Migration")
 
+# 🔒 Disable all migration inputs while running
+disabled = st.session_state.phase_running
+
 phase = st.selectbox(
+    "Choose migration phase",
+    ["Phase 1 – Users, Avatars, Spaces, Memberships",
+     "Phase 2 – Updates, Comments, Likes",
+     "Phase 3 – Articles, Kudos, Events"],
+    index=0,
+    disabled=disabled   # 🔒 Locks the phase selector too
+)
+
     "Choose migration phase",
     [
         "Phase 1 – Users, Avatars, Spaces, Memberships",
