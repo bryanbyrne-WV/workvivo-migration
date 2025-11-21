@@ -215,41 +215,27 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================
-# 🧭 Breadcrumb Navigation
+# 🧭 Breadcrumb Navigation (WORKING)
 # ============================================================
 
-st.markdown("""
-<style>
-.breadcrumb {
-    font-size: 16px;
-    color: #555;
-    margin: 12px 0 18px 0;
-}
-.breadcrumb a {
-    color: #6203ed;
-    text-decoration: none;
-    font-weight: 600;
-}
-.breadcrumb a:hover {
-    text-decoration: underline;
-}
-.breadcrumb .sep {
-    margin: 0 6px;
-    color: #aaa;
-}
-</style>
-""", unsafe_allow_html=True)
+st.markdown("### ")
 
-st.markdown("""
-<div class="breadcrumb">
-    <a href="#_config">API Configuration</a>
-    <span class="sep">›</span>
-    <a href="#_migration">Migrate Data</a>
-    <span class="sep">›</span>
-    <a href="#_logs">Logs</a>
-</div>
-""", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1,1,2])
 
+with col1:
+    if st.button("API Config"):
+        st.session_state["scroll_to"] = "_config"
+        st.rerun()
+
+with col2:
+    if st.button("Environment Config"):
+        st.session_state["scroll_to"] = "_config"
+        st.rerun()
+
+with col3:
+    if st.button("Migration Data"):
+        st.session_state["scroll_to"] = "_migration"
+        st.rerun()
 
 
 # ============================
@@ -291,6 +277,12 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
+# Scroll to selected section
+if "scroll_to" in st.session_state:
+    st.markdown(f"<script>document.getElementById('{st.session_state['scroll_to']}').scrollIntoView();</script>", unsafe_allow_html=True)
+    del st.session_state["scroll_to"]
+
 
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
