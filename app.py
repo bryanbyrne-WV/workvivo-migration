@@ -859,16 +859,6 @@ st.markdown("""
     margin-bottom: 10px;
 }
 </style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="phase-card">
-    <span class="phase-card-label">Choose Migration Phase</span>
-    <span class="phase-card-help">
-        Select the migration workflow you want to run.
-    </span>
-</div>
-""", unsafe_allow_html=True)
 
 disabled = st.session_state.phase_running
 
