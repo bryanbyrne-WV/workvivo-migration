@@ -173,7 +173,7 @@ advanced_styles = f"""
 </style>
 """
 
-# Header Logo (Option A)
+# Brand Logo (Centered)
 st.markdown("""
 <div style="text-align:center; margin-top:10px; margin-bottom:5px;">
     <img src="https://www.festivalofwork.com/media/Workvivo%20(1).png" 
@@ -181,16 +181,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Glass Header
-st.markdown("""
-<div class="glass-header">
-    <div class="glass-header-content">
-        <span class="glass-header-title">🚀 Workvivo Migration Tool</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-
+# Cool Gradient Header (ONLY)
 st.markdown("""
 <style>
 .cool-header {
@@ -217,6 +208,7 @@ st.markdown("""
     to   { opacity: 1; transform: translateY(0); }
 }
 </style>
+
 <div class="cool-header">
     <div class="cool-header-title">🚀 Workvivo Migration Tool</div>
 </div>
