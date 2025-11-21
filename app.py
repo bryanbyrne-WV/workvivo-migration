@@ -892,18 +892,17 @@ if phase.startswith("Phase 1"):
     )
 
 # ------------------------
-# RUN BUTTON (visible when NOT running)
+# RUN BUTTON (when not running)
 # ------------------------
 if not st.session_state.phase1_running:
     if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
-
         st.session_state.phase1_running = True
         st.session_state.phase1_cancel = False
         st.session_state.phase1_trigger = True
+        st.session_state["log_output"] = ""
         st.session_state.phase1_console_visible = True
-
-        st.session_state["log_output"] = ""  # reset logs
         st.rerun()
+
 
 # ------------------------
 # CANCEL BUTTON (visible when running)
