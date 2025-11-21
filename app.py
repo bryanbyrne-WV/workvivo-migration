@@ -902,15 +902,16 @@ if phase.startswith("Phase 1"):
     # ------------------------
     if st.session_state.phase1_trigger:
 
-    # Show logs while Phase 1 is running
+    # Loading spinner
     st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
 
+    # Run actual work
     run_phase_1(company, active_only)
 
-    # ❌ DO NOT RESET phase1_running HERE
-    # Phase 1 is still running during the rerun, allow cancel button to appear
-
-    st.session_state.phase1_trigger = False  
+    # Reset flags after completion
+    st.session_state.phase1_trigger = False
+    st.session_state.phase1_running = False
+    st.session_state.phase1_cancel = False
 
     st.rerun()
 
