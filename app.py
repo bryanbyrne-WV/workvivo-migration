@@ -242,9 +242,9 @@ st.markdown("""
 
 st.markdown("""
 <div class="breadcrumb">
-    <a href="#_config">API Configuration</a>
+    <a href="#_config">Enviroment Configuration</a>
     <span class="sep">›</span>
-    <a href="#_migration">Migrate Data</a>
+    <a href="#_migration">Migration</a>
     <span class="sep">›</span>
     <a href="#_logs">Logs</a>
 </div>
