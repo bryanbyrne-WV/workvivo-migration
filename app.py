@@ -970,16 +970,16 @@ elif phase.startswith("Phase 2"):
 
 
 # =========================================================
-# 📜 MIGRATION LOG OUTPUT (Visible ONLY After Phase 1 Starts)
+# 📜 LIVE LOGS — Only visible once Phase 1 is running
 # =========================================================
+if st.session_state.get("phase1_running") or st.session_state.get("phase1_trigger"):
+    st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
+    st.header("🖥️ Live Console Output")
 
-st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-st.header("🖥️ Live Console Output")
-
-with st.expander("📡 View Live Console Logs", expanded=False):
-    st.text_area(
-        "Console Output",
-        value=st.session_state.get("log_output", ""),
-        height=400,
-        disabled=True
-    )
+    with st.expander("🖥️ View Live Console Logs", expanded=False):
+        st.text_area(
+            "Console Output",
+            value=st.session_state.get("log_output", ""),
+            height=400,
+            disabled=True
+        )
