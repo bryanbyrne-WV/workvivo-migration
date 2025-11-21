@@ -870,7 +870,7 @@ if "phase1_console_visible" not in st.session_state:
 # ============================================================
 if phase.startswith("Phase 1"):
 
-    st.subheader("Phase 1 Options")
+    st.subheader("Phase 1 – Migration Options")
 
     disabled = st.session_state.phase1_running
 
@@ -952,7 +952,7 @@ if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
 # -------------------------------
 elif phase.startswith("Phase 2"):
 
-    st.subheader("Phase 2 – Content Migration Options")
+    st.subheader("Phase 2 – Migration Options")
 
     # Full list of Phase 2 items
     phase2_items = [
