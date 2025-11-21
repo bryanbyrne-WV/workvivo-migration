@@ -742,24 +742,78 @@ def create_global_space_and_enroll(company_name):
 # PHASE 1 RUNNER — FULL END-TO-END
 # =========================================================
 def run_phase_1(company_name, active_only):
+    lock_ui_for_phase()
     ui_log("▶ Starting Phase 1…")
 
-    # 1) Global Space FIRST
-    create_global_space_and_enroll(company_name)
+    try:
+        # 1) Global Space
+        check_cancel()
+        create_global_space_and_enroll(company_name)
 
-    # 2) Users
-    migrate_users(active_only)
+        # 2) Users
+        check_cancel()
+        migrate_users(active_only)
 
-    # 3) Avatars
-    migrate_user_images()
+        # 3) Avatars
+        check_cancel()
+        migrate_user_images()
 
-    # 4) Spaces
-    migrate_spaces()
+        # 4) Spaces
+        check_cancel()
+        migrate_spaces()
 
-    # 5) Memberships
-    migrate_memberships()
+        # 5) Memberships
+        check_cancel()
+        migrate_memberships()
 
-    ui_log("🎉 Phase 1 Completed Successfully!")
+        ui_log("🎉 Phase 1 Completed Successfully!")
+
+    except Exception as e:
+        # Cancel or error
+        ui_log(f"⚠️ Migration stopped: {str(e)}")
+
+    finally:
+        unlock_ui()
+
+# ============================================================
+# 🔒 MIGRATION PHASE LOCKING + CANCEL SUPPORT
+# ============================================================
+
+# Initialize flags
+if "phase_running" not in st.session_state:
+    st.session_state.phase_running = False
+
+if "cancel_requested" not in st.session_state:
+    st.session_state.cancel_requested = False
+
+
+def lock_ui_for_phase():
+    """Lock UI during migration."""
+    st.session_state.phase_running = True
+    st.session_state.cancel_requested = False
+    ui_log("🔒 UI locked — migration started…")
+
+
+def unlock_ui():
+    """Unlock UI when migration finishes or cancels."""
+    st.session_state.phase_running = False
+    st.session_state.cancel_requested = False
+    ui_log("🔓 UI unlocked — migration stopped.")
+
+
+def cancel_migration():
+    """Request cancellation."""
+    st.session_state.cancel_requested = True
+    ui_log("🛑 Cancel requested… Stopping after the current item.")
+
+
+# Modify all long loops to respect cancellation
+def check_cancel():
+    """Call this inside loops to stop safely."""
+    if st.session_state.cancel_requested:
+        ui_log("⛔ Migration cancelled by user.")
+        unlock_ui()
+        raise Exception("Migration Cancelled")
 
 # =========================================================
 # 2) PHASE SELECTION UI
@@ -772,7 +826,19 @@ phase = st.selectbox(
      "Phase 2 – Updates, Comments, Likes",
      "Phase 3 – Articles, Kudos, Events"],
     index=0,
-    disabled=st.session_state.phase_running   # 🔒 Lock if running
+company = st.text_input(
+    "Company Name for Global Space",
+    value="My Company",
+    key="phase1_company",
+    disabled=disabled
+)
+
+active_only = st.checkbox(
+    "Migrate ONLY active users",
+    value=True,
+    key="phase1_active_only",
+    disabled=disabled
+)
 )
 
 if phase.startswith("Phase 1"):
@@ -791,9 +857,19 @@ if phase.startswith("Phase 1"):
         key="phase1_active_only"
     )
 
-    if st.button("▶ Run Phase 1 Now", key="run_phase1_button"):
+        disabled = st.session_state.phase_running
+
+    # RUN BUTTON (disabled while running)
+    if st.button("▶ Run Phase 1 Now", key="run_phase1_button", disabled=disabled):
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
         run_phase_1(company, active_only)
+
+    # CANCEL BUTTON (only visible when running)
+    if st.session_state.phase_running:
+        st.warning("Migration is currently running…")
+        if st.button("❌ Cancel Migration", key="cancel_phase1_button"):
+            cancel_migration()
+
 
 elif phase.startswith("Phase 2"):
     if st.button("▶ Run Phase 2"):
