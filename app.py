@@ -850,12 +850,14 @@ if "phase1_show_console" not in st.session_state:
 if "start_phase_1" not in st.session_state:
     st.session_state.start_phase_1 = False
 
-# ============================================================
-# 🚀 PHASE 1 UI
-# ============================================================
+# --------------------------
+# Phase 1 UI Controls
+# --------------------------
 if phase.startswith("Phase 1"):
 
     st.subheader("Phase 1 Options")
+
+    disabled = st.session_state.phase_running
 
     company = st.text_input(
         "Company Name for Global Space",
@@ -870,6 +872,32 @@ if phase.startswith("Phase 1"):
         key="phase1_active_only",
         disabled=disabled
     )
+
+    # -----------------------------------------------------
+    # RUN BUTTON — visible only when NOT running
+    # -----------------------------------------------------
+    if not st.session_state.phase_running:
+        if st.button("▶ Run Phase 1 Now"):
+            st.session_state.phase_running = True
+            st.session_state.cancel_requested = False
+            st.session_state.start_phase_1 = True
+            st.rerun()
+
+    # -----------------------------------------------------
+    # CANCEL BUTTON — visible ONLY when running
+    # -----------------------------------------------------
+    if st.session_state.phase_running:
+        st.warning("Migration is running...")
+        if st.button("🖥️ Cancel Migration"):
+            cancel_migration()
+
+    # -----------------------------------------------------
+    # RUN PHASE 1 FOR REAL (AFTER UI RERUN)
+    # -----------------------------------------------------
+    if st.session_state.get("start_phase_1", False):
+        run_phase_1(company, active_only)
+        st.session_state.start_phase_1 = False
+
 
 # ============================
 # RUN BUTTON — triggers lock
@@ -974,27 +1002,13 @@ elif phase.startswith("Phase 2"):
 # 📜 MIGRATION LOG OUTPUT (Visible ONLY After Phase 1 Starts)
 # =========================================================
 
-# Show log console only when Phase 1 has started at least once
-if st.session_state.get("phase1_started", False):
+st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
+st.header("🖥️ Live Console Output")
 
-    st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-
-    st.markdown("""
-    <details open>
-      <summary style="font-size:20px; font-weight:600; cursor:pointer;">
-        🖥️ View Live Console Output
-      </summary>
-      <div style="margin-top:15px;">
-    """, unsafe_allow_html=True)
-
+with st.expander("📡 View Live Console Logs", expanded=False):
     st.text_area(
-        label="Live Console Log",
+        "Console Output",
         value=st.session_state.get("log_output", ""),
-        height=350,
+        height=400,
         disabled=True
     )
-
-    st.markdown("</div></details>", unsafe_allow_html=True)
-
-
-
