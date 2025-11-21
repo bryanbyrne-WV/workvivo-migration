@@ -9,6 +9,8 @@ import random
 import os
 import mimetypes
 
+st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
+
 # ============================================================
 # WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
 # ============================================================
