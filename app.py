@@ -17,7 +17,7 @@ st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 WORKVIVO_LOGO = "https://assets-global.website-files.com/5db06f883fe98384f8e59870/60df4cf0e95f707221207050_workvivo-logo.svg"
 
-# Sidebar styling + header bar + global element tweaks
+# Sidebar styling + header bar + global theme
 workvivo_styles = f"""
 <style>
 
@@ -49,16 +49,17 @@ workvivo_styles = f"""
         margin-top: 2px;
     }}
 
-    /* SIDEBAR */
+    /* SIDEBAR PANEL */
     section[data-testid="stSidebar"] {{
         background-color: #003A99 !important;
+        padding: 20px 15px;
     }}
 
     /* SIDEBAR LOGO */
     .sidebar-logo {{
         width: 160px;
-        margin-bottom: 15px;
-        margin-top: 10px;
+        margin-bottom: 20px;
+        margin-top: 5px;
     }}
 
     /* SIDEBAR MENU TITLE */
@@ -66,8 +67,8 @@ workvivo_styles = f"""
         color: #ffffff;
         font-size: 20px;
         font-weight: 600;
-        margin-top: 15px;
-        margin-bottom: 8px;
+        margin-top: 10px;
+        margin-bottom: 10px;
     }}
 
     /* SIDEBAR LINKS */
@@ -93,21 +94,23 @@ workvivo_styles = f"""
         color: #d0d8e8;
         font-size: 13px;
         text-align: center;
+        line-height: 1.4;
     }}
 
-    /* SECTION TITLES */
+    /* SECTION TITLES IN MAIN VIEW */
     .section-title {{
         color: #0052CC !important;
         font-weight: 700 !important;
         margin-top: 20px;
     }}
+
 </style>
 """
 
-# Render style block
+# Inject style block
 st.markdown(workvivo_styles, unsafe_allow_html=True)
 
-# Render Workvivo header bar
+# MAIN HEADER BAR (Top of App)
 header_html = f"""
 <div class="header-bar">
     <img src="{WORKVIVO_LOGO}" class="header-logo">
@@ -116,22 +119,32 @@ header_html = f"""
 """
 st.markdown(header_html, unsafe_allow_html=True)
 
-# SIDEBAR CONTENT
+# --------------------------------
+# SIDEBAR CONTENT (Navigation)
+# --------------------------------
 with st.sidebar:
+
+    # Logo
     st.markdown(f"""<img src="{WORKVIVO_LOGO}" class="sidebar-logo">""", unsafe_allow_html=True)
 
     st.markdown("""<div class="sidebar-title">Navigation</div>""", unsafe_allow_html=True)
 
+    # Main links
     st.markdown("""<a class="sidebar-link" href="#_config">⚙️ Configuration</a>""", unsafe_allow_html=True)
     st.markdown("""<a class="sidebar-link" href="#_phase1">🚦 Phase 1 Migration</a>""", unsafe_allow_html=True)
     st.markdown("""<a class="sidebar-link" href="#_phase2">📝 Phase 2</a>""", unsafe_allow_html=True)
     st.markdown("""<a class="sidebar-link" href="#_phase3">📚 Phase 3</a>""", unsafe_allow_html=True)
     st.markdown("""<a class="sidebar-link" href="#_logs">📜 Migration Logs</a>""", unsafe_allow_html=True)
 
-    st.markdown("""<div class="sidebar-footer">
-        Built internally for Workvivo migrations<br>
-        © Bryan Byrne
-    </div>""", unsafe_allow_html=True)
+    # Footer
+    st.markdown(
+        """<div class="sidebar-footer">
+            Built internally for Workvivo migrations<br>
+            © Bryan Byrne
+        </div>""",
+        unsafe_allow_html=True
+    )
+
 
 
 
