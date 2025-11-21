@@ -897,11 +897,15 @@ if phase.startswith("Phase 1"):
         run_phase_1(company, active_only)
         st.session_state.start_phase_1 = False
 
+# -------------------------------
+# Phase 2
+# -------------------------------
 elif phase.startswith("Phase 2"):
 
     st.subheader("Phase 2 – Content Migration Options (Demo Only)")
 
-    phase2_options = [
+    # Full list of Phase 2 items
+    phase2_items = [
         "Updates",
         "Comments",
         "Likes",
@@ -910,20 +914,37 @@ elif phase.startswith("Phase 2"):
         "Events"
     ]
 
-    selected_phase2 = st.multiselect(
-        "Select the items to include (all pre-selected for demo):",
-        options=phase2_options,
-        default=phase2_options,  # <-- auto-select everything
-        disabled=disabled        # <-- locked when migration running
-    )
+    # Store checkbox states in session_state
+    if "phase2_selection" not in st.session_state:
+        # Initialise with everything pre-selected
+        st.session_state.phase2_selection = {
+            item: True for item in phase2_items
+        }
 
+    # Disable while running
+    disabled = st.session_state.phase_running
+
+    st.write("Select which content types to include:")
+
+    # Render checkboxes vertically
+    for item in phase2_items:
+        st.session_state.phase2_selection[item] = st.checkbox(
+            item,
+            value=st.session_state.phase2_selection[item],
+            key=f"phase2_{item}",
+            disabled=disabled
+        )
+
+    # RUN BUTTON
     if not st.session_state.phase_running:
-        if st.button("▶ Run Phase 2"):
+        if st.button("▶ Run Phase 2 (Demo Mode)"):
             ui_log("📌 Phase 2 (Demo) triggered with:")
-            for item in selected_phase2:
-                ui_log(f"   • {item}")
+            for item, enabled in st.session_state.phase2_selection.items():
+                if enabled:
+                    ui_log(f"   • {item}")
             ui_log("⚠️ Phase 2 is demo-only. No data migrated.")
 
+    # CANCEL while running
     if st.session_state.phase_running:
         st.warning("Migration is currently running…")
         if st.button("❌ Cancel Migration"):
