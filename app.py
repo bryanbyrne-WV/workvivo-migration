@@ -898,13 +898,38 @@ if phase.startswith("Phase 1"):
         st.session_state.start_phase_1 = False
 
 elif phase.startswith("Phase 2"):
-    if st.button("▶ Run Phase 2"):
-        ui_log("Phase 2 placeholder executed.")
 
-else:
-    modules = st.multiselect("Choose modules", ["Articles", "Kudos", "Events"])
-    if st.button("▶ Run Phase 3"):
-        ui_log(f"Phase 3 running modules: {modules}")
+    st.subheader("Phase 2 – Content Migration Options (Demo Only)")
+
+    phase2_options = [
+        "Updates",
+        "Comments",
+        "Likes",
+        "Articles",
+        "Kudos",
+        "Events"
+    ]
+
+    selected_phase2 = st.multiselect(
+        "Select the items to include (all pre-selected for demo):",
+        options=phase2_options,
+        default=phase2_options,  # <-- auto-select everything
+        disabled=disabled        # <-- locked when migration running
+    )
+
+    if not st.session_state.phase_running:
+        if st.button("▶ Run Phase 2 (Demo Mode)"):
+            ui_log("📌 Phase 2 (Demo) triggered with:")
+            for item in selected_phase2:
+                ui_log(f"   • {item}")
+            ui_log("⚠️ Phase 2 is demo-only. No data migrated.")
+
+    if st.session_state.phase_running:
+        st.warning("Migration is currently running…")
+        if st.button("❌ Cancel Migration"):
+            cancel_migration()
+
+
 
 
 # =========================================================
