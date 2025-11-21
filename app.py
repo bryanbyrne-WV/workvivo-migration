@@ -980,16 +980,15 @@ if st.session_state.get("phase1_running", False) or st.session_state.get("log_ou
 
     with st.expander("📡 View Live Console Output", expanded=False):
 
-    # Store placeholder in session for realtime updates
-    st.session_state.console_placeholder = st.empty()
+        # Store placeholder so ui_log() can update it live
+        st.session_state.console_placeholder = st.empty()
 
-    st.session_state.console_placeholder.text_area(
-        "📡 Live Console Output",
-        st.session_state.get("log_output", ""),
-        height=400,
-        disabled=True
-    )
-
+        st.session_state.console_placeholder.text_area(
+            "📡 Live Console Output",
+            st.session_state.get("log_output", ""),
+            height=400,
+            disabled=True
+        )
 
 else:
     st.info("Console output will appear here once a migration starts.")
