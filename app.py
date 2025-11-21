@@ -196,7 +196,7 @@ st.markdown(f"""
 <div class="header-bar">
     st.markdown("""
 <div class="header-bar">
-    <div class="header-title">🚀 Workvivo Migration Tool</div>
+    <div class="header-title">Workvivo Migration Tool</div>
 </div>
 """, unsafe_allow_html=True)
 
