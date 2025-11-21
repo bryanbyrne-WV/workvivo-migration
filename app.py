@@ -945,38 +945,30 @@ This section migrates core organisational structure in Workvivo, including users
 and all related metadata such as space descriptions, logos, and memberships.
 """)
 
-col1, col2 = st.columns(2)
-
-with col1:
-    users_selected = selectable_card(
-        "migrate_users",
-        "Users",
-        "👤",
-        "Migrate SCIM users + details"
-    )
-
-with col2:
-    spaces_selected = selectable_card(
-        "migrate_spaces",
-        "Spaces",
-        "📦",
-        "Includes descriptions, logos, membership"
-    )
+migrate_users = st.toggle("Migrate Users", value=True)
+migrate_spaces = st.toggle("Migrate Spaces (includes descriptions, logos, membership, admins)", value=True)
 
 if st.button("▶ Run Organisation Migration"):
     ui_log("🚀 Starting Organisation Migration...")
 
-    if users_selected:
+    if migrate_users:
         ui_log("• Migrating users...")
-        migrate_users(st.session_state.phase1_active_only)
+        migrate_users_func = migrate_users  # alias
+        migrate_users_func(st.session_state.phase1_active_only)
 
-    if spaces_selected:
+    if migrate_spaces:
         ui_log("• Migrating spaces...")
         migrate_spaces()
+        ui_log("• Migrating memberships...")
         migrate_memberships()
 
     ui_log("🎉 Organisation Migration Complete!")
     st.success("Organisation migration completed.")
+
+
+# Spacer
+st.markdown("---")
+
 
 # ============================================================
 # 👥 User activity on Workvivo
@@ -989,50 +981,18 @@ spaces joined and more. This information will be grouped and associated with ind
 Relevant information such as posts, groups, surveys and comments will be used for integrations.
 """)
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    updates_selected = selectable_card(
-        "migrate_updates",
-        "Updates",
-        "📝",
-        "Posts created by users"
-    )
-
-with col2:
-    comments_selected = selectable_card(
-        "migrate_comments",
-        "Comments",
-        "💬",
-        "Comments made on posts"
-    )
-
-with col3:
-    likes_selected = selectable_card(
-        "migrate_likes",
-        "Likes",
-        "👍",
-        "Likes and reactions"
-    )
-
+migrate_updates = st.toggle("Migrate Updates (Posts)", value=True)
+migrate_comments = st.toggle("Migrate Comments", value=True)
+migrate_likes = st.toggle("Migrate Likes", value=True)
 
 if st.button("▶ Run User Activity Migration"):
     ui_log("🚀 Starting User Activity Migration...")
 
-    if updates_selected:
+    if migrate_updates:
         ui_log("• Migrating updates...")
         # migrate_updates()
 
-    if comments_selected:
-        ui_log("• Migrating comments...")
-        # migrate_comments()
-
-    if likes_selected:
-        ui_log("• Migrating likes...")
-        # migrate_likes()
-
-    ui_log("🎉 User Activity Migration Complete!")
-    st.success("User activity migration completed.")
+    if
 
 # =========================================================
 # 2) PHASE SELECTION UI
