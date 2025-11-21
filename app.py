@@ -838,14 +838,45 @@ phase = st.selectbox(
     disabled=disabled
 )
 
-# -------------------------------
-# Phase 1
-# -------------------------------
+# ============================================================
+# 🔧 PHASE 1 — STATE INITIALIZATION
+# ============================================================
+if "phase1_running" not in st.session_state:
+    st.session_state.phase1_running = False
+
+if "phase1_show_console" not in st.session_state:
+    st.session_state.phase1_show_console = False
+
+if "start_phase_1" not in st.session_state:
+    st.session_state.start_phase_1 = False
+
+
+# =========================================================
+# 🚦 MIGRATION SECTION
+# =========================================================
+st.markdown("<div id='_migration'></div>", unsafe_allow_html=True)
+st.header("🚦 Run Migration")
+
+# Disable whole panel while migrating
+disabled = st.session_state.phase1_running
+
+phase = st.selectbox(
+    "Choose migration phase",
+    [
+        "Phase 1 – Users, Avatars, Spaces, Memberships",
+        "Phase 2 – Updates, Comments, Likes",
+        "Phase 3 – Articles, Kudos, Events"
+    ],
+    index=0,
+    disabled=disabled
+)
+
+# ============================================================
+# 🚀 PHASE 1 UI
+# ============================================================
 if phase.startswith("Phase 1"):
 
     st.subheader("Phase 1 Options")
-
-    disabled = st.session_state.phase_running
 
     company = st.text_input(
         "Company Name for Global Space",
@@ -861,52 +892,48 @@ if phase.startswith("Phase 1"):
         disabled=disabled
     )
 
-    # =====================================================
-    # RUN PHASE 1 BUTTON
-    # =====================================================
+    # --------------------------------------------------------
+    # RUN BUTTON (only shown when not running)
+    # --------------------------------------------------------
     if not st.session_state.phase1_running:
         if st.button("▶ Run Phase 1 Now"):
             st.session_state.phase1_running = True
-            st.session_state.phase1_show_console = True   # console appears only AFTER run
-            st.session_state.cancel_requested = False
             st.session_state.start_phase_1 = True
             st.rerun()
 
-    # =====================================================
-    # CANCEL BUTTON during phase 1 running
-    # =====================================================
+    # --------------------------------------------------------
+    # CANCEL BUTTON (shown only while running)
+    # --------------------------------------------------------
     if st.session_state.phase1_running:
-        st.warning("Phase 1 is running…")
+        st.warning("Migration is running…")
 
-        if st.button("❌ Cancel Phase 1"):
-            cancel_migration()
+        if st.button("❌ Cancel Migration"):
+            st.session_state.cancel_requested = True
+            ui_log("🛑 Cancel requested…")
 
-        # Console toggle visible ONLY during run
-        if st.checkbox("📟 Show Live Console", value=st.session_state.phase1_show_console):
-            st.session_state.phase1_show_console = True
-        else:
-            st.session_state.phase1_show_console = False
+        # Show toggle to reveal/hide live log
+        show_console = st.toggle(
+            "📡 View Live Console Output",
+            key="phase1_show_console"
+        )
 
-        # Actual console
-        if st.session_state.phase1_show_console:
-            st.text_area(
-                label="Live Migration Log",
-                value=st.session_state.get("log_output", ""),
-                height=300,
-                disabled=True
-            )
-
-    # =====================================================
-    # Start process *after rerun*
-    # =====================================================
-    if st.session_state.get("start_phase_1", False):
+    # --------------------------------------------------------
+    # 🚀 EXECUTE PHASE 1 LOGIC AFTER RERUN
+    # --------------------------------------------------------
+    if st.session_state.start_phase_1:
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
+
         run_phase_1(company, active_only)
+
+        # Reset flags
         st.session_state.start_phase_1 = False
+        st.session_state.phase1_running = False
+        st.session_state.phase1_show_console = False
+        st.rerun()
 
 
 # -------------------------------
-# Phase 2
+# Phase 2 - RUN
 # -------------------------------
 elif phase.startswith("Phase 2"):
 
