@@ -298,53 +298,6 @@ if "config_saved" not in st.session_state:
             TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="3000384")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # -------------------------------------------------------------
-# 🔌 Test Full Connectivity (Source + Target)
-# -------------------------------------------------------------
-st.markdown("## 🔌 Test Full Connectivity")
-
-def test_connectivity(name: str, url: str, headers: dict):
-    try:
-        response = requests.get(url, headers=headers, verify=False, timeout=10)
-
-        if response.status_code in [200, 201]:
-            st.success(f"✅ {name}: Connected (HTTP {response.status_code})")
-        else:
-            st.error(f"❌ {name}: HTTP {response.status_code} — {response.text[:200]}")
-    except Exception as exc:
-        st.error(f"❌ {name}: Connection failed — {str(exc)}")
-
-
-if st.button("Test Connectivity"):
-    st.info("⏳ Testing all endpoints…")
-
-    # ---- SOURCE ----
-    test_connectivity(
-        "Source SCIM",
-        source_scim_url,
-        source_scim_headers
-    )
-
-    test_connectivity(
-        "Source API",
-        f"{source_api_url}/org",
-        source_api_headers
-    )
-
-    # ---- TARGET ----
-    test_connectivity(
-        "Target SCIM",
-        target_scim_url,
-        target_scim_headers
-    )
-
-    test_connectivity(
-        "Target API",
-        f"{target_api_url}/org",
-        target_api_headers
-    )
-
-
         # ----------------------------------------------------
         # MIGRATION USER (Single small card)
         # ----------------------------------------------------
