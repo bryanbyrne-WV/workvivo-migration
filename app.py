@@ -380,6 +380,7 @@ def ui_log(message):
     st.session_state["log_output"] += line + "\n"
 
 
+
 # =========================================================
 # HELPER: Fetch users
 # =========================================================
@@ -922,6 +923,20 @@ if phase.startswith("Phase 1"):
 
         st.rerun()
 
+# =========================================================
+# 📜 SHOW LOG OUTPUT ONLY WHEN RUNNING OR COMPLETED
+# =========================================================
+if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
+    
+    st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
+    st.header("🖥️ Migration Log")
+
+    st.text_area(
+        "Console Output",
+        value=st.session_state.get("log_output", ""),
+        height=450,
+        disabled=True
+    )
 
 # -------------------------------
 # Phase 2 - RUN
@@ -975,22 +990,6 @@ elif phase.startswith("Phase 2"):
         st.warning("Migration is currently running…")
         if st.button("❌ Cancel Migration"):
             cancel_migration()
-
-# =========================================================
-# 📜 LIVE LOG OUTPUT — Always visible (simple mode)
-# =========================================================
-
-st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-st.header("🖥️ Live Migration Log")
-
-# Simply show the full logs in a text_area
-st.text_area(
-    "Console Output",
-    value=st.session_state.get("log_output", ""),
-    height=450,
-    disabled=True
-)
-
 
 
 
