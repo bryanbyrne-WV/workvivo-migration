@@ -15,7 +15,7 @@ st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 # WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
 # ============================================================
 
-WORKVIVO_LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAYAAAA+n0hyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAGfUlEQVR4nO3dPW4bRxzH8Y/PQERAREQEREBERAREQEREBERAREQEVEFxu3dHkS9jWIOGfP94p7i57t7HX7Rm3xE3vXW5vJtFwOByOByOByOByOByOByOByOByOB7G3u7fVf8H9qY27u7bH0DEMTB3F9ufz8/Ly8vLy8vLx8yq8QxDExe92u91qtdrtdrtdrtdrnZ8XwDAzMzMzMzMzMzM7P/HYYwxjDHGMMcYwxjDHGMMcYwxjLfEoNvtNtttttttttttttttv9M8IwzDMMyzDMMyzDMMyzDMMyzDP/MwxxjDGMMcYwxjDHGMMcYwxjDHGMMebGMMf5Fgf4mB/gYH+Bgf4mB/gYH+Bgf4mB/gYH+Bgf4mB/gYH+Bgf4mB/gYH+Bgf4mB/gYH+Bgf4mB/gYH+Bgf4mB/gYH+Bgf4mB/gYH+Bgf4mB9mssfX19fX19fX1/X7ar1er1er1er1er1er1+vWDMMwzDP/MwzDMMwzDMMwzDMMwzDMMyzDP/MwxxjDGMMcYwxjDHGMMcYwxjDHGMMcYw5jDHGMMcYwxjDHGMMcYwxjDHGMMcYwy5hjDHGMMcYwxjDHGMMcYwxjDHGMMcYwxjh+lx/r9fr9fr9fr9fr9fr9fr9fo/GcMwzDMMwzDMMwzDMMwzDMMwzDMM8/zMMYwxhjDGMMcYwxjDHGMMcYwxjDGMMcYwxhv6fjeH4/H4/H4/H4/H4/H4/H4/H4/M8wzDMMwzDMMwzDMMwzDMMwzDMMwzDP/MwxxjDGMMcYwxjDHGMMcYwxjDHGMMcYwxjDGMMb4PAPBxOByOByOByOByOByOByOByOB+EfgMEd1XGWmqt7MAAAAASUVORK5CYII="
+WORKVIVO_LOGO = "/Users/bryan/Downloads/wv.png"
 
 advanced_styles = f"""
 <style>
