@@ -864,12 +864,11 @@ if phase.startswith("Phase 1"):
 
     st.subheader("Phase 1 Options")
 
-    # Disable inputs while running
-    disabled = st.session_state.phase1_running
+    disabled = st.session_state.phase1_running  # lock inputs while running
 
-    # --------------------------------------
-    # INPUTS
-    # --------------------------------------
+    # ------------------------
+    # Inputs
+    # ------------------------
     company = st.text_input(
         "Company Name for Global Space",
         value=st.session_state.get("phase1_company", "My Company"),
@@ -884,49 +883,46 @@ if phase.startswith("Phase 1"):
         disabled=disabled
     )
 
-    # --------------------------------------
-# RUN BUTTON (only when NOT running)
-# --------------------------------------
-if not st.session_state.phase1_running:
-    if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
+    # ------------------------
+    # RUN BUTTON (visible when NOT running)
+    # ------------------------
+    if not st.session_state.phase1_running:
+        if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
 
-        # Lock UI + prepare flags
-        st.session_state.phase1_running = True
-        st.session_state.phase1_cancel = False
-        st.session_state.phase1_trigger = True
+            st.session_state.phase1_running = True
+            st.session_state.phase1_cancel = False
+            st.session_state.phase1_trigger = True
+            st.session_state.phase1_console_visible = True  # show console
 
-        # 👇 Show console ONLY now
-        st.session_state.phase1_console_visible = True
+            st.session_state["log_output"] = ""  # reset logs
+            st.rerun()
 
-        st.rerun()
-
-
-    # --------------------------------------
-    # CANCEL BUTTON (only when running)
-    # --------------------------------------
+    # ------------------------
+    # CANCEL BUTTON (visible when running)
+    # ------------------------
     if st.session_state.phase1_running:
-        st.warning("Phase 1 migration is running...")
+        st.warning("Phase 1 migration is running…")
         if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
             st.session_state.phase1_cancel = True
             cancel_migration()
 
-    # --------------------------------------
-    # EXECUTE PHASE 1 (after UI reruns)
-    # --------------------------------------
+    # ------------------------
+    # EXECUTE PHASE 1 (AFTER RERUN)
+    # ------------------------
     if st.session_state.phase1_trigger:
 
-        # Loading spinner (console is at bottom)
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
 
-        # Run Phase 1
+        # Run full migration
         run_phase_1(company, active_only)
 
-        # Reset after complete / cancel
+        # Reset flags after completion
         st.session_state.phase1_trigger = False
         st.session_state.phase1_running = False
         st.session_state.phase1_cancel = False
 
         st.rerun()
+
 
 # -------------------------------
 # Phase 2 - RUN
