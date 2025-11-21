@@ -945,6 +945,22 @@ elif phase.startswith("Phase 2"):
 
 
 
+# ---------------------------------------------------------
+# Toggle show/hide for live logs
+# ---------------------------------------------------------
+if "show_console" not in st.session_state:
+    st.session_state.show_console = False
+
+if st.button("📟 View Live Console" if not st.session_state.show_console else "🙈 Hide Console"):
+    st.session_state.show_console = not st.session_state.show_console
+
+if st.session_state.show_console:
+    st.text_area(
+        "Real-time Output",
+        value=st.session_state.get("log_output", ""),
+        height=400,
+        disabled=True
+    )
 
 # =========================================================
 # BOTTOM LOG OUTPUT
