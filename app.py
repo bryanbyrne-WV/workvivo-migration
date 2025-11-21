@@ -943,6 +943,71 @@ def check_cancel():
 st.markdown("## 🚀 Migrate Workvivo Data")
 
 # ============================================================
+# 📅 Date Range for Content Migration
+# ============================================================
+
+st.markdown("#### 📅 Date Range")
+
+date_options = [
+    "Last 6 months",
+    "Last 1 year",
+    "Last 2 years",
+    "Last 3 years",
+    "All time",
+    "Custom range",
+]
+
+# Default or previous value
+if "migration_date_choice" not in st.session_state:
+    st.session_state.migration_date_choice = "Last 1 year"
+
+date_choice = st.selectbox(
+    "Select date range",
+    date_options,
+    index=date_options.index(st.session_state.migration_date_choice),
+    key="migration_date_choice",
+)
+
+from datetime import datetime, timedelta
+
+today = datetime.utcnow()
+start_date = None
+end_date = today
+
+if date_choice == "Last 6 months":
+    start_date = today - timedelta(days=182)
+elif date_choice == "Last 1 year":
+    start_date = today - timedelta(days=365)
+elif date_choice == "Last 2 years":
+    start_date = today - timedelta(days=365 * 2)
+elif date_choice == "Last 3 years":
+    start_date = today - timedelta(days=365 * 3)
+elif date_choice == "All time":
+    start_date = None
+elif date_choice == "Custom range":
+    st.markdown("##### Custom Range")
+    start_date = st.date_input("Start date")
+    end_date = st.date_input("End date")
+
+# Format for display
+def fmt(d):
+    if d is None:
+        return "All time"
+    if hasattr(d, "strftime"):
+        return d.strftime("%b %d, %Y")
+    return str(d)
+
+pretty_start = fmt(start_date)
+pretty_end = fmt(end_date)
+
+st.info(f"📌 Migrating content from **{pretty_start}** to **{pretty_end}**")
+
+# Save for use in migration functions
+st.session_state.migration_start_date = start_date
+st.session_state.migration_end_date = end_date
+
+
+# ============================================================
 # 🏢 Organisation settings and information
 # ============================================================
 st.markdown("### Organisation settings and information")
