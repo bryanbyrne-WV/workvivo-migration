@@ -210,7 +210,7 @@ st.markdown("""
 </style>
 
 <div class="cool-header">
-    <div class="cool-header-title">🚀 Workvivo Migration Tool</div>
+    <div class="cool-header-title">🚀 Internal Migration Tool v1.0</div>
 </div>
 """, unsafe_allow_html=True)
 
