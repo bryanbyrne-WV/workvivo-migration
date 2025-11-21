@@ -859,18 +859,22 @@ if phase.startswith("Phase 1"):
         disabled=st.session_state.phase_running
     )
 
+    # Determine whether the UI should be locked
     disabled = st.session_state.phase_running
 
-    # RUN PHASE 1
+    # RUN BUTTON
     if st.button("▶ Run Phase 1 Now", key="run_phase1_button", disabled=disabled):
+        st.session_state.phase_running = True
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
         run_phase_1(company, active_only)
+        st.session_state.phase_running = False
 
-    # CANCEL
+    # CANCEL BUTTON (only visible while running)
     if st.session_state.phase_running:
         st.warning("Migration is currently running…")
         if st.button("❌ Cancel Migration", key="cancel_phase1_button"):
-            cancel_migration()
+            st.session_state.phase_running = False
+
 
 
 elif phase.startswith("Phase 2"):
