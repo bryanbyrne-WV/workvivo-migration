@@ -205,60 +205,101 @@ st.markdown("<div id='_config'></div>", unsafe_allow_html=True)
 if "config_saved" not in st.session_state:
 
     with st.form("config_form"):
+
         st.header("🔐 Environment Configuration")
 
-        st.subheader("Source Environment")
-        SOURCE_SCIM_URL = st.text_input(
-            "Source SCIM URL",
-            value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
-        )
-        SOURCE_API_URL = st.text_input(
-            "Source API URL",
-            value="https://api.workvivo.com/v1"
-        )
-        SOURCE_SCIM_TOKEN = st.text_input(
-            "Source SCIM Token",
-            value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
-            type="password"
-        )
-        SOURCE_API_TOKEN = st.text_input(
-            "Source API Token",
-            value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
-            type="password"
-        )
-        SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-ID", value="50")
+        st.markdown("""
+        <style>
+            .config-card {
+                background: #ffffff;
+                padding: 18px 22px;
+                border-radius: 10px;
+                box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
+                margin-bottom: 18px;
+            }
+            summary {
+                font-size: 18px;
+                font-weight: 600;
+                color: #6203ed;
+                cursor: pointer;
+                padding: 6px 0;
+            }
+        </style>
+        """, unsafe_allow_html=True)
 
-        st.subheader("Target Environment")
-        TARGET_SCIM_URL = st.text_input(
-            "Target SCIM URL",
-            value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
-        )
-        TARGET_API_URL = st.text_input(
-            "Target API URL",
-            value="https://api.eu2.workvivo.com/v1"
-        )
-        TARGET_SCIM_TOKEN = st.text_input(
-            "Target SCIM Token",
-            value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
-            type="password"
-        )
-        TARGET_API_TOKEN = st.text_input(
-            "Target API Token",
-            value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
-            type="password"
-        )
-        TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="3000384")
+        # ----------------------------------------------------
+        # SOURCE ENVIRONMENT (Collapsible)
+        # ----------------------------------------------------
+        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+        with st.expander("🔵 Source Environment", expanded=True):
 
+            SOURCE_SCIM_URL = st.text_input(
+                "Source SCIM URL",
+                value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
+            )
+            SOURCE_API_URL = st.text_input(
+                "Source API URL",
+                value="https://api.workvivo.com/v1"
+            )
+            SOURCE_SCIM_TOKEN = st.text_input(
+                "Source SCIM Token",
+                value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
+                type="password"
+            )
+            SOURCE_API_TOKEN = st.text_input(
+                "Source API Token",
+                value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
+                type="password"
+            )
+            SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-ID", value="50")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # ----------------------------------------------------
+        # TARGET ENVIRONMENT (Collapsible)
+        # ----------------------------------------------------
+        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+        with st.expander("🟣 Target Environment", expanded=True):
+
+            TARGET_SCIM_URL = st.text_input(
+                "Target SCIM URL",
+                value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
+            )
+            TARGET_API_URL = st.text_input(
+                "Target API URL",
+                value="https://api.eu2.workvivo.com/v1"
+            )
+            TARGET_SCIM_TOKEN = st.text_input(
+                "Target SCIM Token",
+                value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
+                type="password"
+            )
+            TARGET_API_TOKEN = st.text_input(
+                "Target API Token",
+                value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
+                type="password"
+            )
+            TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="3000384")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # ----------------------------------------------------
+        # MIGRATION USER (Single small card)
+        # ----------------------------------------------------
+        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
         SPACE_CREATOR_EXTERNAL_ID = st.text_input(
             "Migration External ID (Space Creator)",
             value="workvivo-migration-user"
         )
+        st.markdown("</div>", unsafe_allow_html=True)
 
+        # SUBMIT BUTTON
         submitted = st.form_submit_button("Save Configuration")
 
+    # --------------------------------------------------------
+    # SAVE INTO SESSION STATE
+    # --------------------------------------------------------
     if submitted:
-        # Save everything into session state
         st.session_state["config_saved"] = True
+
         st.session_state["SOURCE_SCIM_URL"] = SOURCE_SCIM_URL
         st.session_state["SOURCE_API_URL"] = SOURCE_API_URL
         st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
@@ -273,13 +314,16 @@ if "config_saved" not in st.session_state:
 
         st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
 
-        st.success("✅ Configuration saved! You can now run migrations.")
-         # 👉 **NEXT BUTTON** (re-added)
+        st.success("Configuration saved! Click Next to continue.")
+
+        # NEXT BUTTON (Restored)
         if st.button("➡ Next"):
             st.rerun()
+
         st.stop()
 
-    st.stop()  # prevent loading rest of the app UNTIL config is saved
+    st.stop()
+
 # =========================================================
 # CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
 # =========================================================
