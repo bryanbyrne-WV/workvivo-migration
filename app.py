@@ -200,17 +200,37 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar UI
 with st.sidebar:
-    st.markdown(f"""<img src="{WORKVIVO_LOGO}" class="sidebar-logo">""", unsafe_allow_html=True)
+    st.markdown(
+        f"""<img src="{WORKVIVO_LOGO}" class="sidebar-logo">""",
+        unsafe_allow_html=True
+    )
+
     st.markdown("""<div class="sidebar-title">Navigation</div>""", unsafe_allow_html=True)
 
-    st.markdown("""<a class="sidebar-link" href="#_config">⚙️ Configuration</a>""", unsafe_allow_html=True)
-    st.markdown("""<a class="sidebar-link" href="#_phase1">🚦 Phase 1</a>""", unsafe_allow_html=True)
-    st.markdown("""<a class="sidebar-link" href="#_phase2">📝 Phase 2</a>""", unsafe_allow_html=True)
-    st.markdown("""<a class="sidebar-link" href="#_logs">📜 Logs</a>""", unsafe_allow_html=True)
+    # CONFIGURATION
+    st.markdown(
+        """<a class="sidebar-link" href="#_config">⚙️ Configuration</a>""",
+        unsafe_allow_html=True
+    )
 
-    st.markdown("""<div class="sidebar-footer">Built for internal Workvivo migrations<br>© Bryan Byrne</div>""", unsafe_allow_html=True)
+    # DATA MIGRATION (covers Phase 1 + Phase 2 + Phase 3)
+    st.markdown(
+        """<a class="sidebar-link" href="#_migration">📦 Data Migration</a>""",
+        unsafe_allow_html=True
+    )
+
+    # LOGS
+    st.markdown(
+        """<a class="sidebar-link" href="#_logs">📜 Logs</a>""",
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """<div class="sidebar-footer">Built for internal Workvivo migrations<br>© Bryan Byrne</div>""",
+        unsafe_allow_html=True
+    )
+
 
 
 st.title("🚀 Workvivo Migration Tool")
@@ -219,6 +239,7 @@ st.write("Run internal Workvivo migrations without touching Python scripts.")
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
 # =========================================================
+st.markdown("<div id='_config'></div>", unsafe_allow_html=True)
 
 if "config_saved" not in st.session_state:
 
@@ -818,6 +839,8 @@ def check_cancel():
 # =========================================================
 # 2) PHASE SELECTION UI
 # =========================================================
+st.markdown("<div id='_migration'></div>", unsafe_allow_html=True)
+
 st.header("🚦 Run Migration")
 
 # 🔒 Disable all UI during migration
@@ -899,6 +922,8 @@ else:
 # =========================================================
 # BOTTOM LOG OUTPUT
 # =========================================================
+st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
+
 st.header("📜 Migration Log Output")
 
 # Always render the latest log output
