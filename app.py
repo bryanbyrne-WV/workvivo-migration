@@ -797,7 +797,6 @@ def unlock_ui():
 
 
 def cancel_migration():
-    """Request cancellation."""
     st.session_state.cancel_requested = True
     ui_log("🛑 Cancel requested… Stopping after the current item.")
 
