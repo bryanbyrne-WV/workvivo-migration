@@ -897,10 +897,10 @@ if phase.startswith("Phase 1"):
 
 
 
-    # ------------------------
-    # EXECUTE PHASE 1 (AFTER RERUN)
-    # ------------------------
-    if st.session_state.phase1_trigger:
+# ---------------------------------------------------------
+# EXECUTE PHASE 1 (AFTER UI RERUN)
+# ---------------------------------------------------------
+if st.session_state.phase1_trigger:
 
     # Loading spinner
     st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
