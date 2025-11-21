@@ -898,34 +898,7 @@ if phase.startswith("Phase 1"):
         run_phase_1(company, active_only)
         st.session_state.start_phase_1 = False
 
-
-# ============================
-# RUN BUTTON — triggers lock
-# ============================
-if not st.session_state.phase_running:
-    # Only visible when not running
-    if st.button("▶ Run Phase 1 Now"):
-        st.session_state.phase_running = True
-        st.session_state.cancel_requested = False
-        st.session_state.phase1_started = True      # <-- ADD THIS
-        st.session_state.start_phase_1 = True        # Trigger actual run in next cycle
-        st.rerun()
-
-
-    # --------------------------------------------------------
-    # CANCEL BUTTON (shown only while running)
-    # --------------------------------------------------------
-    if st.session_state.phase1_running:
-        st.warning("Migration is running…")
-
-        if st.button("❌ Cancel Migration"):
-            st.session_state.cancel_requested = True
-            ui_log("🛑 Cancel requested…")
-
-        # Show toggle to reveal/hide live log
-        show_console = st.toggle(
-            "📡 View Live Console Output",
-            key="phase1_show_console"
+onsole"
         )
 
     # --------------------------------------------------------
