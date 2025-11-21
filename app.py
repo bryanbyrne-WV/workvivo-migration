@@ -256,10 +256,10 @@ if "config_saved" not in st.session_state:
 
         submitted = st.form_submit_button("Save Configuration")
 
-    if submitted:
+if submitted:
     st.session_state["config_saved"] = True
 
-    # Save all fields into session
+    # Save everything
     st.session_state["SOURCE_SCIM_URL"] = SOURCE_SCIM_URL
     st.session_state["SOURCE_API_URL"] = SOURCE_API_URL
     st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
@@ -276,11 +276,12 @@ if "config_saved" not in st.session_state:
 
     st.success("✅ Configuration saved! You can now run migrations.")
 
-    # 👉 Show NEXT button instead of forcing rerun
+    # 👉 NEXT BUTTON
     if st.button("➡️ Next"):
         st.rerun()
 
     st.stop()
+
 
 # =========================================================
 # CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
