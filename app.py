@@ -198,9 +198,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-</div>
-""", unsafe_allow_html=True)
-
 with st.sidebar:
     st.markdown(
         f"""<img src="/mnt/data/wv.png" class="sidebar-logo">""",
