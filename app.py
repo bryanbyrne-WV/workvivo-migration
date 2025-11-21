@@ -848,35 +848,28 @@ if phase.startswith("Phase 1"):
 
     company = st.text_input(
         "Company Name for Global Space",
-        value="My Company",
+        value=st.session_state.get("phase1_company", "My Company"),
         key="phase1_company",
-        disabled=st.session_state.phase_running
+        disabled=disabled
     )
 
     active_only = st.checkbox(
         "Migrate ONLY active users",
-        value=True,
+        value=st.session_state.get("phase1_active_only", True),
         key="phase1_active_only",
-        disabled=st.session_state.phase_running
+        disabled=disabled
     )
 
-    # Determine whether the UI should be locked
-    disabled = st.session_state.phase_running
-
     # RUN BUTTON
-    if st.button("▶ Run Phase 1 Now", key="run_phase1_button", disabled=disabled):
+    if st.button("▶ Run Phase 1 Now", disabled=disabled):
         st.session_state.phase_running = True
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
         run_phase_1(company, active_only)
-        st.session_state.phase_running = False
 
     # CANCEL BUTTON (only visible while running)
     if st.session_state.phase_running:
-        st.warning("Migration is currently running…")
-        if st.button("❌ Cancel Migration", key="cancel_phase1_button"):
-            st.session_state.phase_running = False
-
-
+        if st.button("❌ Cancel Migration"):
+            cancel_migration()
 
 elif phase.startswith("Phase 2"):
     if st.button("▶ Run Phase 2"):
