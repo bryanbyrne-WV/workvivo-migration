@@ -838,9 +838,8 @@ disabled = st.session_state.phase_running
 phase = st.selectbox(
     "Choose migration phase",
     [
-        "Phase 1 – Users, Avatars, Spaces, Memberships",
-        "Phase 2 – Updates, Comments, Likes",
-        "Phase 3 – Articles, Kudos, Events"
+        "Phase 1 – Users & Spaces",
+        "Phase 2 – Content",
     ],
     index=0,
     disabled=disabled
