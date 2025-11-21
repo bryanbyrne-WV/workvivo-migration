@@ -170,22 +170,6 @@ advanced_styles = f"""
         padding: 6px;
     }}
 
-    /* LOADING SPINNER */
-    .loading {{
-        border: 5px solid #e3e3e3;
-        border-top: 5px solid #6203ed;
-        border-radius: 50%;
-        width: 38px;
-        height: 38px;
-        animation: spin 0.8s linear infinite;
-        margin: auto;
-    }}
-
-    @keyframes spin {{
-        0% {{ transform: rotate(0deg); }}
-        100% {{ transform: rotate(360deg); }}
-    }}
-
 </style>
 """
 
@@ -907,14 +891,7 @@ if phase.startswith("Phase 1"):
             st.session_state["log_output"] = ""  # reset logs
             st.rerun()
 
-    # ------------------------
-    # CANCEL BUTTON (visible when running)
-    # ------------------------
-    if st.session_state.phase1_running:
-        st.warning("Phase 1 migration is running…")
-        if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
-            st.session_state.phase1_cancel = True
-            cancel_migration()
+
 
     # ------------------------
     # EXECUTE PHASE 1 (AFTER RERUN)
@@ -933,13 +910,24 @@ if phase.startswith("Phase 1"):
 
         st.rerun()
 
-# Create an empty log placeholder BEFORE migration starts
-if "live_log_placeholder" not in st.session_state:
-    st.session_state.live_log_placeholder = st.empty()
+    # ------------------------
+    # CANCEL BUTTON (visible when running)
+    # ------------------------
+    if st.session_state.phase1_running:
+        st.warning("Phase 1 migration is running…")
+        if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
+            st.session_state.phase1_cancel = True
+            cancel_migration()
+            
+
 
 # =========================================================
 # 📜 LIVE LOG OUTPUT — appears ONLY during/after Phase 1
 # =========================================================
+# Create an empty log placeholder BEFORE migration starts
+if "live_log_placeholder" not in st.session_state:
+    st.session_state.live_log_placeholder = st.empty()
+    
 if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
 
     st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
