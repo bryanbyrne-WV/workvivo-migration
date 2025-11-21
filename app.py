@@ -14,7 +14,7 @@ st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 # ============================================================
 # WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
 # ============================================================
-WORKVIVO_LOGO = "/mnt/data/wv.png"
+WORKVIVO_LOGO_URL = "https://hrsummits.co.uk/wp-content/uploads/2020/07/Workvivo-Logo_Positive.png"
 
 advanced_styles = f"""
 <style>
