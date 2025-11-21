@@ -926,16 +926,15 @@ if st.session_state.phase1_trigger:
     st.rerun()
 
 
+# ---------------------------------------------------------
+# CANCEL BUTTON (VISIBLE WHILE RUNNING)
+# ---------------------------------------------------------
+if st.session_state.phase1_running:
+    st.warning("Phase 1 migration is running…")
+    if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
+        st.session_state.phase1_cancel = True
+        cancel_migration()
 
-    # ------------------------
-    # CANCEL BUTTON (visible when running)
-    # ------------------------
-    if st.session_state.phase1_running:
-        st.warning("Phase 1 migration is running…")
-        if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
-            st.session_state.phase1_cancel = True
-            cancel_migration()
-            
 
 
 # =========================================================
