@@ -363,10 +363,6 @@ target_headers = {
     "Accept": "application/json"
 }
 
-# Global live console placeholder
-if "console_placeholder" not in st.session_state:
-    st.session_state.console_placeholder = st.empty()
-
 # =========================================================
 # LOGGING AREA
 # =========================================================
@@ -980,6 +976,10 @@ elif phase.startswith("Phase 2"):
 # =========================================================
 # 📜 LIVE LOG CONSOLE — Only visible once Phase 1 has started
 # =========================================================
+# Global live console placeholder
+if "console_placeholder" not in st.session_state:
+    st.session_state.console_placeholder = st.empty()
+    
 st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
 st.header("🖥️ Migration Console")
 
