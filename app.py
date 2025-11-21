@@ -1024,7 +1024,6 @@ elif phase.startswith("Phase 2"):
 
     st.subheader("Phase 2 – Migration Options")
 
-    # Disable UI if migration running
     disabled = st.session_state.phase_running
 
     # --------------------------------------------------------
@@ -1053,6 +1052,7 @@ elif phase.startswith("Phase 2"):
         disabled=disabled
     )
 
+    # Compute date range
     from datetime import datetime, timedelta
 
     today = datetime.utcnow()
@@ -1074,24 +1074,25 @@ elif phase.startswith("Phase 2"):
         start_date = st.date_input("Start date", disabled=disabled)
         end_date = st.date_input("End date", disabled=disabled)
 
-    # Save into session state for migration scripts
+    # Store into session_state
     st.session_state.phase2_start_date = start_date
     st.session_state.phase2_end_date = end_date
 
-def fmt(d):
-    if isinstance(d, datetime):
-        return d.strftime("%b %d, %Y")  # e.g. Nov 21, 2024
-    elif hasattr(d, "strftime"):       # catches date objects
-        return d.strftime("%b %d, %Y")
-    return "—"
+    # ---- Friendly date formatting ----
+    def fmt(d):
+        if d is None:
+            return "All time"
+        if hasattr(d, "strftime"):
+            return d.strftime("%b %d, %Y")
+        return str(d)
 
-pretty_start = fmt(start_date) if start_date else "All time"
-pretty_end = fmt(end_date) if end_date else "Now"
+    pretty_start = fmt(start_date)
+    pretty_end = fmt(end_date)
 
-st.info(f"📌 Filtering content from **{pretty_start}** to **{pretty_end}**")
+    st.info(f"📌 Filtering content from **{pretty_start}** to **{pretty_end}**")
 
     # --------------------------------------------------------
-    # CONTENT TYPE SELECTION (checkboxes)
+    # CONTENT TYPE SELECTION
     # --------------------------------------------------------
     phase2_items = [
         "Updates",
@@ -1102,15 +1103,13 @@ st.info(f"📌 Filtering content from **{pretty_start}** to **{pretty_end}**")
         "Events"
     ]
 
-    # Initialise selection dictionary if missing
     if "phase2_selection" not in st.session_state:
         st.session_state.phase2_selection = {
             item: True for item in phase2_items
         }
 
-    st.write("### Content Types to Include:")
+    st.write("Select which content types to include:")
 
-    # Render checkboxes vertically
     for item in phase2_items:
         st.session_state.phase2_selection[item] = st.checkbox(
             item,
@@ -1119,23 +1118,17 @@ st.info(f"📌 Filtering content from **{pretty_start}** to **{pretty_end}**")
             disabled=disabled
         )
 
-    # --------------------------------------------------------
     # RUN BUTTON
-    # --------------------------------------------------------
     if not st.session_state.phase_running:
         if st.button("▶ Run Phase 2"):
             ui_log("📌 Phase 2 (Demo) triggered with:")
-
+            ui_log(f"   Date Range: {pretty_start} → {pretty_end}")
             for item, enabled in st.session_state.phase2_selection.items():
                 if enabled:
                     ui_log(f"   • {item}")
-
-            ui_log(f"📅 Using date filter: {start_date} → {end_date}")
             ui_log("⚠️ Phase 2 is demo-only. No data migrated.")
 
-    # --------------------------------------------------------
-    # CANCEL WHILE RUNNING
-    # --------------------------------------------------------
+    # CANCEL BUTTON
     if st.session_state.phase_running:
         st.warning("Migration is currently running…")
         if st.button("❌ Cancel Migration"):
