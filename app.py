@@ -377,6 +377,7 @@ def ui_log(message):
 
     st.session_state["log_output"] += line + "\n"
 
+
     # Update live console ONLY if Phase 1 is running
     if st.session_state.get("phase1_running", False):
         st.session_state.console_placeholder.text_area(
