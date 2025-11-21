@@ -373,14 +373,10 @@ def ui_log(message):
     ts = datetime.utcnow().strftime("%H:%M:%S")
     line = f"[{ts}] {message}"
 
-    # Store into ONE variable
     if "log_output" not in st.session_state:
         st.session_state["log_output"] = ""
 
     st.session_state["log_output"] += line + "\n"
-
-    # Immediately show the update
-    st.write(line)
 
 
 # =========================================================
