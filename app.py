@@ -211,7 +211,7 @@ with st.sidebar:
 
     # CONFIGURATION
     st.markdown(
-        """<a class="sidebar-link" href="#_config">⚙Configuration</a>""",
+        """<a class="sidebar-link" href="#_config">Configuration</a>""",
         unsafe_allow_html=True
     )
 
