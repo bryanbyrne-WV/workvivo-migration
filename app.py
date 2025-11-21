@@ -214,6 +214,46 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ============================
+# CARD SELECTION UI STYLES
+# ============================
+st.markdown("""
+<style>
+.select-card {
+    border-radius: 12px;
+    padding: 18px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border: 2px solid transparent;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    min-height: 110px;
+}
+.select-card:hover {
+    transform: translateY(-3px);
+    border-color: #6203ed;
+}
+.select-card.selected {
+    border-color: #6203ed !important;
+    background: #f4ecff !important;
+}
+.select-card-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: #6203ed;
+}
+.select-card-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+.select-card-sub {
+    font-size: 14px;
+    color: #666;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
 # =========================================================
@@ -568,6 +608,29 @@ def create_global_space_and_enroll(company_name):
     ui_log("✅ Global Space enrollment complete!")
     return space_id
 
+# ============================
+# Helper: Selectable Card Component
+# ============================
+def selectable_card(key, title, icon, subtitle):
+    selected = st.session_state.get(key, False)
+
+    card_class = "select-card selected" if selected else "select-card"
+
+    clicked = st.container().markdown(
+        f"""
+        <div class="{card_class}" onclick="document.getElementById('{key}').click()">
+            <div class="select-card-icon">{icon}</div>
+            <div class="select-card-title">{title}</div>
+            <div class="select-card-sub">{subtitle}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # hidden checkbox syncing state
+    st.checkbox("hidden", key=key, value=selected, label_visibility="collapsed")
+
+    return st.session_state[key]
 
 # =========================================================
 # PHASE 1 — USERS
@@ -872,71 +935,104 @@ def check_cancel():
         ui_log("⛔ Migration cancelled by user.")
         unlock_ui()
         raise Exception("Migration Cancelled")
-# -------------------------------------------------------------
+# ============================================================
 # 🏢 Organisation settings and information
-# -------------------------------------------------------------
+# ============================================================
 st.markdown("## 🏢 Organisation settings and information")
+
 st.markdown("""
 This section migrates core organisational structure in Workvivo, including users, spaces,
 and all related metadata such as space descriptions, logos, and memberships.
 """)
 
-with st.container():
-    migrate_users = st.checkbox("Users", value=True)
-    migrate_spaces = st.checkbox("Spaces (includes descriptions, logos, membership, admins)", value=True)
+col1, col2 = st.columns(2)
 
-    run_org = st.button("Run Organisation Migration")
+with col1:
+    users_selected = selectable_card(
+        "migrate_users",
+        "Users",
+        "👤",
+        "Migrate SCIM users + details"
+    )
 
-    if run_org:
-        st.info("🚀 Starting organisation settings migration...")
+with col2:
+    spaces_selected = selectable_card(
+        "migrate_spaces",
+        "Spaces",
+        "📦",
+        "Includes descriptions, logos, membership"
+    )
 
-        if migrate_users:
-            st.write("• Migrating users...")
-            # run users migration here
+if st.button("▶ Run Organisation Migration"):
+    ui_log("🚀 Starting Organisation Migration...")
 
-        if migrate_spaces:
-            st.write("• Migrating spaces and metadata...")
-            # run spaces migration here
+    if users_selected:
+        ui_log("• Migrating users...")
+        migrate_users(st.session_state.phase1_active_only)
 
-        st.success("✅ Organisation settings migration complete!")
+    if spaces_selected:
+        ui_log("• Migrating spaces...")
+        migrate_spaces()
+        migrate_memberships()
 
+    ui_log("🎉 Organisation Migration Complete!")
+    st.success("Organisation migration completed.")
 
-# Spacer
-st.markdown("---")
-
-# -------------------------------------------------------------
+# ============================================================
 # 👥 User activity on Workvivo
-# -------------------------------------------------------------
+# ============================================================
 st.markdown("## 👥 User activity on Workvivo")
+
 st.markdown("""
 Information and activity from different features of Workvivo, such as posts created,
-spaces joined and more. This information will be grouped and associated to individual users.
+spaces joined and more. This information will be grouped and associated with individual users.
 Relevant information such as posts, groups, surveys and comments will be used for integrations.
 """)
 
-with st.container():
-    migrate_updates = st.checkbox("Updates (Posts)", value=True)
-    migrate_comments = st.checkbox("Comments", value=True)
-    migrate_likes = st.checkbox("Likes", value=True)
+col1, col2, col3 = st.columns(3)
 
-    run_activity = st.button("Run Activity Migration")
+with col1:
+    updates_selected = selectable_card(
+        "migrate_updates",
+        "Updates",
+        "📝",
+        "Posts created by users"
+    )
 
-    if run_activity:
-        st.info("🚀 Starting user activity migration...")
+with col2:
+    comments_selected = selectable_card(
+        "migrate_comments",
+        "Comments",
+        "💬",
+        "Comments made on posts"
+    )
 
-        if migrate_updates:
-            st.write("• Migrating updates...")
-            # run updates migration
+with col3:
+    likes_selected = selectable_card(
+        "migrate_likes",
+        "Likes",
+        "👍",
+        "Likes and reactions"
+    )
 
-        if migrate_comments:
-            st.write("• Migrating comments...")
-            # run comments migration
 
-        if migrate_likes:
-            st.write("• Migrating likes...")
-            # run likes migration
+if st.button("▶ Run User Activity Migration"):
+    ui_log("🚀 Starting User Activity Migration...")
 
-        st.success("✅ User activity migration complete!")
+    if updates_selected:
+        ui_log("• Migrating updates...")
+        # migrate_updates()
+
+    if comments_selected:
+        ui_log("• Migrating comments...")
+        # migrate_comments()
+
+    if likes_selected:
+        ui_log("• Migrating likes...")
+        # migrate_likes()
+
+    ui_log("🎉 User Activity Migration Complete!")
+    st.success("User activity migration completed.")
 
 # =========================================================
 # 2) PHASE SELECTION UI
