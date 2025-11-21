@@ -250,6 +250,43 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ============================================================
+# 🧭 Breadcrumb Navigation
+# ============================================================
+
+st.markdown("""
+<style>
+.breadcrumb {
+    font-size: 16px;
+    color: #555;
+    margin: 12px 0 18px 0;
+}
+.breadcrumb a {
+    color: #6203ed;
+    text-decoration: none;
+    font-weight: 600;
+}
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+.breadcrumb .sep {
+    margin: 0 6px;
+    color: #aaa;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="breadcrumb">
+    <a href="#_config">API Configuration</a>
+    <span class="sep">›</span>
+    <a href="#_migration">Migrate Data</a>
+    <span class="sep">›</span>
+    <a href="#_logs">Logs</a>
+</div>
+""", unsafe_allow_html=True)
+
+
 
 # ============================
 # CARD SELECTION UI STYLES
