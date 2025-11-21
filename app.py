@@ -11,58 +11,91 @@ import mimetypes
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
-# -------------------------------
-# WORKVIVO UI BRANDING + THEMING
-# -------------------------------
+# ============================================================
+# WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
+# ============================================================
 
 WORKVIVO_LOGO = "https://assets-global.website-files.com/5db06f883fe98384f8e59870/60df4cf0e95f707221207050_workvivo-logo.svg"
 
-# Sidebar styling + header bar + global theme
-workvivo_styles = f"""
+advanced_styles = f"""
 <style>
 
-    /* GLOBAL APP BACKGROUND */
+    /* GLOBAL PAGE BACKGROUND */
     .main {{
         background-color: #F7F9FC !important;
+    }}
+
+    /* DARK MODE SUPPORT */
+    @media (prefers-color-scheme: dark) {{
+        .main {{
+            background-color: #0d1117 !important;
+        }}
+        .header-bar {{
+            background-color: #223a7a !important;
+        }}
+        .header-title {{
+            color: #ffffff !important;
+        }}
+        section[data-testid="stSidebar"] {{
+            background-color: #0f172a !important;
+        }}
+        .sidebar-link {{
+            color: #cbd5e1 !important;
+        }}
+        .sidebar-footer {{
+            color: #94a3b8 !important;
+        }}
     }}
 
     /* HEADER BAR */
     .header-bar {{
         background-color: #0052CC;
-        padding: 16px 26px;
+        padding: 18px 28px;
         width: 100%;
         display: flex;
         align-items: center;
-        border-radius: 6px;
+        border-radius: 8px;
         margin-bottom: 25px;
-        box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+        box-shadow: 0px 3px 12px rgba(0,0,0,0.18);
+        animation: fade-slide-down 0.6s ease-out;
     }}
+
     .header-logo {{
-        height: 42px;
+        height: 46px;
         margin-right: 18px;
     }}
+
     .header-title {{
         color: white;
-        font-size: 28px;
-        font-weight: 600;
-        letter-spacing: -0.4px;
+        font-size: 30px;
+        font-weight: 650;
+        letter-spacing: -0.5px;
         margin-top: 2px;
     }}
 
-    /* SIDEBAR PANEL */
+    @keyframes fade-slide-down {{
+        0% {{ opacity: 0; transform: translateY(-10px); }}
+        100% {{ opacity: 1; transform: translateY(0); }}
+    }}
+
+    /* SIDEBAR */
     section[data-testid="stSidebar"] {{
         background-color: #003A99 !important;
         padding: 20px 15px;
     }}
 
-    /* SIDEBAR LOGO */
     .sidebar-logo {{
-        width: 160px;
+        width: 170px;
         margin-bottom: 20px;
-        margin-top: 5px;
+        margin-top: 10px;
+        animation: fade-in 0.8s;
     }}
 
-    /* SIDEBAR MENU TITLE */
+    @keyframes fade-in {{
+        0% {{ opacity: 0; }}
+        100% {{ opacity: 1; }}
+    }}
+
     .sidebar-title {{
         color: #ffffff;
         font-size: 20px;
@@ -71,81 +104,113 @@ workvivo_styles = f"""
         margin-bottom: 10px;
     }}
 
-    /* SIDEBAR LINKS */
     .sidebar-link {{
         color: #ffffff !important;
-        padding: 8px 4px;
+        padding: 10px 6px;
         display: block;
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 500;
-        border-radius: 4px;
+        border-radius: 5px;
+        margin-bottom: 6px;
         text-decoration: none !important;
+        transition: 0.2s;
     }}
 
     .sidebar-link:hover {{
-        background-color: rgba(255,255,255,0.15);
+        background-color: rgba(255,255,255,0.18);
+        padding-left: 12px;
     }}
 
-    /* FOOTER */
     .sidebar-footer {{
         margin-top: 40px;
-        padding: 10px;
+        padding: 12px;
         border-top: 1px solid rgba(255,255,255,0.25);
         color: #d0d8e8;
-        font-size: 13px;
+        font-size: 14px;
         text-align: center;
         line-height: 1.4;
     }}
 
-    /* SECTION TITLES IN MAIN VIEW */
-    .section-title {{
-        color: #0052CC !important;
-        font-weight: 700 !important;
-        margin-top: 20px;
+    /* BEAUTIFUL BUTTONS */
+    .stButton > button {{
+        border-radius: 6px;
+        height: 48px;
+        background-color: #0052CC;
+        border: none;
+        color: white;
+        font-size: 17px;
+        font-weight: 550;
+        padding: 8px 20px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+        transition: 0.2s;
+    }}
+
+    .stButton > button:hover {{
+        background-color: #003A99;
+        transform: translateY(-1px);
+    }}
+
+    .stButton > button:active {{
+        transform: scale(0.98);
+    }}
+
+    /* COLLAPSIBLE LOG CONTAINER */
+    details {{
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 10px 14px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.12);
+        margin-bottom: 10px;
+    }}
+
+    summary {{
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        color: #0052CC;
+        padding: 6px;
+    }}
+
+    /* LOADING SPINNER */
+    .loading {{
+        border: 5px solid #e3e3e3;
+        border-top: 5px solid #0052CC;
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        animation: spin 0.8s linear infinite;
+        margin: auto;
+    }}
+
+    @keyframes spin {{
+        0% {{ transform: rotate(0deg); }}
+        100% {{ transform: rotate(360deg); }}
     }}
 
 </style>
 """
 
-# Inject style block
-st.markdown(workvivo_styles, unsafe_allow_html=True)
+st.markdown(advanced_styles, unsafe_allow_html=True)
 
-# MAIN HEADER BAR (Top of App)
-header_html = f"""
+# Render Header
+st.markdown(f"""
 <div class="header-bar">
     <img src="{WORKVIVO_LOGO}" class="header-logo">
     <div class="header-title">Workvivo Migration Utility</div>
 </div>
-"""
-st.markdown(header_html, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# --------------------------------
-# SIDEBAR CONTENT (Navigation)
-# --------------------------------
+# Sidebar UI
 with st.sidebar:
-
-    # Logo
     st.markdown(f"""<img src="{WORKVIVO_LOGO}" class="sidebar-logo">""", unsafe_allow_html=True)
-
     st.markdown("""<div class="sidebar-title">Navigation</div>""", unsafe_allow_html=True)
 
-    # Main links
     st.markdown("""<a class="sidebar-link" href="#_config">⚙️ Configuration</a>""", unsafe_allow_html=True)
-    st.markdown("""<a class="sidebar-link" href="#_phase1">🚦 Phase 1 Migration</a>""", unsafe_allow_html=True)
+    st.markdown("""<a class="sidebar-link" href="#_phase1">🚦 Phase 1</a>""", unsafe_allow_html=True)
     st.markdown("""<a class="sidebar-link" href="#_phase2">📝 Phase 2</a>""", unsafe_allow_html=True)
-    st.markdown("""<a class="sidebar-link" href="#_phase3">📚 Phase 3</a>""", unsafe_allow_html=True)
-    st.markdown("""<a class="sidebar-link" href="#_logs">📜 Migration Logs</a>""", unsafe_allow_html=True)
+    st.markdown("""<a class="sidebar-link" href="#_logs">📜 Logs</a>""", unsafe_allow_html=True)
 
-    # Footer
-    st.markdown(
-        """<div class="sidebar-footer">
-            Built internally for Workvivo migrations<br>
-            © Bryan Byrne
-        </div>""",
-        unsafe_allow_html=True
-    )
-
-
+    st.markdown("""<div class="sidebar-footer">Built for internal Workvivo migrations<br>© Bryan Byrne</div>""", unsafe_allow_html=True)
 
 
 st.title("🚀 Workvivo Migration Tool")
@@ -718,7 +783,9 @@ if phase.startswith("Phase 1"):
     active_only = st.checkbox("Migrate ONLY active users", value=True)
 
     if st.button("▶ Run Phase 1 Now"):
-        run_phase_1(company, active_only)
+    st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
+    run_phase_1(company, active_only)
+
 
 elif phase.startswith("Phase 2"):
     if st.button("▶ Run Phase 2"):
