@@ -187,12 +187,12 @@ with st.sidebar:
     st.image(WORKVIVO_LOGO_URL, use_column_width=True)
 
     st.markdown(
-        """<a class="sidebar-link" href="#_config">⚙️ Configuration</a>""",
+        """<a class="sidebar-link" href="#_config">Configuration</a>""",
         unsafe_allow_html=True
     )
 
     st.markdown(
-        """<a class="sidebar-link" href="#_migration">📦 Data Migration</a>""",
+        """<a class="sidebar-link" href="#_migration">Data Migration</a>""",
         unsafe_allow_html=True
     )
 
@@ -1078,7 +1078,17 @@ elif phase.startswith("Phase 2"):
     st.session_state.phase2_start_date = start_date
     st.session_state.phase2_end_date = end_date
 
-    st.info(f"📌 Filtering content from **{start_date}** to **{end_date}**")
+def fmt(d):
+    if isinstance(d, datetime):
+        return d.strftime("%b %d, %Y")  # e.g. Nov 21, 2024
+    elif hasattr(d, "strftime"):       # catches date objects
+        return d.strftime("%b %d, %Y")
+    return "—"
+
+pretty_start = fmt(start_date) if start_date else "All time"
+pretty_end = fmt(end_date) if end_date else "Now"
+
+st.info(f"📌 Filtering content from **{pretty_start}** to **{pretty_end}**")
 
     # --------------------------------------------------------
     # CONTENT TYPE SELECTION (checkboxes)
