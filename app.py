@@ -361,6 +361,10 @@ target_headers = {
 # =========================================================
 # LOGGING AREA
 # =========================================================
+# Ensure console placeholder always exists
+if "console_placeholder" not in st.session_state:
+    st.session_state.console_placeholder = None
+
 log_buffer = io.StringIO()
 
 def ui_log(message):
@@ -372,8 +376,8 @@ def ui_log(message):
 
     st.session_state["log_output"] += line + "\n"
 
-    # If console UI exists, update in place
-    if st.session_state.console_placeholder:
+    # Only try to update placeholder if it exists
+    if st.session_state.console_placeholder is not None:
         st.session_state.console_placeholder.text_area(
             "📡 Live Console Output",
             st.session_state["log_output"],
