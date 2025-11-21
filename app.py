@@ -204,7 +204,7 @@ st.markdown("<div id='_config'></div>", unsafe_allow_html=True)
 
 if "config_saved" not in st.session_state:
 
-    with st.form("config_form"):
+with st.form("config_form"):
     st.header("🔐 Environment Configuration")
 
     # -----------------------------
@@ -262,6 +262,17 @@ if "config_saved" not in st.session_state:
             "Target Workvivo-ID",
             value="3000384"
         )
+
+    # -----------------------------
+    # MIGRATION USER
+    # -----------------------------
+    with st.expander("👤 Migration User Settings", expanded=False):
+        SPACE_CREATOR_EXTERNAL_ID = st.text_input(
+            "Migration External ID (Space Creator)",
+            value="workvivo-migration-user"
+        )
+
+    submitted = st.form_submit_button("Save Configuration")
 
     # -----------------------------
     # MIGRATION USER
