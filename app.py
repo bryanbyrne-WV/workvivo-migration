@@ -897,10 +897,21 @@ if phase.startswith("Phase 1"):
             st.session_state.phase1_cancel = True
             cancel_migration()
 
-    # ---------------------------------------------------------
+        # ---------------------------------------------------------
     # EXECUTE PHASE 1 (AFTER RERUN)
     # ---------------------------------------------------------
     if st.session_state.phase1_trigger:
+
+        # Live logs appear as soon as Phase 1 actually begins
+        with st.expander("🖥️ Live Migration Console", expanded=True):
+            st.text_area(
+                "Console Output",
+                value=st.session_state.get("log_output", ""),
+                height=350,
+                disabled=True
+            )
+
+        # Loading spinner
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
 
         # Run actual work
@@ -912,7 +923,6 @@ if phase.startswith("Phase 1"):
         st.session_state.phase1_cancel = False
 
         st.rerun()
-
 
 # -------------------------------
 # Phase 2 - RUN
@@ -967,20 +977,4 @@ elif phase.startswith("Phase 2"):
         if st.button("❌ Cancel Migration"):
             cancel_migration()
 
-
-
-# =========================================================
-# 📜 LIVE LOGS — Collapsible expander (only after Phase 1 starts)
-# =========================================================
-if st.session_state.get("phase_running") and st.session_state.get("start_phase_1"):
-    st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-    st.header("🖥️ Live Console Output")
-
-    with st.expander("📡 View Live Console Logs", expanded=False):
-        st.text_area(
-            "Console Output",
-            value=st.session_state.get("log_output", ""),
-            height=400,
-            disabled=True
-        )
 
