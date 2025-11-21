@@ -66,7 +66,7 @@ advanced_styles = f"""
 
     .header-title {{
         color: white;
-        font-size: 30px;
+        font-size: 42px;
         font-weight: 650;
         letter-spacing: -0.5px;
         margin-top: 2px;
@@ -229,11 +229,6 @@ with st.sidebar:
         """<div class="sidebar-footer">Built for internal Workvivo migrations<br>© Bryan Byrne</div>""",
         unsafe_allow_html=True
     )
-
-
-
-st.title("🚀 Workvivo Migration Tool")
-st.write("Run internal Workvivo migrations without touching Python scripts.")
 
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
