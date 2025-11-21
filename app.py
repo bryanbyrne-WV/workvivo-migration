@@ -274,6 +274,9 @@ if "config_saved" not in st.session_state:
         st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
 
         st.success("✅ Configuration saved! You can now run migrations.")
+         # 👉 **NEXT BUTTON** (re-added)
+        if st.button("➡ Next"):
+            st.rerun()
         st.stop()
 
     st.stop()  # prevent loading rest of the app UNTIL config is saved
