@@ -954,63 +954,65 @@ elif phase.startswith("Phase 2"):
 
     st.subheader("Phase 2 – Migration Options")
 
+    # Disable UI if migration running
+    disabled = st.session_state.phase_running
 
-# --------------------------------------------------------
-# DATE RANGE FILTER FOR PHASE 2
-# --------------------------------------------------------
-st.markdown("### 📅 Date Range")
+    # --------------------------------------------------------
+    # DATE RANGE FILTER FOR PHASE 2
+    # --------------------------------------------------------
+    st.markdown("### 📅 Date Range")
 
-date_options = [
-    "Last 6 months",
-    "Last 1 year",
-    "Last 2 years",
-    "Last 3 years",
-    "All time",
-    "Custom range",
-]
+    date_options = [
+        "Last 6 months",
+        "Last 1 year",
+        "Last 2 years",
+        "Last 3 years",
+        "All time",
+        "Custom range",
+    ]
 
-# Restore previous selection or default to 1 year
-if "phase2_date_choice" not in st.session_state:
-    st.session_state.phase2_date_choice = "Last 1 year"
+    # Restore previous selection or default to 1 year
+    if "phase2_date_choice" not in st.session_state:
+        st.session_state.phase2_date_choice = "Last 1 year"
 
-date_choice = st.selectbox(
-    "Select date range",
-    date_options,
-    index=date_options.index(st.session_state.phase2_date_choice),
-    key="phase2_date_choice",
-    disabled=disabled
-)
+    date_choice = st.selectbox(
+        "Select date range",
+        date_options,
+        index=date_options.index(st.session_state.phase2_date_choice),
+        key="phase2_date_choice",
+        disabled=disabled
+    )
 
-# Compute date range
-from datetime import datetime, timedelta
+    from datetime import datetime, timedelta
 
-today = datetime.utcnow()
-start_date = None
-end_date = today
+    today = datetime.utcnow()
+    start_date = None
+    end_date = today
 
-if date_choice == "Last 6 months":
-    start_date = today - timedelta(days=182)
-elif date_choice == "Last 1 year":
-    start_date = today - timedelta(days=365)
-elif date_choice == "Last 2 years":
-    start_date = today - timedelta(days=365 * 2)
-elif date_choice == "Last 3 years":
-    start_date = today - timedelta(days=365 * 3)
-elif date_choice == "All time":
-    start_date = None  # Disable filtering
-elif date_choice == "Custom range":
-    st.markdown("#### Custom Range")
-    start_date = st.date_input("Start date", disabled=disabled)
-    end_date = st.date_input("End date", disabled=disabled)
+    if date_choice == "Last 6 months":
+        start_date = today - timedelta(days=182)
+    elif date_choice == "Last 1 year":
+        start_date = today - timedelta(days=365)
+    elif date_choice == "Last 2 years":
+        start_date = today - timedelta(days=365 * 2)
+    elif date_choice == "Last 3 years":
+        start_date = today - timedelta(days=365 * 3)
+    elif date_choice == "All time":
+        start_date = None
+    elif date_choice == "Custom range":
+        st.markdown("#### Custom Range")
+        start_date = st.date_input("Start date", disabled=disabled)
+        end_date = st.date_input("End date", disabled=disabled)
 
-# Store into session_state for migration scripts
-st.session_state.phase2_start_date = start_date
-st.session_state.phase2_end_date = end_date
+    # Save into session state for migration scripts
+    st.session_state.phase2_start_date = start_date
+    st.session_state.phase2_end_date = end_date
 
-st.info(f"📌 Filtering content from **{start_date}** to **{end_date}**")
+    st.info(f"📌 Filtering content from **{start_date}** to **{end_date}**")
 
-
-    # Full list of Phase 2 items
+    # --------------------------------------------------------
+    # CONTENT TYPE SELECTION (checkboxes)
+    # --------------------------------------------------------
     phase2_items = [
         "Updates",
         "Comments",
@@ -1020,17 +1022,13 @@ st.info(f"📌 Filtering content from **{start_date}** to **{end_date}**")
         "Events"
     ]
 
-    # Store checkbox states in session_state
+    # Initialise selection dictionary if missing
     if "phase2_selection" not in st.session_state:
-        # Initialise with everything pre-selected
         st.session_state.phase2_selection = {
             item: True for item in phase2_items
         }
 
-    # Disable while running
-    disabled = st.session_state.phase_running
-
-    st.write("Select which content types to include:")
+    st.write("### Content Types to Include:")
 
     # Render checkboxes vertically
     for item in phase2_items:
@@ -1041,20 +1039,24 @@ st.info(f"📌 Filtering content from **{start_date}** to **{end_date}**")
             disabled=disabled
         )
 
+    # --------------------------------------------------------
     # RUN BUTTON
+    # --------------------------------------------------------
     if not st.session_state.phase_running:
         if st.button("▶ Run Phase 2"):
             ui_log("📌 Phase 2 (Demo) triggered with:")
+
             for item, enabled in st.session_state.phase2_selection.items():
                 if enabled:
                     ui_log(f"   • {item}")
+
+            ui_log(f"📅 Using date filter: {start_date} → {end_date}")
             ui_log("⚠️ Phase 2 is demo-only. No data migrated.")
 
-    # CANCEL while running
+    # --------------------------------------------------------
+    # CANCEL WHILE RUNNING
+    # --------------------------------------------------------
     if st.session_state.phase_running:
         st.warning("Migration is currently running…")
         if st.button("❌ Cancel Migration"):
             cancel_migration()
-
-
-
