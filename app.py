@@ -939,20 +939,15 @@ def check_cancel():
 # ============================================================
 # 🏢 Organisation settings and information
 # ============================================================
-st.markdown("## 🏢 Organisation settings and information")
+st.markdown("##Organisation settings and information")
 
 st.markdown("""
-This section migrates core organisational structure in Workvivo, including users, spaces,
-and all related metadata such as space descriptions, logos, and memberships.
+This section migrates the core organisational setup in Workvivo including users, spaces, and all related details such as descriptions, logos, visibility settings, and memberships.
 """)
 
 # Users + Spaces always ON (disabled toggles)
-migrate_users = st.toggle("Migrate Users", value=True, disabled=True)
-migrate_spaces = st.toggle(
-    "Migrate Spaces (includes descriptions, logos, membership, admins)",
-    value=True,
-    disabled=True
-)
+migrate_users = st.toggle("Users", value=True, disabled=True)
+migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
 
 # Spacer
 st.markdown("---")
@@ -960,17 +955,16 @@ st.markdown("---")
 # ============================================================
 # 👥 User activity on Workvivo
 # ============================================================
-st.markdown("## 👥 User activity on Workvivo")
+st.markdown("##User activity on Workvivo")
 
 st.markdown("""
-Information and activity from different features of Workvivo, such as posts created,
-spaces joined and more. This information will be grouped and associated with individual users.
-Relevant information such as posts, groups, surveys and comments will be used for integrations.
+Information and activity across key Workvivo features such as posts, comments, likes, and interactions within spaces will be collected and mapped to the correct users.
+This ensures user activity, engagement data, and content history are accurately carried over for reporting and integrations
 """)
 
-migrate_updates = st.toggle("Migrate Updates (Posts)", value=True)
-migrate_comments = st.toggle("Migrate Comments", value=True)
-migrate_likes = st.toggle("Migrate Likes", value=True)
+migrate_updates = st.toggle("Updates)", value=True)
+migrate_comments = st.toggle("Comments", value=True)
+migrate_likes = st.toggle("Likes", value=True)
 
 # ============================================================
 # RUN EVERYTHING AT ONCE
