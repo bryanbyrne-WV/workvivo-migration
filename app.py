@@ -850,27 +850,6 @@ if "phase1_show_console" not in st.session_state:
 if "start_phase_1" not in st.session_state:
     st.session_state.start_phase_1 = False
 
-
-# =========================================================
-# 🚦 MIGRATION SECTION
-# =========================================================
-st.markdown("<div id='_migration'></div>", unsafe_allow_html=True)
-st.header("🚦 Run Migration")
-
-# Disable whole panel while migrating
-disabled = st.session_state.phase1_running
-
-phase = st.selectbox(
-    "Choose migration phase",
-    [
-        "Phase 1 – Users, Avatars, Spaces, Memberships",
-        "Phase 2 – Updates, Comments, Likes",
-        "Phase 3 – Articles, Kudos, Events"
-    ],
-    index=0,
-    disabled=disabled
-)
-
 # ============================================================
 # 🚀 PHASE 1 UI
 # ============================================================
