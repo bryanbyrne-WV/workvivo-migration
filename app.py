@@ -891,20 +891,28 @@ if phase.startswith("Phase 1"):
         disabled=disabled
     )
 
-    # ------------------------
-    # RUN BUTTON (visible when NOT running)
-    # ------------------------
-    if not st.session_state.phase1_running:
-        if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
+# ------------------------
+# RUN BUTTON (visible when NOT running)
+# ------------------------
+if not st.session_state.phase1_running:
+    if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
 
-            st.session_state.phase1_running = True
-            st.session_state.phase1_cancel = False
-            st.session_state.phase1_trigger = True
-            st.session_state.phase1_console_visible = True
+        st.session_state.phase1_running = True
+        st.session_state.phase1_cancel = False
+        st.session_state.phase1_trigger = True
+        st.session_state.phase1_console_visible = True
 
-            st.session_state["log_output"] = ""  # reset logs
-            st.rerun()
+        st.session_state["log_output"] = ""  # reset logs
+        st.rerun()
 
+# ------------------------
+# CANCEL BUTTON (visible when running)
+# ------------------------
+if st.session_state.phase1_running:
+    st.warning("Phase 1 migration is running…")
+    if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
+        st.session_state.phase1_cancel = True
+        cancel_migration()
 
 
 # ---------------------------------------------------------
@@ -924,18 +932,6 @@ if st.session_state.phase1_trigger:
     st.session_state.phase1_cancel = False
 
     st.rerun()
-
-
-# ---------------------------------------------------------
-# CANCEL BUTTON (VISIBLE WHILE RUNNING)
-# ---------------------------------------------------------
-if st.session_state.phase1_running:
-    st.warning("Phase 1 migration is running…")
-    if st.button("❌ Cancel Migration", key="btn_phase1_cancel"):
-        st.session_state.phase1_cancel = True
-        cancel_migration()
-
-
 
 # =========================================================
 # 📜 LIVE LOG OUTPUT — appears ONLY during/after Phase 1
