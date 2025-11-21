@@ -374,10 +374,20 @@ def ui_log(message):
     ts = datetime.utcnow().strftime("%H:%M:%S")
     line = f"[{ts}] {message}"
 
+    # Append to session buffer
     if "log_output" not in st.session_state:
         st.session_state["log_output"] = ""
 
     st.session_state["log_output"] += line + "\n"
+
+    # Real-time UI update (only if placeholder exists)
+    if "live_log_placeholder" in st.session_state:
+        st.session_state.live_log_placeholder.text_area(
+            "📡 Live Console Output",
+            st.session_state["log_output"],
+            height=400,
+            disabled=True
+        )
 
 
 
@@ -923,18 +933,26 @@ if phase.startswith("Phase 1"):
 
         st.rerun()
 
+# Create an empty log placeholder BEFORE migration starts
+if "live_log_placeholder" not in st.session_state:
+    st.session_state.live_log_placeholder = st.empty()
+
 # =========================================================
-# 📜 SHOW LOG OUTPUT ONLY WHEN RUNNING OR COMPLETED
+# 📜 LIVE LOG OUTPUT — appears ONLY during/after Phase 1
 # =========================================================
 if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
-    
-    st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-    st.header("🖥️ Migration Log")
 
-    st.text_area(
-        "Console Output",
-        value=st.session_state.get("log_output", ""),
-        height=450,
+    st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
+    st.header("🖥️ Migration Console")
+
+    # Ensure placeholder exists
+    if "live_log_placeholder" not in st.session_state:
+        st.session_state.live_log_placeholder = st.empty()
+
+    st.session_state.live_log_placeholder.text_area(
+        "📡 Live Console Output",
+        st.session_state.get("log_output", ""),
+        height=400,
         disabled=True
     )
 
