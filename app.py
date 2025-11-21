@@ -820,18 +820,10 @@ def check_cancel():
 # =========================================================
 st.header("🚦 Run Migration")
 
-# 🔒 Disable all migration inputs while running
+# 🔒 Disable all UI during migration
 disabled = st.session_state.phase_running
 
 phase = st.selectbox(
-    "Choose migration phase",
-    ["Phase 1 – Users, Avatars, Spaces, Memberships",
-     "Phase 2 – Updates, Comments, Likes",
-     "Phase 3 – Articles, Kudos, Events"],
-    index=0,
-    disabled=disabled   # 🔒 Locks the phase selector too
-)
-
     "Choose migration phase",
     [
         "Phase 1 – Users, Avatars, Spaces, Memberships",
@@ -839,9 +831,12 @@ phase = st.selectbox(
         "Phase 3 – Articles, Kudos, Events"
     ],
     index=0,
-    disabled=st.session_state.phase_running
+    disabled=disabled
 )
 
+# -------------------------------
+# Phase 1
+# -------------------------------
 if phase.startswith("Phase 1"):
 
     st.subheader("Phase 1 Options")
@@ -860,13 +855,13 @@ if phase.startswith("Phase 1"):
         disabled=disabled
     )
 
-    # RUN BUTTON
+    # Run Phase 1
     if st.button("▶ Run Phase 1 Now", disabled=disabled):
         st.session_state.phase_running = True
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
         run_phase_1(company, active_only)
 
-    # CANCEL BUTTON (only visible while running)
+    # Cancel button (only while running)
     if st.session_state.phase_running:
         if st.button("❌ Cancel Migration"):
             cancel_migration()
