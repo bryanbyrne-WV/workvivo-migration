@@ -822,22 +822,13 @@ st.header("🚦 Run Migration")
 
 phase = st.selectbox(
     "Choose migration phase",
-    ["Phase 1 – Users, Avatars, Spaces, Memberships",
-     "Phase 2 – Updates, Comments, Likes",
-     "Phase 3 – Articles, Kudos, Events"],
+    [
+        "Phase 1 – Users, Avatars, Spaces, Memberships",
+        "Phase 2 – Updates, Comments, Likes",
+        "Phase 3 – Articles, Kudos, Events"
+    ],
     index=0,
-company = st.text_input(
-    "Company Name for Global Space",
-    value="My Company",
-    key="phase1_company",
-    disabled=disabled
-)
-
-active_only = st.checkbox(
-    "Migrate ONLY active users",
-    value=True,
-    key="phase1_active_only",
-    disabled=disabled
+    disabled=st.session_state.phase_running
 )
 
 if phase.startswith("Phase 1"):
