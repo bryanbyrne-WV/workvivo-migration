@@ -175,10 +175,31 @@ advanced_styles = f"""
 
 st.markdown(advanced_styles, unsafe_allow_html=True)
 
-# Render Header
 st.markdown("""
-<div class="header-bar">
-    <div class="header-title">Workvivo Migration Tool</div>
+<style>
+.glass-header {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(98,3,237,0.3);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.25);
+    text-align: center;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    margin-bottom: 25px;
+}
+
+.glass-header-title {
+    font-size: 48px;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0px 2px 8px rgba(0,0,0,0.45);
+    letter-spacing: -0.5px;
+}
+</style>
+
+<div class="glass-header">
+    <div class="glass-header-title">🚀 Workvivo Migration Tool</div>
 </div>
 """, unsafe_allow_html=True)
 
