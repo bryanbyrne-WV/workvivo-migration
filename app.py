@@ -207,84 +207,60 @@ if "config_saved" not in st.session_state:
 with st.form("config_form"):
     st.header("🔐 Environment Configuration")
 
-    # -----------------------------
-    # SOURCE ENVIRONMENT (Collapsible)
-    # -----------------------------
-    with st.expander("📥 Source Environment Settings", expanded=True):
+    st.subheader("Source Environment")
+    SOURCE_SCIM_URL = st.text_input(
+        "Source SCIM URL",
+        value="https://migration-testing.workvivo.com/scim/v2/scim/Users/"
+    )
+    SOURCE_API_URL = st.text_input(
+        "Source API URL",
+        value="https://api.eu2.workvivo.com/v1"
+    )
+    SOURCE_SCIM_TOKEN = st.text_input(
+        "Source SCIM Token",
+        value="nt4JalDlDMnpW8UyfYZf1qoRod2gJSHPvAknQtiB",
+        type="password"
+    )
+    SOURCE_API_TOKEN = st.text_input(
+        "Source API Token",
+        value="1009|c2ef4508f6e33c707ab6f5cc83a63d7128f3b346",
+        type="password"
+    )
+    SOURCE_WORKVIVO_ID = st.text_input(
+        "Source Workvivo-ID",
+        value="3000380"
+    )
 
-        SOURCE_SCIM_URL = st.text_input(
-            "Source SCIM URL",
-            value="https://migration-testing.workvivo.com/scim/v2/scim/Users/"
-        )
-        SOURCE_API_URL = st.text_input(
-            "Source API URL",
-            value="https://api.eu2.workvivo.com/v1"
-        )
-        SOURCE_SCIM_TOKEN = st.text_input(
-            "Source SCIM Token",
-            value="nt4JalDlDMnpW8UyfYZf1qoRod2gJSHPvAknQtiB",
-            type="password"
-        )
-        SOURCE_API_TOKEN = st.text_input(
-            "Source API Token",
-            value="1009|c2ef4508f6e33c707ab6f5cc83a63d7128f3b346",
-            type="password"
-        )
-        SOURCE_WORKVIVO_ID = st.text_input(
-            "Source Workvivo-ID",
-            value="3000380"
-        )
+    st.subheader("Target Environment")
+    TARGET_SCIM_URL = st.text_input(
+        "Target SCIM URL",
+        value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
+    )
+    TARGET_API_URL = st.text_input(
+        "Target API URL",
+        value="https://api.eu2.workvivo.com/v1"
+    )
+    TARGET_SCIM_TOKEN = st.text_input(
+        "Target SCIM Token",
+        value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
+        type="password"
+    )
+    TARGET_API_TOKEN = st.text_input(
+        "Target API Token",
+        value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
+        type="password"
+    )
+    TARGET_WORKVIVO_ID = st.text_input(
+        "Target Workvivo-ID",
+        value="3000384"
+    )
 
-    # -----------------------------
-    # TARGET ENVIRONMENT (Collapsible)
-    # -----------------------------
-    with st.expander("📤 Target Environment Settings", expanded=True):
-
-        TARGET_SCIM_URL = st.text_input(
-            "Target SCIM URL",
-            value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
-        )
-        TARGET_API_URL = st.text_input(
-            "Target API URL",
-            value="https://api.eu2.workvivo.com/v1"
-        )
-        TARGET_SCIM_TOKEN = st.text_input(
-            "Target SCIM Token",
-            value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
-            type="password"
-        )
-        TARGET_API_TOKEN = st.text_input(
-            "Target API Token",
-            value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
-            type="password"
-        )
-        TARGET_WORKVIVO_ID = st.text_input(
-            "Target Workvivo-ID",
-            value="3000384"
-        )
-
-    # -----------------------------
-    # MIGRATION USER
-    # -----------------------------
-    with st.expander("👤 Migration User Settings", expanded=False):
-        SPACE_CREATOR_EXTERNAL_ID = st.text_input(
-            "Migration External ID (Space Creator)",
-            value="workvivo-migration-user"
-        )
+    SPACE_CREATOR_EXTERNAL_ID = st.text_input(
+        "Migration External ID (Space Creator)",
+        value="workvivo-migration-user"
+    )
 
     submitted = st.form_submit_button("Save Configuration")
-
-    # -----------------------------
-    # MIGRATION USER
-    # -----------------------------
-    with st.expander("👤 Migration User Settings", expanded=False):
-        SPACE_CREATOR_EXTERNAL_ID = st.text_input(
-            "Migration External ID (Space Creator)",
-            value="workvivo-migration-user"
-        )
-
-    submitted = st.form_submit_button("Save Configuration")
-
 
 
     # ---------------------------
