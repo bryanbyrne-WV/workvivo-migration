@@ -936,7 +936,6 @@ def check_cancel():
         unlock_ui()
         raise Exception("Migration Cancelled")
 
-
 # ============================================================
 # 🏢 Organisation settings and information
 # ============================================================
@@ -947,30 +946,16 @@ This section migrates core organisational structure in Workvivo, including users
 and all related metadata such as space descriptions, logos, and memberships.
 """)
 
-migrate_users = st.toggle("Migrate Users", value=True)
-migrate_spaces = st.toggle("Migrate Spaces (includes descriptions, logos, membership, admins)", value=True)
-
-if st.button("▶ Run Organisation Migration"):
-    ui_log("🚀 Starting Organisation Migration...")
-
-    if migrate_users:
-        ui_log("• Migrating users...")
-        migrate_users_func = migrate_users  # alias
-        migrate_users_func(st.session_state.phase1_active_only)
-
-    if migrate_spaces:
-        ui_log("• Migrating spaces...")
-        migrate_spaces()
-        ui_log("• Migrating memberships...")
-        migrate_memberships()
-
-    ui_log("🎉 Organisation Migration Complete!")
-    st.success("Organisation migration completed.")
-
+# Users + Spaces always ON (disabled toggles)
+migrate_users = st.toggle("Migrate Users", value=True, disabled=True)
+migrate_spaces = st.toggle(
+    "Migrate Spaces (includes descriptions, logos, membership, admins)",
+    value=True,
+    disabled=True
+)
 
 # Spacer
 st.markdown("---")
-
 
 # ============================================================
 # 👥 User activity on Workvivo
@@ -987,9 +972,24 @@ migrate_updates = st.toggle("Migrate Updates (Posts)", value=True)
 migrate_comments = st.toggle("Migrate Comments", value=True)
 migrate_likes = st.toggle("Migrate Likes", value=True)
 
-if st.button("▶ Run User Activity Migration"):
-    ui_log("🚀 Starting User Activity Migration...")
+# ============================================================
+# RUN EVERYTHING AT ONCE
+# ============================================================
+if st.button("▶ Run Migration"):
 
+    ui_log("🚀 Starting Migration...")
+
+    # ---- ALWAYS RUN (Users + Spaces) ----
+    ui_log("• Migrating users...")
+    migrate_users_func = migrate_users     # alias to avoid naming conflict
+    migrate_users_func(st.session_state.phase1_active_only)
+
+    ui_log("• Migrating spaces...")
+    migrate_spaces()
+    ui_log("• Migrating memberships...")
+    migrate_memberships()
+
+    # ---- Optional Activity Migration ----
     if migrate_updates:
         ui_log("• Migrating updates...")
         # migrate_updates()
@@ -1002,9 +1002,8 @@ if st.button("▶ Run User Activity Migration"):
         ui_log("• Migrating likes...")
         # migrate_likes()
 
-    ui_log("🎉 User Activity Migration Complete!")
-    st.success("User activity migration completed.")
-
+    ui_log("🎉 Migration Complete!")
+    st.success("All selected migration tasks have completed.")
 
 # ============================================================
 # 🔧 PHASE 1 — STATE INITIALIZATION
