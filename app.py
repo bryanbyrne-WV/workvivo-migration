@@ -244,59 +244,100 @@ if "config_saved" not in st.session_state:
         </style>
         """, unsafe_allow_html=True)
 
-        # ----------------------------------------------------
-        # SOURCE ENVIRONMENT (Collapsible)
-        # ----------------------------------------------------
-        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-        with st.expander("Source Environment", expanded=True):
+# ----------------------------------------------------
+# SOURCE ENVIRONMENT (Collapsible) — With Validation & Dropdown
+# ----------------------------------------------------
+st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+with st.expander("Source Environment", expanded=True):
 
-            SOURCE_SCIM_URL = st.text_input(
-                "Source SCIM URL",
-                value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
-            )
-            SOURCE_API_URL = st.text_input(
-                "Source API URL",
-                value="https://api.workvivo.com/v1"
-            )
-            SOURCE_SCIM_TOKEN = st.text_input(
-                "Source SCIM Token",
-                value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
-                type="password"
-            )
-            SOURCE_API_TOKEN = st.text_input(
-                "Source API Token",
-                value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
-                type="password"
-            )
-            SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-ID", value="50")
-        st.markdown("</div>", unsafe_allow_html=True)
+    # -------- SCIM URL --------
+    SOURCE_SCIM_URL = st.text_input(
+        "Source SCIM URL",
+        value="https://workvivo.workvivo.com/scim/v2/scim/Users/"
+    )
 
-        # ----------------------------------------------------
-        # TARGET ENVIRONMENT (Collapsible)
-        # ----------------------------------------------------
-        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-        with st.expander("Target Environment", expanded=True):
+    # Validate format
+    if SOURCE_SCIM_URL and not SOURCE_SCIM_URL.endswith("/scim/v2/scim/Users/"):
+        st.warning("⚠️ Source SCIM URL must end with `/scim/v2/scim/Users/`")
 
-            TARGET_SCIM_URL = st.text_input(
-                "Target SCIM URL",
-                value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
-            )
-            TARGET_API_URL = st.text_input(
-                "Target API URL",
-                value="https://api.eu2.workvivo.com/v1"
-            )
-            TARGET_SCIM_TOKEN = st.text_input(
-                "Target SCIM Token",
-                value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
-                type="password"
-            )
-            TARGET_API_TOKEN = st.text_input(
-                "Target API Token",
-                value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
-                type="password"
-            )
-            TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="3000384")
-        st.markdown("</div>", unsafe_allow_html=True)
+    # -------- API REGION DROPDOWN --------
+    source_api_choices = {
+        "EU1  – api.workvivo.com": "https://api.workvivo.com/v1",
+        "EU2  – api.eu2.workvivo.com": "https://api.eu2.workvivo.com/v1",
+        "US1  – api.workvivo.us": "https://api.workvivo.us/v1",
+        "US2  – api.us2.workvivo.us": "https://api.us2.workvivo.us/v1",
+    }
+
+    selected_source_label = st.selectbox(
+        "Source API URL (Region)",
+        list(source_api_choices.keys()),
+    )
+
+    SOURCE_API_URL = source_api_choices[selected_source_label]
+
+    # Display read-only final API URL
+    st.text_input("Final Source API URL", SOURCE_API_URL, disabled=True)
+
+    # -------- TOKENS & WORKVIVO-ID --------
+    SOURCE_SCIM_TOKEN = st.text_input(
+        "Source SCIM Token",
+        value="",
+        type="password"
+    )
+    SOURCE_API_TOKEN = st.text_input(
+        "Source API Token",
+        value="",
+        type="password"
+    )
+    SOURCE_WORKVIVO_ID = st.text_input("Source Workvivo-ID", value="")
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+
+# ----------------------------------------------------
+# TARGET ENVIRONMENT (Collapsible)
+# ----------------------------------------------------
+st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+with st.expander("Target Environment", expanded=True):
+
+    TARGET_SCIM_URL = st.text_input(
+        "Target SCIM URL",
+        value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/"
+    )
+
+    # --- Validate SCIM URL format ---
+    if TARGET_SCIM_URL and not TARGET_SCIM_URL.endswith("/scim/v2/scim/Users/"):
+        st.warning("⚠️ Target SCIM URL must end with `/scim/v2/scim/Users/`")
+
+    # --- Target API endpoint dropdown ---
+    api_choices = {
+        "EU1  – api.workvivo.com": "https://api.workvivo.com/v1",
+        "EU2  – api.eu2.workvivo.com": "https://api.eu2.workvivo.com/v1",
+        "US1  – api.workvivo.us": "https://api.workvivo.us/v1",
+        "US2  – api.us2.workvivo.us": "https://api.us2.workvivo.us/v1",
+    }
+
+    selected_api_label = st.selectbox(
+        "Target API URL (Region)",
+        list(api_choices.keys()),
+    )
+
+    TARGET_API_URL = api_choices[selected_api_label]
+
+    st.text_input("Final Target API URL", TARGET_API_URL, disabled=True)
+
+    TARGET_SCIM_TOKEN = st.text_input(
+        "Target SCIM Token",
+        value="",
+        type="password"
+    )
+    TARGET_API_TOKEN = st.text_input(
+        "Target API Token",
+        value="",
+        type="password"
+    )
+    TARGET_WORKVIVO_ID = st.text_input("Target Workvivo-ID", value="")
+st.markdown("</div>", unsafe_allow_html=True)
 
         # ----------------------------------------------------
         # MIGRATION USER (Single small card)
