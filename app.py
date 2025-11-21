@@ -779,20 +779,21 @@ if phase.startswith("Phase 1"):
 
     st.subheader("Phase 1 Options")
 
-    company = st.text_input("Company Name for Global Space", value="My Company")
-    active_only = st.checkbox("Migrate ONLY active users", value=True)
+    company = st.text_input(
+        "Company Name for Global Space",
+        value="My Company",
+        key="phase1_company"
+    )
 
-if phase.startswith("Phase 1"):
+    active_only = st.checkbox(
+        "Migrate ONLY active users",
+        value=True,
+        key="phase1_active_only"
+    )
 
-    st.subheader("Phase 1 Options")
-
-    company = st.text_input("Company Name for Global Space", value="My Company")
-    active_only = st.checkbox("Migrate ONLY active users", value=True)
-
-    if st.button("▶ Run Phase 1 Now"):
+    if st.button("▶ Run Phase 1 Now", key="run_phase1_button"):
         st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
         run_phase_1(company, active_only)
-
 
 elif phase.startswith("Phase 2"):
     if st.button("▶ Run Phase 2"):
