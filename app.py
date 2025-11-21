@@ -839,7 +839,6 @@ active_only = st.checkbox(
     key="phase1_active_only",
     disabled=disabled
 )
-)
 
 if phase.startswith("Phase 1"):
 
