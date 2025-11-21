@@ -379,14 +379,6 @@ def ui_log(message):
 
     st.session_state["log_output"] += line + "\n"
 
-    # Only try to update placeholder if it exists
-    if st.session_state.console_placeholder is not None:
-        st.session_state.console_placeholder.text_area(
-            "📡 Live Console Output",
-            st.session_state["log_output"],
-            height=400,
-            disabled=True
-        )
 
 # =========================================================
 # HELPER: Fetch users
