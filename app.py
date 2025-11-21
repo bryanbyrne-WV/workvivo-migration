@@ -871,15 +871,18 @@ if phase.startswith("Phase 1"):
         disabled=disabled
     )
 
-    # --------------------------------------------------------
-    # RUN BUTTON (only shown when not running)
-    # --------------------------------------------------------
+# ============================
+# RUN BUTTON — triggers lock
+# ============================
+if not st.session_state.phase_running:
+    # Only visible when not running
     if st.button("▶ Run Phase 1 Now"):
-    st.session_state.phase_running = True
-    st.session_state.cancel_requested = False
-    st.session_state.phase1_started = True   # <-- ADD THIS
-    st.session_state.start_phase_1 = True
-    st.rerun()
+        st.session_state.phase_running = True
+        st.session_state.cancel_requested = False
+        st.session_state.phase1_started = True      # <-- ADD THIS
+        st.session_state.start_phase_1 = True        # Trigger actual run in next cycle
+        st.rerun()
+
 
     # --------------------------------------------------------
     # CANCEL BUTTON (shown only while running)
