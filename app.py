@@ -194,8 +194,12 @@ st.markdown(advanced_styles, unsafe_allow_html=True)
 # Render Header
 st.markdown(f"""
 <div class="header-bar">
-    <img src="{WORKVIVO_LOGO}" class="header-logo">
-    <div class="header-title">Workvivo Migration Tool</div>
+    st.markdown("""
+<div class="header-bar">
+    <div class="header-title">🚀 Workvivo Migration Tool</div>
+</div>
+""", unsafe_allow_html=True)
+
 </div>
 """, unsafe_allow_html=True)
 
