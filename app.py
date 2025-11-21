@@ -907,35 +907,47 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Default selected
+# ============================================================
+# PHASE SELECTOR (Card Style — Exclusive Selection)
+# ============================================================
+
+st.markdown("""
+### Select Migration Phase
+Choose which migration phase to run.
+""")
+
+col1, col2 = st.columns(2)
+
+# Ensure phase is stored
 if "phase" not in st.session_state:
     st.session_state.phase = "Phase 1 – Users & Spaces"
 
-phase_col1, phase_col2 = st.columns(2)
-
-with phase_col1:
-    if st.button("", key="phase1_card"):
+# --- PHASE 1 CARD ---
+with col1:
+    phase1_clicked = st.button(
+        "Phase 1 – Users & Spaces",
+        key="phase1_card",
+        help="Run user, avatar, space, and membership migration",
+        type="primary" if st.session_state.phase.startswith("Phase 1") else "secondary",
+        use_container_width=True
+    )
+    if phase1_clicked:
         st.session_state.phase = "Phase 1 – Users & Spaces"
+        st.rerun()
 
-    st.markdown(f"""
-    <div class="phase-card {'selected' if st.session_state.phase.startswith('Phase 1') else ''}">
-        <div class="phase-title">Phase 1</div>
-        <div class="phase-subtitle">Users & Spaces</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with phase_col2:
-    if st.button("", key="phase2_card"):
+# --- PHASE 2 CARD ---
+with col2:
+    phase2_clicked = st.button(
+        "Phase 2 – Content",
+        key="phase2_card",
+        help="Run updates, comments, likes, etc.",
+        type="primary" if st.session_state.phase.startswith("Phase 2") else "secondary",
+        use_container_width=True
+    )
+    if phase2_clicked:
         st.session_state.phase = "Phase 2 – Content"
+        st.rerun()
 
-    st.markdown(f"""
-    <div class="phase-card {'selected' if st.session_state.phase.startswith('Phase 2') else ''}">
-        <div class="phase-title">Phase 2</div>
-        <div class="phase-subtitle">Content Migration</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Provide variable for rest of app
 phase = st.session_state.phase
 
 
