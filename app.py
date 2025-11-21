@@ -257,26 +257,30 @@ if "config_saved" not in st.session_state:
         submitted = st.form_submit_button("Save Configuration")
 
     if submitted:
-        # Save everything into session state
-        st.session_state["config_saved"] = True
-        st.session_state["SOURCE_SCIM_URL"] = SOURCE_SCIM_URL
-        st.session_state["SOURCE_API_URL"] = SOURCE_API_URL
-        st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
-        st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
-        st.session_state["SOURCE_WORKVIVO_ID"] = SOURCE_WORKVIVO_ID
+    st.session_state["config_saved"] = True
 
-        st.session_state["TARGET_SCIM_URL"] = TARGET_SCIM_URL
-        st.session_state["TARGET_API_URL"] = TARGET_API_URL
-        st.session_state["TARGET_SCIM_TOKEN"] = TARGET_SCIM_TOKEN
-        st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
-        st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
+    # Save all fields into session
+    st.session_state["SOURCE_SCIM_URL"] = SOURCE_SCIM_URL
+    st.session_state["SOURCE_API_URL"] = SOURCE_API_URL
+    st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
+    st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
+    st.session_state["SOURCE_WORKVIVO_ID"] = SOURCE_WORKVIVO_ID
 
-        st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
+    st.session_state["TARGET_SCIM_URL"] = TARGET_SCIM_URL
+    st.session_state["TARGET_API_URL"] = TARGET_API_URL
+    st.session_state["TARGET_SCIM_TOKEN"] = TARGET_SCIM_TOKEN
+    st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
+    st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
 
-        st.success("✅ Configuration saved! You can now run migrations.")
-        st.stop()
+    st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
 
-    st.stop()  # prevent loading rest of the app UNTIL config is saved
+    st.success("✅ Configuration saved! You can now run migrations.")
+
+    # 👉 Show NEXT button instead of forcing rerun
+    if st.button("➡️ Next"):
+        st.rerun()
+
+    st.stop()
 
 # =========================================================
 # CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
@@ -790,10 +794,10 @@ def lock_ui_for_phase():
 
 
 def unlock_ui():
-    """Unlock UI when migration finishes or cancels."""
-    st.session_state.phase_running = False
+    st.session_state.phase1_running = False
     st.session_state.cancel_requested = False
     ui_log("🔓 UI unlocked — migration stopped.")
+
 
 
 def cancel_migration():
@@ -897,17 +901,19 @@ if phase.startswith("Phase 1"):
     # ------------------------
     if st.session_state.phase1_trigger:
 
-        st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
+    # Show logs while Phase 1 is running
+    st.markdown("<div class='loading'></div>", unsafe_allow_html=True)
 
-        # Run full migration
-        run_phase_1(company, active_only)
+    run_phase_1(company, active_only)
 
-        # Reset flags after completion
-        st.session_state.phase1_trigger = False
-        st.session_state.phase1_running = False
-        st.session_state.phase1_cancel = False
+    # ❌ DO NOT RESET phase1_running HERE
+    # Phase 1 is still running during the rerun, allow cancel button to appear
 
-        st.rerun()
+    st.session_state.phase1_trigger = False  
+
+    st.rerun()
+
+
 
     # ------------------------
     # CANCEL BUTTON (visible when running)
