@@ -202,9 +202,6 @@ st.markdown("""
 with st.sidebar:
     st.image(WORKVIVO_LOGO_URL, use_column_width=True)
 
-
-    st.markdown("""<div class="sidebar-title">Navigation</div>""", unsafe_allow_html=True)
-
     st.markdown(
         """<a class="sidebar-link" href="#_config">⚙️ Configuration</a>""",
         unsafe_allow_html=True
