@@ -376,18 +376,17 @@ def ui_log(message):
     ts = datetime.utcnow().strftime("%H:%M:%S")
     line = f"[{ts}] {message}"
 
-    # append to session log
     if "log_output" not in st.session_state:
         st.session_state["log_output"] = ""
 
     st.session_state["log_output"] += line + "\n"
 
-    # 🔥 LIVE UPDATE CONSOLE every log
+    # Update live console ONLY if Phase 1 is running
     if st.session_state.get("phase1_running", False):
         st.session_state.console_placeholder.text_area(
-            "Live Console Output",
+            "📡 Live Console Output",
             st.session_state["log_output"],
-            height=350,
+            height=400,
             disabled=True
         )
 
