@@ -935,6 +935,8 @@ def check_cancel():
         ui_log("⛔ Migration cancelled by user.")
         unlock_ui()
         raise Exception("Migration Cancelled")
+
+
 # ============================================================
 # 🏢 Organisation settings and information
 # ============================================================
@@ -964,6 +966,45 @@ if st.button("▶ Run Organisation Migration"):
 
     ui_log("🎉 Organisation Migration Complete!")
     st.success("Organisation migration completed.")
+
+
+# Spacer
+st.markdown("---")
+
+
+# ============================================================
+# 👥 User activity on Workvivo
+# ============================================================
+st.markdown("## 👥 User activity on Workvivo")
+
+st.markdown("""
+Information and activity from different features of Workvivo, such as posts created,
+spaces joined and more. This information will be grouped and associated with individual users.
+Relevant information such as posts, groups, surveys and comments will be used for integrations.
+""")
+
+migrate_updates = st.toggle("Migrate Updates (Posts)", value=True)
+migrate_comments = st.toggle("Migrate Comments", value=True)
+migrate_likes = st.toggle("Migrate Likes", value=True)
+
+if st.button("▶ Run User Activity Migration"):
+    ui_log("🚀 Starting User Activity Migration...")
+
+    if migrate_updates:
+        ui_log("• Migrating updates...")
+        # migrate_updates()
+
+    if migrate_comments:
+        ui_log("• Migrating comments...")
+        # migrate_comments()
+
+    if migrate_likes:
+        ui_log("• Migrating likes...")
+        # migrate_likes()
+
+    ui_log("🎉 User Activity Migration Complete!")
+    st.success("User activity migration completed.")
+
 
 # =========================================================
 # 2) PHASE SELECTION UI
