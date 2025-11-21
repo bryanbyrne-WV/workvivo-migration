@@ -973,6 +973,7 @@ elif phase.startswith("Phase 2"):
         if st.button("❌ Cancel Migration"):
             cancel_migration()
 
+
 # =========================================================
 # 📜 LIVE LOG CONSOLE — Single collapsible, real-time console
 # =========================================================
@@ -980,20 +981,21 @@ elif phase.startswith("Phase 2"):
 st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
 st.header("🖥️ Migration Console")
 
-# Create the placeholder once
-if "console_placeholder" not in st.session_state:
-    st.session_state.console_placeholder = st.empty()
-
-# Show console only after Phase 1 started OR logs exist
+# Show console only after Phase 1 has started or logs exist
 if st.session_state.get("phase1_running", False) or st.session_state.get("log_output"):
+
     with st.expander("📡 View Live Console Output", expanded=False):
-        st.session_state.console_placeholder.text_area(
+
+        # Re-render the log output on every rerun
+        console_placeholder = st.empty()
+
+        console_placeholder.text_area(
             "📡 Live Console Output",
             st.session_state.get("log_output", ""),
             height=400,
             disabled=True
         )
+
 else:
     st.info("Console output will appear here once a migration starts.")
-
 
