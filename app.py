@@ -218,14 +218,6 @@ st.markdown("""
 }
 </style>
 
-
-<div class="cool-header">
-    <div class="cool-header-title">🚀 Workvivo Migration Tool</div>
-</div>
-""", unsafe_allow_html=True)
-
-
-
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
 # =========================================================
