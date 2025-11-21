@@ -202,7 +202,7 @@ with st.sidebar:
     st.markdown(
         f"""
         <div style="text-align:center; padding-bottom:15px;">
-            <img src="file://{WORKVIVO_LOGO}" style="width:150px; border-radius:8px;" />
+            <img src="file:///mnt/data/wv.png" style="width:150px; border-radius:8px;" />
         </div>
         """,
         unsafe_allow_html=True
