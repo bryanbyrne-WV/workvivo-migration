@@ -885,18 +885,21 @@ if phase.startswith("Phase 1"):
     )
 
     # --------------------------------------
-    # RUN BUTTON (only when NOT running)
-    # --------------------------------------
-    if not st.session_state.phase1_running:
+# RUN BUTTON (only when NOT running)
+# --------------------------------------
+if not st.session_state.phase1_running:
     if st.button("▶ Run Phase 1 Now", key="btn_phase1_run"):
+
+        # Lock UI + prepare flags
         st.session_state.phase1_running = True
         st.session_state.phase1_cancel = False
         st.session_state.phase1_trigger = True
-        
-        # 👇 SHOW console ONLY now
+
+        # 👇 Show console ONLY now
         st.session_state.phase1_console_visible = True
-        
+
         st.rerun()
+
 
     # --------------------------------------
     # CANCEL BUTTON (only when running)
