@@ -137,11 +137,6 @@ advanced_styles = f"""
         line-height: 1.4;
     }}
 
-    .stButton > button:hover {{
-        background-color: #4c02b5;
-        transform: translateY(-1px);
-    }}
-
     .stButton > button:active {{
         transform: scale(0.98);
     }}
