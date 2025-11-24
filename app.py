@@ -1243,12 +1243,28 @@ if st.session_state.page == "main":
 # ============================================================
 elif st.session_state.page == "running":
 
-    st.header("🚀 Migration In Progress")
+    # Title changes depending on state
+    if st.session_state.progress >= 100:
+        st.header("🎉 Migration Complete!")
+    elif st.session_state.cancel_requested:
+        st.header("⛔ Migration Cancelled")
+    else:
+        st.header("🚀 Migration In Progress")
 
-    # ⛔ Replace old back button
-    if st.button("🛑 Cancel Migration"):
-        st.session_state.cancel_requested = True
-        ui_log("🛑 Cancel requested by user…")
+    # BUTTON LOGIC
+    if st.session_state.progress < 100 and not st.session_state.cancel_requested:
+        # Migration still running -> show CANCEL
+        if st.button("🛑 Cancel Migration"):
+            st.session_state.cancel_requested = True
+            ui_log("🛑 Cancel requested by user…")
+            st.rerun()
+
+    else:
+        # Migration done or cancelled -> show FINISH
+        if st.button("✔ Finish"):
+            st.session_state.page = "main"
+            st.rerun()
+
 
     progress_bar = st.progress(st.session_state.progress)
 
