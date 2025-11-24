@@ -224,35 +224,6 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-st.markdown("""
-<style>
-
-/* Style ONLY the FINISH button */
-div.stButton > button[purpose="finish"] {
-    background-color: #28a745 !important;
-    color: white !important;
-    border: none !important;
-    padding: 12px 28px !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-    border-radius: 6px !important;
-    height: 48px !important;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.18);
-    transition: 0.2s;
-}
-
-div.stButton > button[purpose="finish"]:hover {
-    background-color: #1e7e34 !important;
-    transform: translateY(-1px);
-}
-
-div.stButton > button[purpose="finish"]:active {
-    transform: scale(0.97);
-}
-
-</style>
-""", unsafe_allow_html=True)
-
 
 st.markdown(advanced_styles, unsafe_allow_html=True)
 
@@ -1468,8 +1439,7 @@ elif st.session_state.page == "summary":
     st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
 
     st.markdown('<div class="green-finish">', unsafe_allow_html=True)
-        if st.markdown('<button purpose="finish">Finish</button>', unsafe_allow_html=True):
-            pass
+    if st.button("Finish", key="summary_finish_btn"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
