@@ -1294,9 +1294,9 @@ if st.session_state.page == "main":
     # -----------------------------------------------------------
     # Company Name Prompt (for Global Feed creation)
     # -----------------------------------------------------------
-    st.markdown("#### Company / Organisation Name")
+    st.markdown("#### Organisation Name")
     st.session_state.phase1_company = st.text_input(
-        "Enter the company name for the Global Feed",
+        "Enter the organisation name for the Global Feed",
         value=st.session_state.get("phase1_company", ""),
         placeholder="Example: Workvivo, Zoom, etc..."
     )
