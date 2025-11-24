@@ -516,6 +516,15 @@ if "config_saved" not in st.session_state:
 
     st.stop()
 
+# =========================================================
+# If config not saved, stay on config page
+# =========================================================
+if "config_saved" not in st.session_state:
+    st.session_state.page = "config"
+else:
+    if st.session_state.page == "config":
+        st.session_state.page = "main"
+
 
 # =========================================================
 # CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
