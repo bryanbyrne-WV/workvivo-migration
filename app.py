@@ -1212,179 +1212,37 @@ migrate_spacePages = st.toggle("Space Pages", value=True)
 
 
 # ============================================================
-# RUN EVERYTHING AT ONCE
+# RUN EVERYTHING AT ONCE (MAIN PAGE)
 # ============================================================
-if st.button("▶ Run Migration"):
-    st.session_state.page = "running"   # switch page
-    st.session_state.progress = 0       # reset progress
-    st.rerun()
+if st.session_state.page == "main":
 
-    ui_log("🚀 Starting Migration...")
+    if st.button("▶ Run Migration"):
+        st.session_state.page = "running"   # switch to progress page
+        st.session_state.progress = 0       # reset progress bar
+        st.session_state.start_migration = True  # tells the running page to execute real migration
+        st.rerun()
 
-    # ---- ALWAYS RUN (Users + Spaces) ----
-    ui_log("• Migrating users...")
-    migrate_users_func = migrate_users     # alias to avoid naming conflict
-    migrate_users_func(st.session_state.phase1_active_only)
-
-    ui_log("• Migrating spaces...")
-    migrate_spaces()
-    ui_log("• Migrating memberships...")
-    migrate_memberships()
-
-    # ---- Optional Activity Migration ----
-    if migrate_updates:
-        ui_log("• Migrating updates...")
-        # migrate_updates()
-
-    if migrate_comments:
-        ui_log("• Migrating comments...")
-        # migrate_comments()
-
-    if migrate_likes:
-        ui_log("• Migrating likes...")
-        # migrate_likes()
-
-    ui_log("🎉 Migration Complete!")
-    st.success("All selected migration tasks have completed.")
-# =========================================================
-# 📜 LIVE LOG OUTPUT — appears ONLY during/after Phase 1
-# =========================================================
-# Create an empty log placeholder BEFORE migration starts
-if "live_log_placeholder" not in st.session_state:
-    st.session_state.live_log_placeholder = st.empty()
-    
-if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
-
-    st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-    st.header("🖥️ Migration Console")
-
-    # Ensure placeholder exists
+    # =========================================================
+    # 📜 LIVE LOG OUTPUT — ONLY SHOW ON MAIN PAGE
+    # =========================================================
     if "live_log_placeholder" not in st.session_state:
         st.session_state.live_log_placeholder = st.empty()
+        
+    if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
 
-    st.session_state.live_log_placeholder.text_area(
-        "📡 Live Console Output",
-        st.session_state.get("log_output", ""),
-        height=400,
-        disabled=True
-    )
+        st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
+        st.header("🖥️ Migration Console")
 
-# -------------------------------
-# Phase 2 - RUN
-# -------------------------------
-elif phase.startswith("Phase 2"):
+        # Ensure placeholder exists
+        if "live_log_placeholder" not in st.session_state:
+            st.session_state.live_log_placeholder = st.empty()
 
-    st.subheader("Phase 2 – Migration Options")
-
-    disabled = st.session_state.phase_running
-
-    # --------------------------------------------------------
-    # DATE RANGE FILTER FOR PHASE 2
-    # --------------------------------------------------------
-    st.markdown("### 📅 Date Range")
-
-    date_options = [
-        "Last 6 months",
-        "Last 1 year",
-        "Last 2 years",
-        "Last 3 years",
-        "All time",
-        "Custom range",
-    ]
-
-    # Restore previous selection or default to 1 year
-    if "phase2_date_choice" not in st.session_state:
-        st.session_state.phase2_date_choice = "Last 1 year"
-
-    date_choice = st.selectbox(
-        "Select date range",
-        date_options,
-        index=date_options.index(st.session_state.phase2_date_choice),
-        key="phase2_date_choice",
-        disabled=disabled
-    )
-
-    # Compute date range
-    from datetime import datetime, timedelta
-
-    today = datetime.utcnow()
-    start_date = None
-    end_date = today
-
-    if date_choice == "Last 6 months":
-        start_date = today - timedelta(days=182)
-    elif date_choice == "Last 1 year":
-        start_date = today - timedelta(days=365)
-    elif date_choice == "Last 2 years":
-        start_date = today - timedelta(days=365 * 2)
-    elif date_choice == "Last 3 years":
-        start_date = today - timedelta(days=365 * 3)
-    elif date_choice == "All time":
-        start_date = None
-    elif date_choice == "Custom range":
-        st.markdown("#### Custom Range")
-        start_date = st.date_input("Start date", disabled=disabled)
-        end_date = st.date_input("End date", disabled=disabled)
-
-    # Store into session_state
-    st.session_state.phase2_start_date = start_date
-    st.session_state.phase2_end_date = end_date
-
-    # ---- Friendly date formatting ----
-    def fmt(d):
-        if d is None:
-            return "All time"
-        if hasattr(d, "strftime"):
-            return d.strftime("%b %d, %Y")
-        return str(d)
-
-    pretty_start = fmt(start_date)
-    pretty_end = fmt(end_date)
-
-    st.info(f"📌 Filtering content from **{pretty_start}** to **{pretty_end}**")
-
-    # --------------------------------------------------------
-    # CONTENT TYPE SELECTION
-    # --------------------------------------------------------
-    phase2_items = [
-        "Updates",
-        "Comments",
-        "Likes",
-        "Articles",
-        "Kudos",
-        "Events"
-    ]
-
-    if "phase2_selection" not in st.session_state:
-        st.session_state.phase2_selection = {
-            item: True for item in phase2_items
-        }
-
-    st.write("Select which content types to include:")
-
-    for item in phase2_items:
-        st.session_state.phase2_selection[item] = st.checkbox(
-            item,
-            value=st.session_state.phase2_selection[item],
-            key=f"phase2_{item}",
-            disabled=disabled
+        st.session_state.live_log_placeholder.text_area(
+            "📡 Live Console Output",
+            st.session_state.get("log_output", ""),
+            height=400,
+            disabled=True
         )
-
-    # RUN BUTTON
-    if not st.session_state.phase_running:
-        if st.button("▶ Run Phase 2"):
-            ui_log("📌 Phase 2 (Demo) triggered with:")
-            ui_log(f"   Date Range: {pretty_start} → {pretty_end}")
-            for item, enabled in st.session_state.phase2_selection.items():
-                if enabled:
-                    ui_log(f"   • {item}")
-            ui_log("⚠️ Phase 2 is demo-only. No data migrated.")
-
-    # CANCEL BUTTON
-    if st.session_state.phase_running:
-        st.warning("Migration is currently running…")
-        if st.button("❌ Cancel Migration"):
-            cancel_migration()
 
 
 # ============================================================
