@@ -138,29 +138,44 @@ summary {
     transform: translateY(-1px);
 }
 
-/* -------------------------------------------------------
-   PURPLE TOGGLE SWITCH
-------------------------------------------------------- */
+# ============================================================
+# WORKVIVO PURPLE TOGGLE SWITCH  (FIXED + SAFE)
+# ============================================================
+st.markdown("""
+<style>
+
+/* Toggle track (ON) */
 [data-testid="stSwitch"] .st-dl {
-    background-color: #d8c9ff !important;  /* ON Track */
+    background-color: #d8c9ff !important;
     border-color: #d8c9ff !important;
 }
+
+/* Toggle track (OFF) */
 [data-testid="stSwitch"][aria-checked="false"] .st-dl {
-    background-color: #cccccc !important; /* OFF Track */
+    background-color: #cccccc !important;
+    border-color: #cccccc !important;
 }
+
+/* Toggle knob (ON) */
 [data-testid="stSwitch"] .st-dm {
-    background-color: #6203ed !important; /* ON knob */
+    background-color: #6203ed !important;
 }
+
+/* Toggle knob (OFF) */
 [data-testid="stSwitch"][aria-checked="false"] .st-dm {
-    background-color: white !important;   /* OFF knob */
+    background-color: #ffffff !important;
     border: 1px solid #aaaaaa !important;
 }
+
+/* Rounded shapes + sizing */
 [data-testid="stSwitch"] .st-dl {
     height: 22px !important;
     border-radius: 20px !important;
 }
+
 [data-testid="stSwitch"] .st-dm {
-    height: 20px !important; width: 20px !important;
+    height: 20px !important;
+    width: 20px !important;
     border-radius: 20px !important;
 }
 
