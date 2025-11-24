@@ -1294,62 +1294,19 @@ elif st.session_state.page == "running":
         st.header("Migration In Progress...")
 
     # --------------------------------------------------------
-    # CANCEL vs FINISH BUTTON (Styled)
+    # CANCEL vs FINISH BUTTON
     # --------------------------------------------------------
-    
-    # --- Style for red Cancel button ---
-    st.markdown("""
-    <style>
-    .cancel-btn > button {
-        background-color: #e02424 !important;  /* Red */
-        color: white !important;
-        border: none !important;
-        padding: 10px 22px !important;
-        font-size: 16px !important;
-        font-weight: 600 !important;
-        border-radius: 6px !important;
-    }
-    .cancel-btn > button:hover {
-        background-color: #b91c1c !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # --- Style for green Finish button ---
-    st.markdown("""
-    <style>
-    .finish-btn > button {
-        background-color: #22c55e !important;  /* Green */
-        color: white !important;
-        border: none !important;
-        padding: 10px 22px !important;
-        font-size: 16px !important;
-        font-weight: 600 !important;
-        border-radius: 6px !important;
-    }
-    .finish-btn > button:hover {
-        background-color: #16a34a !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # --- Button logic ---
     if not st.session_state.get("migration_finished", False) and not st.session_state.cancel_requested:
-    
-        # Migration still running → show CANCEL
-        st.markdown('<div class="cancel-btn">', unsafe_allow_html=True)
+        # Migration is still running
         if st.button("🛑 Cancel Migration"):
             st.session_state.cancel_requested = True
             ui_log("🛑 Cancel requested by user…")
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-    
     else:
-        # Migration done or cancelled → show FINISH
-        st.markdown('<div class="finish-btn">', unsafe_allow_html=True)
+        # Migration complete or cancelled → show FINISH
         if st.button("✔ Finish"):
     
-            # Fully reset migration state
+            # Fully clear old migration state
             keys_to_clear = [
                 "progress",
                 "log_output",
@@ -1359,13 +1316,15 @@ elif st.session_state.page == "running":
                 "phase1_running",
                 "live_log_placeholder"
             ]
+    
             for k in keys_to_clear:
                 if k in st.session_state:
                     del st.session_state[k]
     
+            # Navigate back to main
             st.session_state.page = "main"
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+    
 
     # --------------------------------------------------------
     # PROGRESS BAR
