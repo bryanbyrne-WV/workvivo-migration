@@ -1239,56 +1239,64 @@ if st.session_state.page == "main":
 
 
 # ============================================================
-# MIGRATION PAGE
+# MIGRATION PAGE — FINAL WORKING VERSION
 # ============================================================
 elif st.session_state.page == "running":
 
-    # Determine header depending on state
-    if st.session_state.progress >= 100:
-        st.header("🎉 Migration Complete!")
+    # --------------------------------------------------------
+    # HEADER LOGIC
+    # --------------------------------------------------------
+    if st.session_state.get("migration_finished", False):
+        st.header("🎉 Migration Finished!")
+
     elif st.session_state.cancel_requested:
         st.header("⛔ Migration Cancelled")
+
     else:
         st.header("🚀 Migration In Progress")
 
-    # Handle buttons depending on migration state
-    if st.session_state.progress < 100 and not st.session_state.cancel_requested:
-        # Migration still running → show cancel
+    # --------------------------------------------------------
+    # CANCEL vs FINISH BUTTON
+    # --------------------------------------------------------
+    if not st.session_state.get("migration_finished", False) and not st.session_state.cancel_requested:
+        # Migration is still running
         if st.button("🛑 Cancel Migration"):
             st.session_state.cancel_requested = True
             ui_log("🛑 Cancel requested by user…")
             st.rerun()
     else:
-        # Migration finished or cancelled → show finish button
+        # Migration complete or cancelled
         if st.button("✔ Finish"):
             st.session_state.page = "main"
             st.rerun()
 
-    # Progress bar
+    # --------------------------------------------------------
+    # PROGRESS BAR
+    # --------------------------------------------------------
     progress_bar = st.progress(st.session_state.progress)
 
-    # ------------------------------
-    # Loading Animation ("Migrating…")
-    # ------------------------------
+    # --------------------------------------------------------
+    # LOADING ANIMATION (MIGRATING…)
+    # --------------------------------------------------------
     loading_placeholder = st.empty()
 
     def animate_loading():
         dots = ["", ".", "..", "..."]
         for d in dots:
-            # STOP animation if finished or cancelled
-            if st.session_state.progress >= 100 or st.session_state.cancel_requested:
+            # Stop animation if done or cancelled
+            if st.session_state.get("migration_finished", False) or st.session_state.cancel_requested:
                 loading_placeholder.empty()
                 return
             loading_placeholder.markdown(f"### ⏳ Migrating{d}")
             time.sleep(0.25)
-    # ------------------------------
 
     # --------------------------------------------------------
-    # Run migration ONLY ONCE when arriving on this page
+    # RUN MIGRATION (ONLY ON FIRST VISIT)
     # --------------------------------------------------------
     if st.session_state.get("start_migration", False):
 
-        st.session_state.start_migration = False  # prevent repeat runs
+        st.session_state.start_migration = False
+        st.session_state.migration_finished = False   # Reset finish flag
 
         ui_log("🚀 Starting migration...")
 
@@ -1301,29 +1309,34 @@ elif st.session_state.page == "running":
         total_steps = len(steps)
         pct = int(100 / total_steps)
 
+        # Run step-by-step
         for i, (label, fn) in enumerate(steps):
-            ui_log(label)
-        
-            # small animation while step runs
-            animate_loading()
-        
-            # run task
-            fn()
-        
-            # update bar
-            st.session_state.progress = (i + 1) * pct
-            progress_bar.progress(st.session_state.progress)
-        
-            # clear loading text
-            loading_placeholder.empty()
-        
-            # handle cancel
             if st.session_state.cancel_requested:
-                progress_bar.progress(0)
-                ui_log("🛑 Migration cancelled.")
                 break
 
+            ui_log(label)
+            animate_loading()  # visual animation
+            fn()  # actual migration work
 
-        st.session_state.progress = 100
-        progress_bar.progress(100)
-        ui_log("✅ Migration Complete!")
+            st.session_state.progress = (i + 1) * pct
+            progress_bar.progress(st.session_state.progress)
+
+        # FINISHED SUCCESSFULLY
+        if not st.session_state.cancel_requested:
+            st.session_state.progress = 100
+            progress_bar.progress(100)
+            ui_log("🎉 Migration Complete!")
+            st.session_state.migration_finished = True
+            st.rerun()
+
+    # --------------------------------------------------------
+    # SHOW CONSOLE OUTPUT
+    # --------------------------------------------------------
+    st.subheader("📡 Live Console Output")
+
+    st.text_area(
+        "Console",
+        st.session_state.get("log_output", ""),
+        height=400,
+        disabled=True
+    )
