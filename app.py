@@ -1171,7 +1171,7 @@ st.session_state.migration_end_date = end_date
 st.markdown("### Organisation settings and information")
 
 st.markdown("""
-This section migrates the core organisational setup in Workvivo including users, spaces, and all related details such as descriptions, logos, visibility settings, and memberships.
+The core organisational setup in Workvivo, which includes users, spaces, and all related details such as descriptions, logos, visibility settings, and memberships.
 """)
 
 # Users + Spaces always ON (disabled toggles)
@@ -1188,7 +1188,6 @@ st.markdown("### User activity on Workvivo")
 
 st.markdown("""
 Information and activity across key Workvivo features such as posts, comments, likes, and interactions within spaces will be collected and mapped to the correct users.
-This ensures user activity, engagement data, and content history are accurately carried over for reporting and integrations
 """)
 
 migrate_updates = st.toggle("Updates)", value=True)
