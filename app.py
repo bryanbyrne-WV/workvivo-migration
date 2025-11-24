@@ -1468,7 +1468,7 @@ elif st.session_state.page == "summary":
     st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
 
     st.markdown('<div class="green-finish">', unsafe_allow_html=True)
-    if st.markdown('<button purpose="finish">Finish</button>', unsafe_allow_html=True):
+        if st.markdown('<button purpose="finish">Finish</button>', unsafe_allow_html=True):
             pass
         for key in list(st.session_state.keys()):
             del st.session_state[key]
