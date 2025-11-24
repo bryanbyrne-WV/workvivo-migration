@@ -225,6 +225,35 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+
+div[data-testid="stButton"][key="summary_finish_btn"] > button {
+    background-color: #28a745 !important; /* Green */
+    color: white !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    height: 48px !important;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.18);
+    transition: 0.2s;
+}
+
+div[data-testid="stButton"][key="summary_finish_btn"] > button:hover {
+    background-color: #1e7e34 !important; /* Darker green */
+    transform: translateY(-1px);
+}
+
+div[data-testid="stButton"][key="summary_finish_btn"] > button:active {
+    transform: scale(0.97);
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
 st.markdown(advanced_styles, unsafe_allow_html=True)
 
 
