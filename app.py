@@ -137,6 +137,20 @@ advanced_styles = f"""
         line-height: 1.4;
     }}
 
+    /* BEAUTIFUL BUTTONS */
+    .stButton > button {{
+        border-radius: 6px;
+        height: 48px;
+        background-color: #6203ed;
+        border: none;
+        color: white;
+        font-size: 17px;
+        font-weight: 550;
+        padding: 8px 20px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+        transition: 0.2s;
+    }}
+
     .stButton > button:hover {{
         background-color: #4c02b5;
         transform: translateY(-1px);
@@ -553,25 +567,22 @@ st.markdown("""
 
 st.markdown("""
 <style>
-.green-finish .stButton > button {
+.green-finish > button {
     background-color: #28a745 !important;  /* Green */
     color: white !important;
     border: none !important;
-    padding: 12px 28px !important;
+    padding: 10px 26px !important;
     font-size: 18px !important;
     font-weight: 600 !important;
     border-radius: 6px !important;
-    height: 48px !important;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.18);
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
     transition: 0.2s;
 }
-
-.green-finish .stButton > button:hover {
-    background-color: #1e7e34 !important; /* Darker green */
+.green-finish > button:hover {
+    background-color: #1e7e34 !important;  /* Darker green */
     transform: translateY(-1px);
 }
-
-.green-finish .stButton > button:active {
+.green-finish > button:active {
     transform: scale(0.97);
 }
 </style>
@@ -1443,7 +1454,7 @@ elif st.session_state.page == "summary":
     st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
 
     st.markdown('<div class="green-finish">', unsafe_allow_html=True)
-    if st.button("Finish", key="summary_finish_btn"):
+    if st.button("Finish"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
