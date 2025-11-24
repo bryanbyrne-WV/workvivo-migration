@@ -1454,19 +1454,23 @@ elif st.session_state.page == "summary":
     st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
 
     st.markdown('<div class="green-finish">', unsafe_allow_html=True)
+
+    # ✅ Finish button (fully correct indentation)
     if st.button("Finish"):
 
-    # Clear ONLY migration-related data
-    for key in ["progress", "log_output", "migration_finished", "cancel_requested",
-                "start_migration", "phase1_running", "live_log_placeholder",
-                "summary"]:
-        if key in st.session_state:
-            del st.session_state[key]
+        # Clear ONLY migration-related items
+        for key in [
+            "progress", "log_output", "migration_finished", "cancel_requested",
+            "start_migration", "phase1_running", "live_log_placeholder",
+            "summary"
+        ]:
+            if key in st.session_state:
+                del st.session_state[key]
 
-    # Go back to migration page
-    st.session_state.page = "main"
+        # Go back to migration page
+        st.session_state.page = "main"
 
-    # Force a full refresh
-    st.rerun()
+        # Force full refresh
+        st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
