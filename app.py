@@ -1282,10 +1282,22 @@ if st.session_state.page == "main":
     migrate_globalPages = st.toggle("Global Pages", value=True)
     migrate_spacePages = st.toggle("Space Pages", value=True)
 
+
+        if st.button("▶ Run Migration"):
     
-    if st.button("▶ Run Migration"):
+        # Set migration state BEFORE rerun
+        st.session_state.start_migration = True
+        st.session_state.migration_finished = False
+        st.session_state.cancel_requested = False
+        st.session_state.progress = 0
+        st.session_state.page = "running"
     
-        # Smooth scroll (optional)
+        # Rerun to go to "running" page
+        st.rerun()
+    
+    
+    # 🚀 This triggers ONLY on the first load of the 'running' page
+    if st.session_state.page == "running":
         st.components.v1.html(
             """
             <script>
@@ -1294,17 +1306,7 @@ if st.session_state.page == "main":
             """,
             height=0,
         )
-    
-        st.session_state.start_migration = True
-        st.session_state.migration_finished = False
-        st.session_state.cancel_requested = False
-        st.session_state.progress = 0
-    
-        # Switch page
-        st.session_state.page = "running"
-    
-        # ⭐ REQUIRED or user must click twice
-        st.rerun()
+
 
     # ============================================================
     # LIVE LOG OUTPUT (optional)
