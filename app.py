@@ -1198,14 +1198,14 @@ if st.session_state.page == "main":
     migrate_globalPages = st.toggle("Global Pages", value=True)
     migrate_spacePages = st.toggle("Space Pages", value=True)
 
-    # ============================================================
-# RUN BUTTON (navigate to migration page)
-# ============================================================
     if st.button("▶ Run Migration"):
-        st.session_state.page = "migration"
+        st.session_state.page = "running"
         st.session_state.start_migration = True
         st.session_state.progress = 0
         st.rerun()
+        st.stop()  # ← This fixes the issue
+
+
 
 
     # ============================================================
@@ -1230,7 +1230,7 @@ if st.session_state.page == "main":
 # ============================================================
 # MIGRATION PAGE
 # ============================================================
-if st.session_state.page == "migration":
+elif st.session_state.page == "running":
 
     st.header("🚀 Migration In Progress")
 
