@@ -10,10 +10,9 @@ import os
 import mimetypes
 
 # ------------------------------
-# 🔐 USERNAME + PASSWORD LOGIN
+# 🔐 BEAUTIFUL LOGIN SCREEN
 # ------------------------------
 
-# Hardcoded admin credentials
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
 
@@ -21,23 +20,83 @@ ADMIN_PASSWORD = "Workvivo2025!"
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
-# Show login form if not logged in
 if not st.session_state.authenticated:
 
-    st.title("Secure Access Required")
+    # ----- Logo + Centered Card -----
+    st.markdown("""
+    <style>
+        .login-container {
+            max-width: 420px;
+            margin: 80px auto;
+            padding: 30px;
+            border-radius: 16px;
+            background: #ffffff;
+            box-shadow: 0px 4px 20px rgba(0,0,0,0.12);
+            text-align: center;
+            border: 2px solid #ece8ff;
+        }
 
+        .login-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #6203ed;
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: #555;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        .login-logo {
+            height: 70px;
+            margin-bottom: 18px;
+        }
+
+        /* Custom purple login button */
+        .login-btn > button {
+            width: 100%;
+            background-color: #6203ed !important;
+            color: white !important;
+            padding: 10px 0 !important;
+            font-size: 18px !important;
+            border-radius: 8px !important;
+            border: none !important;
+        }
+
+        .login-btn > button:hover {
+            background-color: #4c02b5 !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ----- Login Box -----
+    st.markdown("""
+    <div class="login-container">
+
+        <img src="https://www.festivalofwork.com/media/Workvivo%20(1).png" class="login-logo">
+
+        <div class="login-title">Workvivo Migration Tool</div>
+        <div class="login-subtitle">Admin Login Required</div>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Since Streamlit inputs can't be inside HTML, put them below
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
+    st.markdown('<div class="login-btn">', unsafe_allow_html=True)
     if st.button("Login"):
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             st.session_state.authenticated = True
-            st.success("Logged in successfully!")
+            st.success("🎉 Login successful!")
             st.rerun()
         else:
             st.error("❌ Invalid username or password.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Stop the rest of the app from loading
     st.stop()
 
 # ------------------------------
