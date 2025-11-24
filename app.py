@@ -1108,11 +1108,6 @@ def check_cancel():
 # ============================================================
 # MAIN PAGE (Migration Dashboard)
 # ============================================================
-# After config is saved, ensure we show the main page
-if st.session_state.get("config_saved") and st.session_state.page == "config":
-    st.session_state.page = "main"
-    st.rerun()
-    st.stop()
 
 if st.session_state.page == "main":
 
