@@ -1465,39 +1465,12 @@ elif st.session_state.page == "summary":
     st.markdown("---")
 
     st.subheader("Full Console Log")
-    st.text_area("Log Output",
-                 st.session_state.get("log_output", ""),
-                 height=300)
+    st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
 
-    # --- GREEN FINISH BUTTON CSS ---
-    st.markdown("""
-    <style>
-    /* Style ONLY the button with this key */
-    div[data-testid="stButton"][data-baseweb="button"] button {
-        background-color: #28a745 !important;
-        color: white !important;
-        border: none !important;
-        padding: 12px 28px !important;
-        font-size: 18px !important;
-        font-weight: 600 !important;
-        border-radius: 6px !important;
-        height: 48px !important;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.18);
-        transition: 0.2s;
-    }
-
-    div[data-testid="stButton"][data-baseweb="button"] button:hover {
-        background-color: #1e7e34 !important;
-        transform: translateY(-1px);
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # --- FINISH BUTTON ---
-    if st.button("Finish", key="summary_finish_btn"):
-
-        # Reset everything so the tool is fresh again
+    st.markdown('<div class="green-finish">', unsafe_allow_html=True)
+        if st.markdown('<button purpose="finish">Finish</button>', unsafe_allow_html=True):
+            pass
         for key in list(st.session_state.keys()):
             del st.session_state[key]
-
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
