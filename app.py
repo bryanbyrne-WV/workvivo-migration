@@ -1350,7 +1350,7 @@ elif st.session_state.page == "running":
     # --------------------------------------------------------
     # SHOW CONSOLE OUTPUT
     # --------------------------------------------------------
-    st.subheader("📡 Live Console Output")
+    st.subheader("Live Console Output")
 
     st.text_area(
         "Console",
