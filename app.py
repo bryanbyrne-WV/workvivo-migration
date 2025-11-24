@@ -182,24 +182,44 @@ advanced_styles = f"""
 st.markdown("""
 <style>
 
-/* ===== PURPLE TOGGLE SWITCHES ===== */
+st.markdown("""
+<style>
 
-div.stSwitch > label > div[data-testid="stTickBar"] {
-    background-color: #ccc !important; /* background of OFF state */
+/* --- WORKVIVO PURPLE TOGGLE SWITCH (New Streamlit UI) --- */
+
+[data-testid="stSwitch"] .st-dl {
+    background-color: #d8c9ff !important;      /* track ON */
+    border-color: #d8c9ff !important;
+}
+
+[data-testid="stSwitch"][aria-checked="false"] .st-dl {
+    background-color: #cccccc !important;      /* track OFF */
+    border-color: #cccccc !important;
+}
+
+[data-testid="stSwitch"] .st-dm {
+    background-color: #6203ed !important;      /* toggle knob ON */
+}
+
+[data-testid="stSwitch"][aria-checked="false"] .st-dm {
+    background-color: #ffffff !important;      /* toggle knob OFF */
+    border: 1px solid #aaaaaa !important;
+}
+
+/* Make toggle slightly larger + rounded */
+[data-testid="stSwitch"] .st-dl {
+    height: 22px !important;
     border-radius: 20px !important;
 }
 
-div.stSwitch > label > div[data-testid="stTickBar"] > div {
-    background-color: #6203ed !important; /* Purple thumb when ON */
-    border-radius: 16px !important;
-    height: 22px !important;
-    width: 22px !important;
-    margin-top: -2px !important;
+[data-testid="stSwitch"] .st-dm {
+    height: 20px !important;
+    width: 20px !important;
+    border-radius: 20px !important;
 }
 
-div.stSwitch > label > div[data-testid="stTickBar"][aria-checked="true"] {
-    background-color: #d7c4ff !important; /* Light purple track when ON */
-}
+</style>
+""", unsafe_allow_html=True)
 
 </style>
 """, unsafe_allow_html=True)
