@@ -1102,6 +1102,7 @@ def check_cancel():
         raise Exception("Migration Cancelled")
 
 
+
 # ============================================================
 # MAIN PAGE (Migration Dashboard)
 # ============================================================
@@ -1123,7 +1124,6 @@ if st.session_state.page == "main":
         "Custom range",
     ]
 
-    # Default or previous value
     if "migration_date_choice" not in st.session_state:
         st.session_state.migration_date_choice = "Last 1 year"
 
@@ -1155,7 +1155,6 @@ if st.session_state.page == "main":
         start_date = st.date_input("Start date")
         end_date = st.date_input("End date")
 
-    # Format for display
     def fmt(d):
         if d is None:
             return "All time"
@@ -1168,7 +1167,6 @@ if st.session_state.page == "main":
 
     st.info(f"📌 Migrating content from **{pretty_start}** to **{pretty_end}**")
 
-    # Save for use in migration functions
     st.session_state.migration_start_date = start_date
     st.session_state.migration_end_date = end_date
 
@@ -1176,9 +1174,8 @@ if st.session_state.page == "main":
     # 🏢 Organisation settings and information
     # ============================================================
     st.markdown("### Organisation settings and information")
-
     st.markdown("""
-    This section migrates the core organisational setup in Workvivo including users, spaces, and all related details such as descriptions, logos, visibility settings, and memberships.
+    This section migrates users, spaces and space membership.
     """)
 
     migrate_users = st.toggle("Users", value=True, disabled=True)
@@ -1190,10 +1187,7 @@ if st.session_state.page == "main":
     # 👥 User activity on Workvivo
     # ============================================================
     st.markdown("### User activity on Workvivo")
-
-    st.markdown("""
-    Information and activity across key Workvivo features such as posts, comments, likes, and interactions within spaces will be collected and mapped to the correct users.
-    """)
+    st.markdown("Migrate content & user interactions.")
 
     migrate_updates = st.toggle("Updates", value=True)
     migrate_kudos = st.toggle("Kudos", value=True)
@@ -1208,7 +1202,7 @@ if st.session_state.page == "main":
     # RUN EVERYTHING AT ONCE
     # ============================================================
     if st.button("▶ Run Migration"):
-        st.session_state.page = "running"   # Go to progress page
+        st.session_state.page = "running"
         st.session_state.start_migration = True
         st.session_state.progress = 0
         st.rerun()
@@ -1230,6 +1224,7 @@ if st.session_state.page == "main":
             height=400,
             disabled=True
         )
+
 
 # ============================================================
 # RUNNING PAGE — PROGRESS VIEW
