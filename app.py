@@ -214,6 +214,30 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+.custom-continue > button {
+    background-color: #6203ed !important;   /* Purple */
+    color: white !important;                /* White text */
+    border: none !important;
+    padding: 10px 26px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+    transition: 0.2s;
+}
+.custom-continue > button:hover {
+    background-color: #4c02b5 !important;   /* Darker purple */
+    transform: translateY(-1px);
+}
+.custom-continue > button:active {
+    transform: scale(0.98);
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 # ============================================================
 # 🧭 Breadcrumb Navigation
 # ============================================================
@@ -476,11 +500,14 @@ if "config_saved" not in st.session_state:
         </style>
         """, unsafe_allow_html=True)
 
-        # Save button disabled if errors
-        submitted = st.form_submit_button(
-            "Save Configuration",
-            disabled=len(errors) > 0
+    # Save button disabled if errors
+    st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
+    submitted = st.form_submit_button(
+        "Save Configuration",
+        disabled=len(errors) > 0
         )
+st.markdown('</div>', unsafe_allow_html=True)
+
 
     # ------------ OUTSIDE the form(), STILL inside "if not config_saved" ------------
     if submitted:
