@@ -1249,7 +1249,8 @@ if st.session_state.page == "main":
     migrate_globalPages = st.toggle("Global Pages", value=True)
     migrate_spacePages = st.toggle("Space Pages", value=True)
 
-    if st.button("▶ Run Migration"):
+    
+        if st.button("▶ Run Migration"):
 
         st.components.v1.html(
             """
@@ -1265,6 +1266,7 @@ if st.session_state.page == "main":
         st.session_state.progress = 0
         st.rerun()
         st.stop()
+
 
     # Migration result summary
     if "summary" not in st.session_state:
