@@ -599,7 +599,6 @@ TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
 
 SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
-st.success("🔐 Configuration active — ready to run migrations
 
 # ============================================================
 # Ensure SUMMARY dictionary exists
@@ -614,6 +613,7 @@ if "summary" not in st.session_state:
         "start_time": datetime.utcnow(),
         "end_time": None
     }
+st.success("🔐 Configuration active — ready to run migrations
 
 
 # ============================================================
