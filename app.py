@@ -1230,7 +1230,7 @@ if st.session_state.page == "main":
 # ============================================================
 # MIGRATION PAGE
 # ============================================================
-elif st.session_state.page == "running":
+elif st.session_state.page == "migration":
 
     st.header("🚀 Migration In Progress")
 
