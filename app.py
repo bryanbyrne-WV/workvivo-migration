@@ -1250,10 +1250,10 @@ elif st.session_state.page == "running":
         st.header("Migration Finished!")
 
     elif st.session_state.cancel_requested:
-        st.header("⛔ Migration Cancelled")
+        st.header("Migration Cancelled")
 
     else:
-        st.header("Migration In Progress")
+        st.header("Migration In Progress...")
 
     # --------------------------------------------------------
     # CANCEL vs FINISH BUTTON
