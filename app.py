@@ -1382,8 +1382,14 @@ elif st.session_state.page == "running":
             st.session_state.progress = 100
             progress_bar.progress(100)
             ui_log("Migration Complete!")
-            st.session_state.migration_finished = True
+        
+            # Store end time
+            st.session_state.summary["end_time"] = datetime.utcnow()
+        
+            # Navigate to summary page
+            st.session_state.page = "summary"
             st.rerun()
+
 
     # --------------------------------------------------------
     # SHOW CONSOLE OUTPUT
