@@ -15,7 +15,7 @@ st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 # Page state (2-page layout)
 # ==========================================
 if "page" not in st.session_state:
-    st.session_state.page = "main"   # "main" = setup page, "running" = progress page
+    st.session_state.page = "config"
 
 
 # ============================================================
@@ -507,7 +507,9 @@ if "config_saved" not in st.session_state:
         # CONTINUE BUTTON (purple)
         st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
         if st.button("➡ Continue"):
+            st.session_state.page = "main"
             st.rerun()
+
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.stop()
