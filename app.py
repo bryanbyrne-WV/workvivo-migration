@@ -549,6 +549,38 @@ if "config_saved" not in st.session_state:
 # CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
 # =========================================================
 
+# Allow user to return to environment configuration
+st.markdown("""
+<div style="margin-bottom: 15px;">
+    <style>
+    .back-btn > button {
+        background-color: #6203ed !important;
+        color: white !important;
+        border: none !important;
+        padding: 6px 18px !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        border-radius: 6px !important;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+        transition: 0.2s;
+    }
+    .back-btn > button:hover {
+        background-color: #4c02b5 !important;
+        transform: translateY(-1px);
+    }
+    </style>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="back-btn">', unsafe_allow_html=True)
+if st.button("← Edit Environment Settings"):
+    # Reset config state so the form shows again
+    if "config_saved" in st.session_state:
+        del st.session_state["config_saved"]
+    st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
+
+
 SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
 SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
 SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
