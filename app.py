@@ -1244,39 +1244,6 @@ migrate_spacePages = st.toggle("Space Pages", value=True)
 
 
 # ============================================================
-# RUN EVERYTHING AT ONCE (MAIN PAGE)
-# ============================================================
-    if st.button("▶ Run Migration"):
-        st.session_state.page = "running"   # go to progress page
-        st.session_state.start_migration = True
-        st.session_state.progress = 0
-        st.rerun()
-
-
-    # =========================================================
-    # 📜 LIVE LOG OUTPUT — ONLY SHOW ON MAIN PAGE
-    # =========================================================
-    if "live_log_placeholder" not in st.session_state:
-        st.session_state.live_log_placeholder = st.empty()
-        
-    if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
-
-        st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-        st.header("🖥️ Migration Console")
-
-        # Ensure placeholder exists
-        if "live_log_placeholder" not in st.session_state:
-            st.session_state.live_log_placeholder = st.empty()
-
-        st.session_state.live_log_placeholder.text_area(
-            "📡 Live Console Output",
-            st.session_state.get("log_output", ""),
-            height=400,
-            disabled=True
-        )
-
-
-# ============================================================
 # RUNNING PAGE — PROGRESS VIEW
 # ============================================================
 if st.session_state.page == "running":
