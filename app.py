@@ -516,6 +516,12 @@ def render_config_page():
 
     st.stop()
 
+# ============================================================
+# PAGE ROUTER HELPERS (NEW)
+# ============================================================
+def go_to(page_name):
+    st.session_state.page = page_name
+    st.rerun()
 
 # =========================================================
 # CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
