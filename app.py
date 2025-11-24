@@ -621,11 +621,29 @@ if "summary" not in st.session_state:
     st.session_state.summary = {
         "users_migrated": 0,
         "users_skipped": 0,
+
         "spaces_created": 0,
         "spaces_skipped": 0,
+
         "memberships_added": 0,
+
+        "updates_migrated": 0,
+        "updates_skipped": 0,
+
+        "kudos_migrated": 0,
+        "kudos_skipped": 0,
+
+        "articles_migrated": 0,
+        "articles_skipped": 0,
+
+        "events_migrated": 0,
+        "events_skipped": 0,
+
+        "global_pages_migrated": 0,
+        "space_pages_migrated": 0,
+
         "start_time": datetime.utcnow(),
-        "end_time": None
+        "end_time": None,
     }
 
 # ============================================================
