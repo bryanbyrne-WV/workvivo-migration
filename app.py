@@ -1283,29 +1283,22 @@ if st.session_state.page == "main":
     migrate_spacePages = st.toggle("Space Pages", value=True)
 
 
-        if st.button("▶ Run Migration"):
-    
-        # Set migration state BEFORE rerun
+    # ------------------------------------------------------------
+    # RUN MIGRATION BUTTON (with auto-scroll + no double-click)
+    # ------------------------------------------------------------
+    if st.button("▶ Run Migration"):
+
+        # Set migration flags before rerun
         st.session_state.start_migration = True
         st.session_state.migration_finished = False
         st.session_state.cancel_requested = False
         st.session_state.progress = 0
+
+        # Switch page
         st.session_state.page = "running"
-    
-        # Rerun to go to "running" page
+
+        # Force rerun so we go to "running" immediately
         st.rerun()
-    
-    
-    # 🚀 This triggers ONLY on the first load of the 'running' page
-    if st.session_state.page == "running":
-        st.components.v1.html(
-            """
-            <script>
-                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-            """,
-            height=0,
-        )
 
 
     # ============================================================
@@ -1325,6 +1318,17 @@ if st.session_state.page == "main":
             height=400,
             disabled=True
         )
+
+# Auto-scroll to top when entering the running page
+if st.session_state.get("page") == "running":
+    st.components.v1.html(
+        """
+        <script>
+            window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+        </script>
+        """,
+        height=0,
+    )
 
 
 # ============================================================
