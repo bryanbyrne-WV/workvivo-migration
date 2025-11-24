@@ -1228,10 +1228,10 @@ if st.session_state.page == "main":
     if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
 
         st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-        st.header("🖥️ Migration Console")
+        st.header("Migration Console")
 
         st.session_state.live_log_placeholder.text_area(
-            "📡 Live Console Output",
+            "Live Console Output",
             st.session_state.get("log_output", ""),
             height=400,
             disabled=True
@@ -1247,13 +1247,13 @@ elif st.session_state.page == "running":
     # HEADER LOGIC
     # --------------------------------------------------------
     if st.session_state.get("migration_finished", False):
-        st.header("🎉 Migration Finished!")
+        st.header("Migration Finished!")
 
     elif st.session_state.cancel_requested:
         st.header("⛔ Migration Cancelled")
 
     else:
-        st.header("🚀 Migration In Progress")
+        st.header("Migration In Progress")
 
     # --------------------------------------------------------
     # CANCEL vs FINISH BUTTON
@@ -1294,7 +1294,7 @@ elif st.session_state.page == "running":
     progress_bar = st.progress(st.session_state.progress)
 
     # --------------------------------------------------------
-    # LOADING ANIMATION (MIGRATING…)
+    # LOADING ANIMATION (MIGRATING DATA…)
     # --------------------------------------------------------
     loading_placeholder = st.empty()
 
@@ -1316,7 +1316,7 @@ elif st.session_state.page == "running":
         st.session_state.start_migration = False
         st.session_state.migration_finished = False   # Reset finish flag
 
-        ui_log("🚀 Starting migration...")
+        ui_log("Starting migration...")
 
         steps = [
             ("Migrating users…", lambda: migrate_users(st.session_state.phase1_active_only)),
@@ -1343,7 +1343,7 @@ elif st.session_state.page == "running":
         if not st.session_state.cancel_requested:
             st.session_state.progress = 100
             progress_bar.progress(100)
-            ui_log("🎉 Migration Complete!")
+            ui_log("Migration Complete!")
             st.session_state.migration_finished = True
             st.rerun()
 
