@@ -15,7 +15,7 @@ st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 # Page state (2-page layout)
 # ==========================================
 if "page" not in st.session_state:
-    st.session_state.page = "main"   # "main" = setup page, "running" = progress page
+    st.session_state.page = "config"
 
 
 # ============================================================
@@ -1106,6 +1106,12 @@ def check_cancel():
 # ============================================================
 # MAIN PAGE (Migration Dashboard)
 # ============================================================
+# After config is saved, ensure we show the main page
+if st.session_state.get("config_saved") and st.session_state.page == "config":
+    st.session_state.page = "main"
+    st.rerun()
+    st.stop()
+
 if st.session_state.page == "main":
 
     st.markdown("## Migrate Workvivo Data")
@@ -1199,11 +1205,12 @@ if st.session_state.page == "main":
     migrate_spacePages = st.toggle("Space Pages", value=True)
 
     if st.button("▶ Run Migration"):
-        st.session_state.page = "running"
+        st.session_state.page = "migration"
         st.session_state.start_migration = True
         st.session_state.progress = 0
         st.rerun()
-        st.stop()  # ← This fixes the issue
+        st.stop()
+
 
 
 
