@@ -185,6 +185,9 @@ st.markdown("""
 st.markdown("""
 <style>
 
+st.markdown("""
+<style>
+
 /* --- WORKVIVO PURPLE TOGGLE SWITCH (New Streamlit UI) --- */
 
 [data-testid="stSwitch"] .st-dl {
@@ -198,15 +201,15 @@ st.markdown("""
 }
 
 [data-testid="stSwitch"] .st-dm {
-    background-color: #6203ed !important;      /* toggle knob ON */
+    background-color: #6203ed !important;      /* knob ON */
 }
 
 [data-testid="stSwitch"][aria-checked="false"] .st-dm {
-    background-color: #ffffff !important;      /* toggle knob OFF */
+    background-color: #ffffff !important;      /* knob OFF */
     border: 1px solid #aaaaaa !important;
 }
 
-/* Make toggle slightly larger + rounded */
+/* Sizing + rounding */
 [data-testid="stSwitch"] .st-dl {
     height: 22px !important;
     border-radius: 20px !important;
