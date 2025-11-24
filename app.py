@@ -1199,13 +1199,14 @@ if st.session_state.page == "main":
     migrate_spacePages = st.toggle("Space Pages", value=True)
 
     # ============================================================
-    # RUN EVERYTHING AT ONCE
-    # ============================================================
+# RUN BUTTON (navigate to migration page)
+# ============================================================
     if st.button("▶ Run Migration"):
-        st.session_state.page = "running"
+        st.session_state.page = "migration"
         st.session_state.start_migration = True
         st.session_state.progress = 0
         st.rerun()
+
 
     # ============================================================
     # LIVE LOG OUTPUT (optional)
@@ -1227,9 +1228,9 @@ if st.session_state.page == "main":
 
 
 # ============================================================
-# RUNNING PAGE — PROGRESS VIEW
+# MIGRATION PAGE
 # ============================================================
-if st.session_state.page == "running":
+if st.session_state.page == "migration":
 
     st.header("🚀 Migration In Progress")
 
@@ -1240,10 +1241,12 @@ if st.session_state.page == "running":
 
     progress_bar = st.progress(st.session_state.progress)
 
-    # Run migration ONCE
+    # --------------------------------------------------------
+    # Run migration ONLY ONCE when arriving on this page
+    # --------------------------------------------------------
     if st.session_state.get("start_migration", False):
 
-        st.session_state.start_migration = False  # prevent repeat execution
+        st.session_state.start_migration = False  # prevent repeat runs
 
         ui_log("🚀 Starting migration...")
 
@@ -1254,18 +1257,20 @@ if st.session_state.page == "running":
         ]
 
         total_steps = len(steps)
-        pct_per_step = int(100 / total_steps)
+        pct = int(100 / total_steps)
 
         for i, (label, fn) in enumerate(steps):
             ui_log(label)
             fn()
-            st.session_state.progress = (i + 1) * pct_per_step
+            st.session_state.progress = (i + 1) * pct
             progress_bar.progress(st.session_state.progress)
 
         st.session_state.progress = 100
         progress_bar.progress(100)
         ui_log("🎉 Migration Complete!")
 
-    # Live log
+    # --------------------------------------------------------
+    # Console Output
+    # --------------------------------------------------------
     st.subheader("📜 Console Output")
     st.text_area("Live Output", st.session_state.get("log_output", ""), height=400)
