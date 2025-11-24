@@ -1250,8 +1250,9 @@ if st.session_state.page == "main":
     migrate_spacePages = st.toggle("Space Pages", value=True)
 
     
-     if st.button("▶ Run Migration"):
-    
+    if st.button("▶ Run Migration"):
+
+        # Smooth scroll to top
         st.components.v1.html(
             """
             <script>
@@ -1260,29 +1261,15 @@ if st.session_state.page == "main":
             """,
             height=0,
         )
-    
-        st.session_state.page = "running"      # << THIS WAS CRITICAL
+
+        # Set migration state
         st.session_state.start_migration = True
+        st.session_state.migration_finished = False
+        st.session_state.cancel_requested = False
         st.session_state.progress = 0
-        st.rerun()
 
-
-    # Migration result summary
-    if "summary" not in st.session_state:
-        st.session_state.summary = {
-            "users_migrated": 0,
-            "users_skipped": 0,
-            "spaces_created": 0,
-            "spaces_skipped": 0,
-            "memberships_added": 0,
-            "warnings": [],
-            "start_time": None,
-            "end_time": None
-        }
-
-
-
-
+        # 🚀 SWITCH TO RUNNING PAGE
+        st.session_state.page = "running"
     # ============================================================
     # LIVE LOG OUTPUT (optional)
     # ============================================================
