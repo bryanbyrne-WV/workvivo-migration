@@ -324,13 +324,13 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_URL = st.text_input(
                 "Source SCIM URL",
-                value="https://workvivo.workvivo.com/scim/v2/scim/Users/",
+                value="https://workvivo.workvivo.com/scim/v1/scim/Users/",
                 help="SCIM endpoint for reading users from the SOURCE Workvivo environment."
             )
 
             SOURCE_API_URL = st.text_input(
                 "Source API URL",
-                value="https://api.workvivo.com/v1",
+                value="https://api.workvivo.com/v2",
                 help="Base API URL for fetching content, spaces, images and memberships from the SOURCE tenant."
             )
 
@@ -1245,12 +1245,25 @@ elif st.session_state.page == "running":
 
     st.header("🚀 Migration In Progress")
 
-    # Back button
-    if st.button("⬅ Back to Dashboard"):
-        st.session_state.page = "main"
-        st.rerun()
+    # ⛔ Replace old back button
+    if st.button("🛑 Cancel Migration"):
+        st.session_state.cancel_requested = True
+        ui_log("🛑 Cancel requested by user…")
 
     progress_bar = st.progress(st.session_state.progress)
+
+    # ✅ ADD THIS BLOCK RIGHT HERE
+    loading_placeholder = st.empty()
+
+    def animate_loading():
+        dots = ["", ".", "..", "..."]
+        for d in dots:
+            loading_placeholder.markdown(f"### ⏳ Working{d}")
+            time.sleep(0.25)
+            if st.session_state.cancel_requested:
+                break
+    # --------------------------------
+
 
     # --------------------------------------------------------
     # Run migration ONLY ONCE when arriving on this page
@@ -1272,9 +1285,26 @@ elif st.session_state.page == "running":
 
         for i, (label, fn) in enumerate(steps):
             ui_log(label)
+        
+            # small animation while step runs
+            animate_loading()
+        
+            # run task
             fn()
+        
+            # update bar
             st.session_state.progress = (i + 1) * pct
             progress_bar.progress(st.session_state.progress)
+        
+            # clear loading text
+            loading_placeholder.empty()
+        
+            # handle cancel
+            if st.session_state.cancel_requested:
+                progress_bar.progress(0)
+                ui_log("🛑 Migration cancelled.")
+                break
+
 
         st.session_state.progress = 100
         progress_bar.progress(100)
