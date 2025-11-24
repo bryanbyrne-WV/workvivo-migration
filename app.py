@@ -506,8 +506,10 @@ if "config_saved" not in st.session_state:
 
         # CONTINUE BUTTON (purple)
         st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
-        if st.button("➡ Continue"):
+                if st.button("➡ Continue"):
+            st.session_state.page = "main"   # ← FIX
             st.rerun()
+
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.stop()
