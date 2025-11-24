@@ -19,168 +19,166 @@ if "page" not in st.session_state:
 
 
 # ============================================================
-# WORKVIVO ADVANCED UI THEME + BUTTONS + DARK-MODE + TOGGLES
+# WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
 # ============================================================
-
 WORKVIVO_LOGO_URL = "https://www.festivalofwork.com/media/Workvivo%20(1).png"
 
-# MASTER STYLE BLOCK
-st.markdown("""
+advanced_styles = f"""
 <style>
 
-/* -------------------------------------------------------
-   GLOBAL LAYOUT
-------------------------------------------------------- */
-.main {
-    background-color: #F7F9FC !important;
-}
+    /* GLOBAL PAGE BACKGROUND */
+    .main {{
+        background-color: #F7F9FC !important;
+    }}
 
-@media (prefers-color-scheme: dark) {
-    .main { background-color: #0d1117 !important; }
-    .header-bar { background-color: #3d0199 !important; }
-    .header-title { color: white !important; }
-    section[data-testid="stSidebar"] { background-color: #1a0638 !important; }
-    .sidebar-link { color: #cbd5e1 !important; }
-    .sidebar-footer { color: #94a3b8 !important; }
-}
+    /* DARK MODE SUPPORT */
+    @media (prefers-color-scheme: dark) {{
+        .main {{
+            background-color: #0d1117 !important;
+        }}
+        .header-bar {{
+            background-color: #3d0199 !important;
+        }}
+        .header-title {{
+            color: #ffffff !important;
+        }}
+        section[data-testid="stSidebar"] {{
+            background-color: #1a0638 !important;
+        }}
+        .sidebar-link {{
+            color: #cbd5e1 !important;
+        }}
+        .sidebar-footer {{
+            color: #94a3b8 !important;
+        }}
+    }}
 
-/* -------------------------------------------------------
-   HEADER BAR
-------------------------------------------------------- */
-.header-bar {
-    background-color: #6203ed;
-    padding: 18px 28px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    border-radius: 8px;
-    margin-bottom: 25px;
-    box-shadow: 0px 3px 12px rgba(0,0,0,0.18);
-}
-.header-logo { height: 46px; margin-right: 18px; }
-.header-title {
-    color: white; font-size: 42px; font-weight: 650;
-    letter-spacing: -0.5px; margin-top: 2px;
-}
+    /* HEADER BAR */
+    .header-bar {{
+        background-color: #6203ed;
+        padding: 18px 28px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        box-shadow: 0px 3px 12px rgba(0,0,0,0.18);
+        animation: fade-slide-down 0.6s ease-out;
+    }}
 
-/* -------------------------------------------------------
-   SIDEBAR
-------------------------------------------------------- */
-section[data-testid="stSidebar"] {
-    background-color: #4502b4 !important;
-    padding: 20px 15px;
-}
-.sidebar-logo { width: 170px; margin-bottom: 20px; margin-top: 10px; }
-.sidebar-title {
-    color: white; font-size: 20px; font-weight: 600;
-}
-.sidebar-link {
-    color: white !important;
-    padding: 10px 6px; display: block; font-size: 17px;
-    border-radius: 5px; font-weight: 500;
-}
-.sidebar-link:hover {
-    background-color: rgba(255,255,255,0.18);
-    padding-left: 12px;
-}
-.sidebar-footer {
-    margin-top: 40px; padding: 12px; text-align: center;
-    color: #d0d8e8; font-size: 14px;
-    border-top: 1px solid rgba(255,255,255,0.25);
-}
+    .header-logo {{
+        height: 46px;
+        margin-right: 18px;
+    }}
 
-/* -------------------------------------------------------
-   GLOBAL BUTTON STYLE (DEFAULT PURPLE)
-------------------------------------------------------- */
-.stButton > button {
-    border-radius: 6px;
-    height: 48px;
-    background-color: #6203ed !important;
-    border: none;
-    color: white !important;
-    font-size: 17px;
-    font-weight: 550;
-    padding: 8px 20px;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-}
-.stButton > button:hover { background-color: #4c02b5 !important; }
-.stButton > button:active { transform: scale(0.98); }
+    .header-title {{
+        color: white;
+        font-size: 42px;
+        font-weight: 650;
+        letter-spacing: -0.5px;
+        margin-top: 2px;
+    }}
 
-/* -------------------------------------------------------
-   COLLAPSIBLE LOG BOX
-------------------------------------------------------- */
-details {
-    background: white;
-    border-radius: 8px;
-    padding: 10px 14px;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.12);
-}
-summary {
-    font-size: 18px;
-    color: #6203ed;
-    cursor: pointer;
-    font-weight: 600;
-}
+    @keyframes fade-slide-down {{
+        0% {{ opacity: 0; transform: translateY(-10px); }}
+        100% {{ opacity: 1; transform: translateY(0); }}
+    }}
 
-/* -------------------------------------------------------
-   PURPLE CONTINUE BUTTON CLASS
-------------------------------------------------------- */
-.custom-continue > button {
-    background-color: #6203ed !important;
-    color: white !important;
-    padding: 10px 26px !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-    border-radius: 6px !important;
-}
-.custom-continue > button:hover {
-    background-color: #4c02b5 !important;
-    transform: translateY(-1px);
-}
+    /* SIDEBAR */
+    section[data-testid="stSidebar"] {{
+        background-color: #4502b4 !important;
+        padding: 20px 15px;
+    }}
 
-# ============================================================
-# WORKVIVO PURPLE TOGGLE SWITCH  (FIXED + SAFE)
-# ============================================================
-st.markdown("""
-<style>
+    .sidebar-logo {{
+        width: 170px;
+        margin-bottom: 20px;
+        margin-top: 10px;
+        animation: fade-in 0.8s;
+    }}
 
-/* Toggle track (ON) */
-[data-testid="stSwitch"] .st-dl {
-    background-color: #d8c9ff !important;
-    border-color: #d8c9ff !important;
-}
+    @keyframes fade-in {{
+        0% {{ opacity: 0; }}
+        100% {{ opacity: 1; }}
+    }}
 
-/* Toggle track (OFF) */
-[data-testid="stSwitch"][aria-checked="false"] .st-dl {
-    background-color: #cccccc !important;
-    border-color: #cccccc !important;
-}
+    .sidebar-title {{
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }}
 
-/* Toggle knob (ON) */
-[data-testid="stSwitch"] .st-dm {
-    background-color: #6203ed !important;
-}
+    .sidebar-link {{
+        color: #ffffff !important;
+        padding: 10px 6px;
+        display: block;
+        font-size: 17px;
+        font-weight: 500;
+        border-radius: 5px;
+        margin-bottom: 6px;
+        text-decoration: none !important;
+        transition: 0.2s;
+    }}
 
-/* Toggle knob (OFF) */
-[data-testid="stSwitch"][aria-checked="false"] .st-dm {
-    background-color: #ffffff !important;
-    border: 1px solid #aaaaaa !important;
-}
+    .sidebar-link:hover {{
+        background-color: rgba(255,255,255,0.18);
+        padding-left: 12px;
+    }}
 
-/* Rounded shapes + sizing */
-[data-testid="stSwitch"] .st-dl {
-    height: 22px !important;
-    border-radius: 20px !important;
-}
+    .sidebar-footer {{
+        margin-top: 40px;
+        padding: 12px;
+        border-top: 1px solid rgba(255,255,255,0.25);
+        color: #d0d8e8;
+        font-size: 14px;
+        text-align: center;
+        line-height: 1.4;
+    }}
 
-[data-testid="stSwitch"] .st-dm {
-    height: 20px !important;
-    width: 20px !important;
-    border-radius: 20px !important;
-}
+    /* BEAUTIFUL BUTTONS */
+    .stButton > button {{
+        border-radius: 6px;
+        height: 48px;
+        background-color: #6203ed;
+        border: none;
+        color: white;
+        font-size: 17px;
+        font-weight: 550;
+        padding: 8px 20px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+        transition: 0.2s;
+    }}
+
+    .stButton > button:hover {{
+        background-color: #4c02b5;
+        transform: translateY(-1px);
+    }}
+
+    .stButton > button:active {{
+        transform: scale(0.98);
+    }}
+
+    /* COLLAPSIBLE LOG CONTAINER */
+    details {{
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 10px 14px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.12);
+        margin-bottom: 10px;
+    }}
+
+    summary {{
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        color: #6203ed;
+        padding: 6px;
+    }}
 
 </style>
-""", unsafe_allow_html=True)
+"""
 
 # Brand Logo (Centered)
 st.markdown("""
