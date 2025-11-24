@@ -1455,10 +1455,10 @@ elif st.session_state.page == "summary":
 
     st.markdown('<div class="green-finish">', unsafe_allow_html=True)
 
-    # ✅ Finish button (fully correct indentation)
+    # ✅ FINISH BUTTON
     if st.button("Finish"):
 
-        # Clear ONLY migration-related items
+        # Clear migration-related session keys
         for key in [
             "progress", "log_output", "migration_finished", "cancel_requested",
             "start_migration", "phase1_running", "live_log_placeholder",
@@ -1467,10 +1467,20 @@ elif st.session_state.page == "summary":
             if key in st.session_state:
                 del st.session_state[key]
 
-        # Go back to migration page
+        # Return to main migration page
         st.session_state.page = "main"
 
-        # Force full refresh
+        # Inject JS to scroll to top before rerun
+        st.components.v1.html(
+            """
+            <script>
+                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+            </script>
+            """,
+            height=0,
+        )
+
+        # Force UI refresh
         st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
