@@ -619,6 +619,8 @@ st.success("🔐 Configuration active — ready to run migrations.")
 # ============================================================
 if "summary" not in st.session_state:
     st.session_state.summary = {
+
+        # USERS & SPACES
         "users_migrated": 0,
         "users_skipped": 0,
 
@@ -627,6 +629,7 @@ if "summary" not in st.session_state:
 
         "memberships_added": 0,
 
+        # CONTENT
         "updates_migrated": 0,
         "updates_skipped": 0,
 
@@ -639,12 +642,23 @@ if "summary" not in st.session_state:
         "events_migrated": 0,
         "events_skipped": 0,
 
-        "global_pages_migrated": 0,
-        "space_pages_migrated": 0,
+        "comments_migrated": 0,
+        "comments_skipped": 0,
 
-        "start_time": datetime.utcnow(),
+        "likes_migrated": 0,
+        "likes_skipped": 0,
+
+        "global_pages_migrated": 0,
+        "global_pages_skipped": 0,
+
+        "space_pages_migrated": 0,
+        "space_pages_skipped": 0,
+
+        # TIMING
+        "start_time": None,
         "end_time": None,
     }
+
 
 # ============================================================
 # Streamlit session state setup
