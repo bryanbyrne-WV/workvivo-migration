@@ -565,6 +565,30 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+.green-finish > button {
+    background-color: #28a745 !important;  /* Green */
+    color: white !important;
+    border: none !important;
+    padding: 10px 26px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+    transition: 0.2s;
+}
+.green-finish > button:hover {
+    background-color: #1e7e34 !important;  /* Darker green */
+    transform: translateY(-1px);
+}
+.green-finish > button:active {
+    transform: scale(0.97);
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 st.markdown('<div class="back-btn">', unsafe_allow_html=True)
 if st.button("← Edit Environment Settings"):
     # Reset config state so the form shows again
@@ -1429,8 +1453,9 @@ elif st.session_state.page == "summary":
     st.subheader("Full Console Log")
     st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
 
+    st.markdown('<div class="green-finish">', unsafe_allow_html=True)
     if st.button("Finish"):
-        # Reset everything so the app is fresh
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
