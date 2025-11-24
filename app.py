@@ -1463,15 +1463,48 @@ elif st.session_state.page == "summary":
     st.markdown(f"""
     **Users Migrated:** {s['users_migrated']}  
     **Users Skipped:** {s['users_skipped']}  
-
+    
     **Spaces Created:** {s['spaces_created']}  
     **Spaces Skipped:** {s['spaces_skipped']}  
-
+    
     **Memberships Added:** {s['memberships_added']}  
-
+    
+    ---
+    
+    ### Content Migration
+    
+    **Updates Migrated:** {s['updates_migrated']}  
+    **Updates Skipped:** {s['updates_skipped']}  
+    
+    **Kudos Migrated:** {s['kudos_migrated']}  
+    **Kudos Skipped:** {s['kudos_skipped']}  
+    
+    **Articles Migrated:** {s['articles_migrated']}  
+    **Articles Skipped:** {s['articles_skipped']}  
+    
+    **Events Migrated:** {s['events_migrated']}  
+    **Events Skipped:** {s['events_skipped']}  
+    
+    **Comments Migrated:** {s['comments_migrated']}  
+    **Comments Skipped:** {s['comments_skipped']}  
+    
+    **Likes Migrated:** {s['likes_migrated']}  
+    **Likes Skipped:** {s['likes_skipped']}  
+    
+    **Global Pages Migrated:** {s['global_pages_migrated']}  
+    **Global Pages Skipped:** {s['global_pages_skipped']}  
+    
+    **Space Pages Migrated:** {s['space_pages_migrated']}  
+    **Space Pages Skipped:** {s['space_pages_skipped']}  
+    
+    ---
+    
+    ### Timing
+    
     **Start Time:** {s['start_time']}  
     **End Time:** {s['end_time']}
     """)
+
 
     st.markdown("---")
 
