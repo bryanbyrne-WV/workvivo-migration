@@ -137,20 +137,6 @@ advanced_styles = f"""
         line-height: 1.4;
     }}
 
-    /* BEAUTIFUL BUTTONS */
-    .stButton > button {{
-        border-radius: 6px;
-        height: 48px;
-        background-color: #6203ed;
-        border: none;
-        color: white;
-        font-size: 17px;
-        font-weight: 550;
-        padding: 8px 20px;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-        transition: 0.2s;
-    }}
-
     .stButton > button:hover {{
         background-color: #4c02b5;
         transform: translateY(-1px);
