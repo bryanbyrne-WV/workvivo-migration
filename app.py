@@ -1223,21 +1223,22 @@ if st.session_state.page == "main":
 
     if st.button("▶ Run Migration"):
 
-    # Auto-scroll to the top of the page
-    st.markdown(
-        """
-        <script>
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
+        # Auto-scroll to the top of the page
+        st.markdown(
+            """
+            <script>
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            </script>
+            """,
+            unsafe_allow_html=True
+        )
+    
+        st.session_state.page = "running"
+        st.session_state.start_migration = True
+        st.session_state.progress = 0
+        st.rerun()
+        st.stop()
 
-    st.session_state.page = "running"
-    st.session_state.start_migration = True
-    st.session_state.progress = 0
-    st.rerun()
-    st.stop()
 
 
     # ============================================================
