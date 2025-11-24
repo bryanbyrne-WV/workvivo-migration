@@ -559,19 +559,24 @@ if st.button("← Edit Environment Settings"):
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
-SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
-SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
-SOURCE_API_TOKEN = st.session_state["SOURCE_API_TOKEN"]
-SOURCE_WORKVIVO_ID = st.session_state["SOURCE_WORKVIVO_ID"]
+# Only load config values AFTER config_saved exists
+if "config_saved" not in st.session_state:
+    st.stop()
 
-TARGET_SCIM_URL = st.session_state["TARGET_SCIM_URL"]
-TARGET_API_URL = st.session_state["TARGET_API_URL"]
-TARGET_SCIM_TOKEN = st.session_state["TARGET_SCIM_TOKEN"]
-TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
-TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
+SOURCE_SCIM_URL = st.session_state.get("SOURCE_SCIM_URL", "")
+SOURCE_API_URL = st.session_state.get("SOURCE_API_URL", "")
+SOURCE_SCIM_TOKEN = st.session_state.get("SOURCE_SCIM_TOKEN", "")
+SOURCE_API_TOKEN = st.session_state.get("SOURCE_API_TOKEN", "")
+SOURCE_WORKVIVO_ID = st.session_state.get("SOURCE_WORKVIVO_ID", "")
 
-SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
+TARGET_SCIM_URL = st.session_state.get("TARGET_SCIM_URL", "")
+TARGET_API_URL = st.session_state.get("TARGET_API_URL", "")
+TARGET_SCIM_TOKEN = st.session_state.get("TARGET_SCIM_TOKEN", "")
+TARGET_API_TOKEN = st.session_state.get("TARGET_API_TOKEN", "")
+TARGET_WORKVIVO_ID = st.session_state.get("TARGET_WORKVIVO_ID", "")
+
+SPACE_CREATOR_EXTERNAL_ID = st.session_state.get("SPACE_CREATOR_EXTERNAL_ID", "")
+
 
 st.success("🔐 Configuration active — ready to run migrations.")
 
