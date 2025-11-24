@@ -1191,9 +1191,15 @@ Information and activity across key Workvivo features such as posts, comments, l
 This ensures user activity, engagement data, and content history are accurately carried over for reporting and integrations
 """)
 
-migrate_updates = st.toggle("Updates)", value=True)
+migrate_updates = st.toggle("Updates", value=True)
+migrate_kudos = st.toggle("Kudos'", value=True)
+migrate_articles = st.toggle("Articles", value=True)
+migrate_events = st.toggle("Events", value=True)
 migrate_comments = st.toggle("Comments", value=True)
 migrate_likes = st.toggle("Likes", value=True)
+migrate_globalPages = st.toggle("Global Pages", value=True)
+migrate_spacePages = st.toggle("Space Pages", value=True)
+
 
 # ============================================================
 # RUN EVERYTHING AT ONCE
