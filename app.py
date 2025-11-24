@@ -1245,11 +1245,11 @@ elif st.session_state.page == "running":
 
     # Title changes depending on state
     if st.session_state.progress >= 100:
-        st.header("🎉 Migration Complete!")
+        st.header("✅ Migration Complete!")
     elif st.session_state.cancel_requested:
         st.header("⛔ Migration Cancelled")
     else:
-        st.header("🚀 Migration In Progress")
+        st.header("Migration In Progress")
 
     # BUTTON LOGIC
     if st.session_state.progress < 100 and not st.session_state.cancel_requested:
@@ -1324,4 +1324,4 @@ elif st.session_state.page == "running":
 
         st.session_state.progress = 100
         progress_bar.progress(100)
-        ui_log("🎉 Migration Complete!")
+        ui_log("✅ Migration Complete!")
