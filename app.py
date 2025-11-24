@@ -1291,6 +1291,19 @@ if st.session_state.page == "main":
     st.session_state.migration_start_date = start_date
     st.session_state.migration_end_date = end_date
 
+    # -----------------------------------------------------------
+    # Company Name Prompt (for Global Feed creation)
+    # -----------------------------------------------------------
+    st.markdown("#### Company / Organisation Name")
+    st.session_state.phase1_company = st.text_input(
+        "Enter the company name for the Global Feed",
+        value=st.session_state.get("phase1_company", ""),
+        placeholder="Example: Workvivo, Zoom, etc..."
+    )
+    
+    if not st.session_state.phase1_company:
+        st.warning("Please enter a company name — required to create the Global Feed.")
+
     # ============================================================
     # 🏢 Organisation settings and information
     # ============================================================
@@ -1298,19 +1311,6 @@ if st.session_state.page == "main":
     st.markdown("""
     This section migrates users, spaces and space membership.
     """)
-    
-    # -----------------------------------------------------------
-    # Company Name Prompt (for Global Feed creation)
-    # -----------------------------------------------------------
-    st.markdown("#### 🏢 Company / Organisation Name")
-    st.session_state.phase1_company = st.text_input(
-        "Enter the company name for the Global Feed",
-        value=st.session_state.get("phase1_company", ""),
-        placeholder="Example: Baywater, Soho House, Acme Corp..."
-    )
-    
-    if not st.session_state.phase1_company:
-        st.warning("Please enter a company name — required to create the Global Feed.")
 
     migrate_users = st.toggle("Users", value=True, disabled=True)
     migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
