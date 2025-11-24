@@ -621,11 +621,29 @@ if "summary" not in st.session_state:
     st.session_state.summary = {
         "users_migrated": 0,
         "users_skipped": 0,
+
         "spaces_created": 0,
         "spaces_skipped": 0,
+
         "memberships_added": 0,
+
+        "updates_migrated": 0,
+        "updates_skipped": 0,
+
+        "kudos_migrated": 0,
+        "kudos_skipped": 0,
+
+        "articles_migrated": 0,
+        "articles_skipped": 0,
+
+        "events_migrated": 0,
+        "events_skipped": 0,
+
+        "global_pages_migrated": 0,
+        "space_pages_migrated": 0,
+
         "start_time": datetime.utcnow(),
-        "end_time": None
+        "end_time": None,
     }
 
 # ============================================================
@@ -1436,58 +1454,161 @@ elif st.session_state.page == "running":
 
 elif st.session_state.page == "summary":
 
-    st.header("Migration Completed Successfully")
-
     s = st.session_state.summary
 
-    st.subheader("Migration Summary")
+    st.markdown("""
+        <style>
+        .summary-card {
+            background: white;
+            padding: 18px 20px;
+            border-radius: 12px;
+            box-shadow: 0px 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 18px;
+        }
+        .summary-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #6203ed;
+            margin-bottom: 10px;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 17px;
+        }
+        .metric-label {
+            font-weight: 600;
+        }
+        .badge-green {
+            background: #28a745;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .badge-red {
+            background: #dc3545;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .badge-purple {
+            background: #6203ed;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<h1 style='color:#6203ed;'>🎉 Migration Summary</h1>", unsafe_allow_html=True)
+
+    # --------------------------------------------------------
+    # TIME & GENERAL INFO
+    # --------------------------------------------------------
+    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-title'>⏱️ Migration Timing</div>", unsafe_allow_html=True)
+
+    st.write(f"**Start:** {s['start_time'].strftime('%Y-%m-%d %H:%M:%S')}")
+    st.write(f"**End:** {s['end_time'].strftime('%Y-%m-%d %H:%M:%S')}")
+    st.write(f"**Duration:** {str(s['end_time'] - s['start_time'])}")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------------
+    # USERS
+    # --------------------------------------------------------
+    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-title'>👥 Users</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
-    **Users Migrated:** {s['users_migrated']}  
-    **Users Skipped:** {s['users_skipped']}  
+        <div class='metric-row'>
+            <div class='metric-label'>Migrated</div>
+            <div class='badge-green'>{s['users_migrated']}</div>
+        </div>
+        <div class='metric-row'>
+            <div class='metric-label'>Skipped</div>
+            <div class='badge-red'>{s['users_skipped']}</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    **Spaces Created:** {s['spaces_created']}  
-    **Spaces Skipped:** {s['spaces_skipped']}  
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    **Memberships Added:** {s['memberships_added']}  
+    # --------------------------------------------------------
+    # SPACES
+    # --------------------------------------------------------
+    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-title'>📁 Spaces</div>", unsafe_allow_html=True)
 
-    **Start Time:** {s['start_time']}  
-    **End Time:** {s['end_time']}
-    """)
+    st.markdown(f"""
+        <div class='metric-row'>
+            <div class='metric-label'>Created</div>
+            <div class='badge-green'>{s['spaces_created']}</div>
+        </div>
+        <div class='metric-row'>
+            <div class='metric-label'>Skipped</div>
+            <div class='badge-red'>{s['spaces_skipped']}</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown("---")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.subheader("Full Console Log")
-    st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
+    # --------------------------------------------------------
+    # CONTENT
+    # --------------------------------------------------------
+    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-title'>📝 Content Migration</div>", unsafe_allow_html=True)
 
+    content_metrics = [
+        ("Updates", "updates_migrated", "updates_skipped"),
+        ("Kudos", "kudos_migrated", "kudos_skipped"),
+        ("Articles", "articles_migrated", "articles_skipped"),
+        ("Events", "events_migrated", "events_skipped"),
+        ("Global Pages", "global_pages_migrated", None),
+        ("Space Pages", "space_pages_migrated", None),
+    ]
+
+    html = ""
+    for label, mig, skip in content_metrics:
+        html += f"""
+        <div class='metric-row'>
+            <div class='metric-label'>{label}</div>
+            <div>
+                <span class='badge-green'>{s[mig]}</span>
+        """
+        if skip:
+            html += f" <span class='badge-red'>{s[skip]}</span>"
+        html += "</div></div>"
+
+    st.markdown(html, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------------
+    # FULL LOG
+    # --------------------------------------------------------
+    st.subheader("📡 Full Console Log")
+    st.text_area("Console", st.session_state.get("log_output", ""), height=350)
+
+    # --------------------------------------------------------
+    # FINISH BUTTON
+    # --------------------------------------------------------
     st.markdown('<div class="green-finish">', unsafe_allow_html=True)
 
-    # ✅ FINISH BUTTON
     if st.button("Finish"):
 
-        # Clear migration-related session keys
+        # Clear migration-related session data
         for key in [
-            "progress", "log_output", "migration_finished", "cancel_requested",
-            "start_migration", "phase1_running", "live_log_placeholder",
-            "summary"
+            "progress","log_output","migration_finished","cancel_requested",
+            "start_migration","phase1_running","live_log_placeholder","summary"
         ]:
             if key in st.session_state:
                 del st.session_state[key]
 
-        # Return to main migration page
         st.session_state.page = "main"
 
-        # Inject JS to scroll to top before rerun
-        st.components.v1.html(
-            """
-            <script>
-                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-            """,
-            height=0,
-        )
-
-        # Force UI refresh
         st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
