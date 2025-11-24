@@ -1243,43 +1243,45 @@ if st.session_state.page == "main":
 # ============================================================
 elif st.session_state.page == "running":
 
-    # Title changes depending on state
+    # Determine header depending on state
     if st.session_state.progress >= 100:
-        st.header("✅ Migration Complete!")
+        st.header("🎉 Migration Complete!")
     elif st.session_state.cancel_requested:
         st.header("⛔ Migration Cancelled")
     else:
-        st.header("Migration In Progress")
+        st.header("🚀 Migration In Progress")
 
-    # BUTTON LOGIC
+    # Handle buttons depending on migration state
     if st.session_state.progress < 100 and not st.session_state.cancel_requested:
-        # Migration still running -> show CANCEL
+        # Migration still running → show cancel
         if st.button("🛑 Cancel Migration"):
             st.session_state.cancel_requested = True
             ui_log("🛑 Cancel requested by user…")
             st.rerun()
-
     else:
-        # Migration done or cancelled -> show FINISH
+        # Migration finished or cancelled → show finish button
         if st.button("✔ Finish"):
             st.session_state.page = "main"
             st.rerun()
 
-
+    # Progress bar
     progress_bar = st.progress(st.session_state.progress)
 
-    # ✅ ADD THIS BLOCK RIGHT HERE
+    # ------------------------------
+    # Loading Animation ("Migrating…")
+    # ------------------------------
     loading_placeholder = st.empty()
 
     def animate_loading():
         dots = ["", ".", "..", "..."]
         for d in dots:
-            loading_placeholder.markdown(f"### ⏳ Working{d}")
+            # STOP animation if finished or cancelled
+            if st.session_state.progress >= 100 or st.session_state.cancel_requested:
+                loading_placeholder.empty()
+                return
+            loading_placeholder.markdown(f"### ⏳ Migrating{d}")
             time.sleep(0.25)
-            if st.session_state.cancel_requested:
-                break
-    # --------------------------------
-
+    # ------------------------------
 
     # --------------------------------------------------------
     # Run migration ONLY ONCE when arriving on this page
