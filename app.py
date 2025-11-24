@@ -308,9 +308,8 @@ if "config_saved" not in st.session_state:
             }
         </style>
         """, unsafe_allow_html=True)
-
         # ----------------------------------------------------
-        # SOURCE ENVIRONMENT
+        # SOURCE ENVIRONMENT (Inside the form)
         # ----------------------------------------------------
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
         with st.expander("Source Environment", expanded=True):
@@ -318,50 +317,60 @@ if "config_saved" not in st.session_state:
             SOURCE_SCIM_URL = st.text_input(
                 "Source SCIM URL",
                 value="https://workvivo.workvivo.com/scim/v2/scim/Users/",
-                help="SCIM endpoint for reading users from the SOURCE Workvivo environment."
+                help="SCIM endpoint for reading users from the SOURCE Workvivo environment.",
+                key="SOURCE_SCIM_URL"
             )
 
             SOURCE_API_URL = st.text_input(
                 "Source API URL",
                 value="https://api.workvivo.com/v1",
-                help="Base API URL for fetching content, spaces, images and memberships from the SOURCE tenant."
+                help="Base API URL for fetching content, spaces, images and memberships from the SOURCE tenant.",
+                key="SOURCE_API_URL"
             )
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
                 value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
                 type="password",
-                help="Authentication token for SCIM user requests in the SOURCE tenant."
+                help="Authentication token for SCIM user requests in the SOURCE tenant.",
+                key="SOURCE_SCIM_TOKEN"
             )
 
             SOURCE_API_TOKEN = st.text_input(
                 "Source API Token",
                 value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
                 type="password",
-                help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
+                help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant.",
+                key="SOURCE_API_TOKEN"
             )
 
             SOURCE_WORKVIVO_ID = st.text_input(
                 "Source Workvivo-ID",
                 value="50",
-                help="Workvivo-ID header required for API requests on the SOURCE tenant."
+                help="Workvivo-ID header required for API requests on the SOURCE tenant.",
+                key="SOURCE_WORKVIVO_ID"
             )
 
-                    # ----------------------------------------------------
-            # TEST CONNECTION (Source)
-            # ----------------------------------------------------
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # ----------------------------------------------------
+        # SOURCE TEST CONNECTION (Outside form, correct indentation)
+        # ----------------------------------------------------
+        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+        with st.expander("Source Environment", expanded=False):
+
             st.markdown("### 🔌 Test Source Connection")
 
-            if st.button("Test Source Connection", key="test_source"):
+            if st.button("Test Source Connection", key="test_source_conn"):
+
                 with st.spinner("Testing source connection..."):
 
                     # ---- SCIM CHECK ----
-                    scim_ok = False
                     try:
                         test_scim = requests.get(
-                            f"{SOURCE_SCIM_URL}?count=1",
+                            f"{st.session_state['SOURCE_SCIM_URL']}?count=1",
                             headers={
-                                "Authorization": f"Bearer {SOURCE_SCIM_TOKEN}",
+                                "Authorization": f"Bearer {st.session_state['SOURCE_SCIM_TOKEN']}",
                                 "Accept": "application/json"
                             }
                         )
@@ -370,13 +379,12 @@ if "config_saved" not in st.session_state:
                         scim_ok = False
 
                     # ---- API CHECK ----
-                    api_ok = False
                     try:
                         test_api = requests.get(
-                            f"{SOURCE_API_URL}/users?skip=0&take=1",
+                            f"{st.session_state['SOURCE_API_URL']}/users?skip=0&take=1",
                             headers={
-                                "Authorization": f"Bearer {SOURCE_API_TOKEN}",
-                                "Workvivo-Id": SOURCE_WORKVIVO_ID,
+                                "Authorization": f"Bearer {st.session_state['SOURCE_API_TOKEN']}",
+                                "Workvivo-Id": st.session_state['SOURCE_WORKVIVO_ID'],
                                 "Accept": "application/json"
                             }
                         )
@@ -386,14 +394,13 @@ if "config_saved" not in st.session_state:
 
                 # ---- Display Results ----
                 if scim_ok and api_ok:
-                    st.success("✅ Source connection successful! SCIM + API responded correctly.")
+                    st.success("✅ Source connection successful!")
                 elif scim_ok and not api_ok:
-                    st.warning("⚠️ SCIM OK, but API failed. Check API URL, token or Workvivo-ID.")
+                    st.warning("⚠️ SCIM OK, but API failed. Check API URL, API token or Workvivo-ID.")
                 elif api_ok and not scim_ok:
-                    st.warning("⚠️ API OK, but SCIM failed. Check SCIM URL or SCIM token.")
+                    st.warning("⚠️ API OK, but SCIM failed. Check SCIM URL and SCIM token.")
                 else:
                     st.error("❌ Both SCIM and API tests failed. Check your source credentials.")
-
 
         st.markdown("</div>", unsafe_allow_html=True)
 
