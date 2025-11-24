@@ -1181,8 +1181,9 @@ if st.session_state.page == "main":
     This section migrates users, spaces and space membership.
     """)
 
-    migrate_users = st.toggle("Users", value=True, disabled=True)
-    migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
+    opt_migrate_users = st.toggle("Users", value=True, disabled=True)
+    opt_migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
+
 
     st.markdown("---")
 
@@ -1192,14 +1193,15 @@ if st.session_state.page == "main":
     st.markdown("### User activity on Workvivo")
     st.markdown("Migrate content & user interactions.")
 
-    migrate_updates = st.toggle("Updates", value=True)
-    migrate_kudos = st.toggle("Kudos", value=True)
-    migrate_articles = st.toggle("Articles", value=True)
-    migrate_events = st.toggle("Events", value=True)
-    migrate_comments = st.toggle("Comments", value=True)
-    migrate_likes = st.toggle("Likes", value=True)
-    migrate_globalPages = st.toggle("Global Pages", value=True)
-    migrate_spacePages = st.toggle("Space Pages", value=True)
+    opt_updates = st.toggle("Updates", value=True)
+    opt_kudos = st.toggle("Kudos", value=True)
+    opt_articles = st.toggle("Articles", value=True)
+    opt_events = st.toggle("Events", value=True)
+    opt_comments = st.toggle("Comments", value=True)
+    opt_likes = st.toggle("Likes", value=True)
+    opt_globalPages = st.toggle("Global Pages", value=True)
+    opt_spacePages = st.toggle("Space Pages", value=True)
+
 
     if st.button("▶ Run Migration"):
         st.session_state.page = "migration"
