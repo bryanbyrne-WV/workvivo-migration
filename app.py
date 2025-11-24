@@ -1309,9 +1309,3 @@ elif st.session_state.page == "running":
         st.session_state.progress = 100
         progress_bar.progress(100)
         ui_log("🎉 Migration Complete!")
-
-    # --------------------------------------------------------
-    # Console Output
-    # --------------------------------------------------------
-    st.subheader("📜 Console Output")
-    st.text_area("Live Output", st.session_state.get("log_output", ""), height=400)
