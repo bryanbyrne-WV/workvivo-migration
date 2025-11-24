@@ -1103,7 +1103,7 @@ def check_cancel():
 
 
 # ============================================================
-# MAIN PAGE (Setup)
+# MAIN PAGE (Migration Dashboard)
 # ============================================================
 if st.session_state.page == "main":
 
@@ -1214,13 +1214,12 @@ migrate_spacePages = st.toggle("Space Pages", value=True)
 # ============================================================
 # RUN EVERYTHING AT ONCE (MAIN PAGE)
 # ============================================================
-if st.session_state.page == "main":
-
     if st.button("▶ Run Migration"):
-        st.session_state.page = "running"   # switch to progress page
-        st.session_state.progress = 0       # reset progress bar
-        st.session_state.start_migration = True  # tells the running page to execute real migration
+        st.session_state.page = "running"   # go to progress page
+        st.session_state.start_migration = True
+        st.session_state.progress = 0
         st.rerun()
+
 
     # =========================================================
     # 📜 LIVE LOG OUTPUT — ONLY SHOW ON MAIN PAGE
@@ -1246,34 +1245,45 @@ if st.session_state.page == "main":
 
 
 # ============================================================
-# MIGRATION RUNNING PAGE
+# RUNNING PAGE — PROGRESS VIEW
 # ============================================================
-if st.session_state.get("page") == "running":
+if st.session_state.page == "running":
 
     st.header("🚀 Migration In Progress")
 
     # Back button
-    if st.button("⬅ Back to Setup"):
+    if st.button("⬅ Back to Dashboard"):
         st.session_state.page = "main"
         st.rerun()
 
-    st.markdown("### Processing migration… Please wait.")
-
-    # Progress bar
-    if "progress" not in st.session_state:
-        st.session_state.progress = 0
-
     progress_bar = st.progress(st.session_state.progress)
 
-    # Simulated progress: replace with your actual migration operations
-    for i in range(st.session_state.progress, 101):
-        st.session_state.progress = i
-        progress_bar.progress(i)
-        time.sleep(0.03)
+    # Run migration ONCE
+    if st.session_state.get("start_migration", False):
 
-    st.success("🎉 Migration completed!")
+        st.session_state.start_migration = False  # prevent repeat execution
 
-    # Show log output live
-    st.subheader("📜 Migration Log")
+        ui_log("🚀 Starting migration...")
+
+        steps = [
+            ("Migrating users…", lambda: migrate_users(st.session_state.phase1_active_only)),
+            ("Migrating spaces…", migrate_spaces),
+            ("Migrating memberships…", migrate_memberships)
+        ]
+
+        total_steps = len(steps)
+        pct_per_step = int(100 / total_steps)
+
+        for i, (label, fn) in enumerate(steps):
+            ui_log(label)
+            fn()
+            st.session_state.progress = (i + 1) * pct_per_step
+            progress_bar.progress(st.session_state.progress)
+
+        st.session_state.progress = 100
+        progress_bar.progress(100)
+        ui_log("🎉 Migration Complete!")
+
+    # Live log
+    st.subheader("📜 Console Output")
     st.text_area("Live Output", st.session_state.get("log_output", ""), height=400)
-
