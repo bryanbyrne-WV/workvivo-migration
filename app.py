@@ -860,9 +860,12 @@ def migrate_users(active_only):
 
         if resp.status_code in (200, 201):
             migrated += 1
+            st.session_state.summary["users_migrated"] += 1
             ui_log(f"✅ Created {email}")
         else:
             skipped += 1
+            st.session_state.summary["spaces_skipped"] += 1
+            st.session_state.summary["users_skipped"] += 1
             ui_log(f"⚠️ Skipped {email}: {resp.status_code}")
 
     ui_log(f"=== USER MIGRATION END — migrated={migrated}, skipped={skipped} ===")
@@ -957,6 +960,7 @@ def migrate_spaces():
             continue
 
         created += 1
+        st.session_state.summary["spaces_created"] += 1
         ui_log(f"✅ Created space '{name}'")
 
     ui_log(f"=== SPACE MIGRATION END — created={created}, skipped={skipped} ===")
@@ -1238,6 +1242,18 @@ if st.session_state.page == "main":
         st.rerun()
         st.stop()
 
+    # Migration result summary
+    if "summary" not in st.session_state:
+        st.session_state.summary = {
+            "users_migrated": 0,
+            "users_skipped": 0,
+            "spaces_created": 0,
+            "spaces_skipped": 0,
+            "memberships_added": 0,
+            "warnings": [],
+            "start_time": None,
+            "end_time": None
+        }
 
 
 
@@ -1380,3 +1396,44 @@ elif st.session_state.page == "running":
         height=400,
         disabled=True
     )
+
+elif st.session_state.page == "summary":
+
+    st.header("🎉 Migration Completed Successfully")
+
+    s = st.session_state.summary
+
+    st.subheader("📊 Migration Summary")
+
+    st.markdown(f"""
+    **Users Migrated:** {s['users_migrated']}  
+    **Users Skipped:** {s['users_skipped']}  
+
+    **Spaces Created:** {s['spaces_created']}  
+    **Spaces Skipped:** {s['spaces_skipped']}  
+
+    **Memberships Added:** {s['memberships_added']}  
+
+    **Start Time:** {s['start_time']}  
+    **End Time:** {s['end_time']}
+    """)
+
+    st.markdown("---")
+
+    st.subheader("⚠️ Warnings")
+    if len(s["warnings"]) == 0:
+        st.success("No warnings during migration.")
+    else:
+        for w in s["warnings"]:
+            st.warning(w)
+
+    st.markdown("---")
+
+    st.subheader("📜 Full Console Log")
+    st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
+
+    if st.button("Finish"):
+        # Reset everything so the app is fresh
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
