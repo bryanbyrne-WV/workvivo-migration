@@ -22,7 +22,6 @@ if "page" not in st.session_state:
 # WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
 # ============================================================
 WORKVIVO_LOGO_URL = "https://www.festivalofwork.com/media/Workvivo%20(1).png"
-st.markdown(advanced_styles, unsafe_allow_html=True)
 
 advanced_styles = f"""
 <style>
@@ -231,6 +230,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown(advanced_styles, unsafe_allow_html=True)
 
 
 # ============================
