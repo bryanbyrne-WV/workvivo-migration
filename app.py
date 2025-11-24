@@ -1251,8 +1251,8 @@ if st.session_state.page == "main":
 
     
     if st.button("▶ Run Migration"):
-
-        # Smooth scroll to top
+    
+        # Smooth scroll (optional)
         st.components.v1.html(
             """
             <script>
@@ -1261,15 +1261,18 @@ if st.session_state.page == "main":
             """,
             height=0,
         )
-
-        # Set migration state
+    
         st.session_state.start_migration = True
         st.session_state.migration_finished = False
         st.session_state.cancel_requested = False
         st.session_state.progress = 0
-
-        # 🚀 SWITCH TO RUNNING PAGE
+    
+        # Switch page
         st.session_state.page = "running"
+    
+        # ⭐ REQUIRED or user must click twice
+        st.rerun()
+
     # ============================================================
     # LIVE LOG OUTPUT (optional)
     # ============================================================
