@@ -1222,13 +1222,22 @@ if st.session_state.page == "main":
     migrate_spacePages = st.toggle("Space Pages", value=True)
 
     if st.button("▶ Run Migration"):
-        st.session_state.page = "running"
-        st.session_state.start_migration = True
-        st.session_state.progress = 0
-        st.rerun()
-        st.stop()  # ← This fixes the issue
 
+    # Auto-scroll to the top of the page
+    st.markdown(
+        """
+        <script>
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
 
+    st.session_state.page = "running"
+    st.session_state.start_migration = True
+    st.session_state.progress = 0
+    st.rerun()
+    st.stop()
 
 
     # ============================================================
