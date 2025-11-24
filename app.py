@@ -1109,117 +1109,106 @@ if st.session_state.page == "main":
 
     st.markdown("## Migrate Workvivo Data")
 
-    # (your date range UI here)
-    # (your toggles here)
-    # (any other migration options here)
+    # ============================================================
+    # 📅 Date Range for Content Migration
+    # ============================================================
+    st.markdown("#### 📅 Date Range")
 
+    date_options = [
+        "Last 6 months",
+        "Last 1 year",
+        "Last 2 years",
+        "Last 3 years",
+        "All time",
+        "Custom range",
+    ]
 
+    # Default or previous value
+    if "migration_date_choice" not in st.session_state:
+        st.session_state.migration_date_choice = "Last 1 year"
 
-# ============================================================
-# 📅 Date Range for Content Migration
-# ============================================================
+    date_choice = st.selectbox(
+        "Select date range",
+        date_options,
+        index=date_options.index(st.session_state.migration_date_choice),
+        key="migration_date_choice",
+    )
 
-st.markdown("#### 📅 Date Range")
+    from datetime import datetime, timedelta
 
-date_options = [
-    "Last 6 months",
-    "Last 1 year",
-    "Last 2 years",
-    "Last 3 years",
-    "All time",
-    "Custom range",
-]
-
-# Default or previous value
-if "migration_date_choice" not in st.session_state:
-    st.session_state.migration_date_choice = "Last 1 year"
-
-date_choice = st.selectbox(
-    "Select date range",
-    date_options,
-    index=date_options.index(st.session_state.migration_date_choice),
-    key="migration_date_choice",
-)
-
-from datetime import datetime, timedelta
-
-today = datetime.utcnow()
-start_date = None
-end_date = today
-
-if date_choice == "Last 6 months":
-    start_date = today - timedelta(days=182)
-elif date_choice == "Last 1 year":
-    start_date = today - timedelta(days=365)
-elif date_choice == "Last 2 years":
-    start_date = today - timedelta(days=365 * 2)
-elif date_choice == "Last 3 years":
-    start_date = today - timedelta(days=365 * 3)
-elif date_choice == "All time":
+    today = datetime.utcnow()
     start_date = None
-elif date_choice == "Custom range":
-    st.markdown("##### Custom Range")
-    start_date = st.date_input("Start date")
-    end_date = st.date_input("End date")
+    end_date = today
 
-# Format for display
-def fmt(d):
-    if d is None:
-        return "All time"
-    if hasattr(d, "strftime"):
-        return d.strftime("%b %d, %Y")
-    return str(d)
+    if date_choice == "Last 6 months":
+        start_date = today - timedelta(days=182)
+    elif date_choice == "Last 1 year":
+        start_date = today - timedelta(days=365)
+    elif date_choice == "Last 2 years":
+        start_date = today - timedelta(days=365 * 2)
+    elif date_choice == "Last 3 years":
+        start_date = today - timedelta(days=365 * 3)
+    elif date_choice == "All time":
+        start_date = None
+    elif date_choice == "Custom range":
+        st.markdown("##### Custom Range")
+        start_date = st.date_input("Start date")
+        end_date = st.date_input("End date")
 
-pretty_start = fmt(start_date)
-pretty_end = fmt(end_date)
+    # Format for display
+    def fmt(d):
+        if d is None:
+            return "All time"
+        if hasattr(d, "strftime"):
+            return d.strftime("%b %d, %Y")
+        return str(d)
 
-st.info(f"📌 Migrating content from **{pretty_start}** to **{pretty_end}**")
+    pretty_start = fmt(start_date)
+    pretty_end = fmt(end_date)
 
-# Save for use in migration functions
-st.session_state.migration_start_date = start_date
-st.session_state.migration_end_date = end_date
+    st.info(f"📌 Migrating content from **{pretty_start}** to **{pretty_end}**")
 
+    # Save for use in migration functions
+    st.session_state.migration_start_date = start_date
+    st.session_state.migration_end_date = end_date
 
-# ============================================================
-# 🏢 Organisation settings and information
-# ============================================================
-st.markdown("### Organisation settings and information")
+    # ============================================================
+    # 🏢 Organisation settings and information
+    # ============================================================
+    st.markdown("### Organisation settings and information")
 
-st.markdown("""
-This section migrates the core organisational setup in Workvivo including users, spaces, and all related details such as descriptions, logos, visibility settings, and memberships.
-""")
+    st.markdown("""
+    This section migrates the core organisational setup in Workvivo including users, spaces, and all related details such as descriptions, logos, visibility settings, and memberships.
+    """)
 
-# Users + Spaces always ON (disabled toggles)
-migrate_users = st.toggle("Users", value=True, disabled=True)
-migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
+    migrate_users = st.toggle("Users", value=True, disabled=True)
+    migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
 
-# Spacer
-st.markdown("---")
+    st.markdown("---")
 
-# ============================================================
-# 👥 User activity on Workvivo
-# ============================================================
-st.markdown("### User activity on Workvivo")
+    # ============================================================
+    # 👥 User activity on Workvivo
+    # ============================================================
+    st.markdown("### User activity on Workvivo")
 
-st.markdown("""
-Information and activity across key Workvivo features such as posts, comments, likes, and interactions within spaces will be collected and mapped to the correct users.
-This ensures user activity, engagement data, and content history are accurately carried over for reporting and integrations
-""")
+    st.markdown("""
+    Information and activity across key Workvivo features such as posts, comments, likes, and interactions within spaces will be collected and mapped to the correct users.
+    """)
 
-migrate_updates = st.toggle("Updates", value=True)
-migrate_kudos = st.toggle("Kudos", value=True)
-migrate_articles = st.toggle("Articles", value=True)
-migrate_events = st.toggle("Events", value=True)
-migrate_comments = st.toggle("Comments", value=True)
-migrate_likes = st.toggle("Likes", value=True)
-migrate_globalPages = st.toggle("Global Pages", value=True)
-migrate_spacePages = st.toggle("Space Pages", value=True)
+    migrate_updates = st.toggle("Updates", value=True)
+    migrate_kudos = st.toggle("Kudos", value=True)
+    migrate_articles = st.toggle("Articles", value=True)
+    migrate_events = st.toggle("Events", value=True)
+    migrate_comments = st.toggle("Comments", value=True)
+    migrate_likes = st.toggle("Likes", value=True)
+    migrate_globalPages = st.toggle("Global Pages", value=True)
+    migrate_spacePages = st.toggle("Space Pages", value=True)
 
     # ============================================================
     # RUN EVERYTHING AT ONCE
     # ============================================================
     if st.button("▶ Run Migration"):
-        st.session_state.page = "running"   # go to progress page
+        st.session_state.page = "running"   # Go to progress page
         st.session_state.start_migration = True
         st.session_state.progress = 0
         st.rerun()
@@ -1241,7 +1230,6 @@ migrate_spacePages = st.toggle("Space Pages", value=True)
             height=400,
             disabled=True
         )
-
 
 # ============================================================
 # RUNNING PAGE — PROGRESS VIEW
