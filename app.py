@@ -224,12 +224,12 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
 st.markdown("""
 <style>
 
-div[data-testid="stButton"][key="summary_finish_btn"] > button {
-    background-color: #28a745 !important; /* Green */
+/* Style ONLY the FINISH button */
+div.stButton > button[purpose="finish"] {
+    background-color: #28a745 !important;
     color: white !important;
     border: none !important;
     padding: 12px 28px !important;
@@ -241,12 +241,12 @@ div[data-testid="stButton"][key="summary_finish_btn"] > button {
     transition: 0.2s;
 }
 
-div[data-testid="stButton"][key="summary_finish_btn"] > button:hover {
-    background-color: #1e7e34 !important; /* Darker green */
+div.stButton > button[purpose="finish"]:hover {
+    background-color: #1e7e34 !important;
     transform: translateY(-1px);
 }
 
-div[data-testid="stButton"][key="summary_finish_btn"] > button:active {
+div.stButton > button[purpose="finish"]:active {
     transform: scale(0.97);
 }
 
@@ -1468,7 +1468,8 @@ elif st.session_state.page == "summary":
     st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
 
     st.markdown('<div class="green-finish">', unsafe_allow_html=True)
-    if st.button("Finish", key="summary_finish_btn"):
+    if st.markdown('<button purpose="finish">Finish</button>', unsafe_allow_html=True):
+            pass
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
