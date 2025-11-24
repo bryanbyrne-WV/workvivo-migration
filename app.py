@@ -1455,7 +1455,18 @@ elif st.session_state.page == "summary":
 
     st.markdown('<div class="green-finish">', unsafe_allow_html=True)
     if st.button("Finish"):
-        for key in list(st.session_state.keys()):
+
+    # Clear ONLY migration-related data
+    for key in ["progress", "log_output", "migration_finished", "cancel_requested",
+                "start_migration", "phase1_running", "live_log_placeholder",
+                "summary"]:
+        if key in st.session_state:
             del st.session_state[key]
-        st.rerun()
+
+    # Go back to migration page
+    st.session_state.page = "main"
+
+    # Force a full refresh
+    st.rerun()
+
     st.markdown('</div>', unsafe_allow_html=True)
