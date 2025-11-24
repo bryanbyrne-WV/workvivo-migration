@@ -11,29 +11,11 @@ import mimetypes
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
-# ============================================================
-# PAGE ROUTING (FIXED & STABLE)
-# ============================================================
-
-# Initialise page if missing
-if "page" not in st.session_state:
-    st.session_state.page = "config"
-
-# Shortcut flags used across pages
-if "config_saved" not in st.session_state:
-    st.session_state.config_saved = False
-
-# Helper: change page cleanly
-def go_to(page_name: str):
-    st.session_state.page = page_name
-    st.rerun()
-
-
 # ==========================================
 # Page state (2-page layout)
 # ==========================================
 if "page" not in st.session_state:
-    st.session_state.page = "config"
+    st.session_state.page = "main"   # "main" = setup page, "running" = progress page
 
 
 # ============================================================
@@ -307,178 +289,196 @@ st.markdown("""
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
 # =========================================================
-# ============================================================
-# PAGE 1 — CONFIG PAGE
-# ============================================================
-def render_config_page():
+st.markdown("<div id='_config'></div>", unsafe_allow_html=True)
 
-    st.markdown("<div id='_config'></div>", unsafe_allow_html=True)
+if "config_saved" not in st.session_state:
 
-    # If config NOT saved → show form
-    if not st.session_state.config_saved:
+    with st.form("config_form"):
 
-        with st.form("config_form"):
+        st.header("🔐 Environment Configuration")
 
-            st.header("🔐 Environment Configuration")
+        st.markdown("""
+        <style>
+            .config-card {
+                background: #ffffff;
+                padding: 18px 22px;
+                border-radius: 10px;
+                box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
+                margin-bottom: 18px;
+            }
+            summary {
+                font-size: 18px;
+                font-weight: 600;
+                color: #6203ed;
+                cursor: pointer;
+                padding: 6px 0;
+            }
+        </style>
+        """, unsafe_allow_html=True)
 
-            # ------------------------------
-            # SOURCE ENVIRONMENT
-            # ------------------------------
-            st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-            with st.expander("Source Environment", expanded=True):
+        # ----------------------------------------------------
+        # SOURCE ENVIRONMENT
+        # ----------------------------------------------------
+        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+        with st.expander("Source Environment", expanded=True):
 
-                SOURCE_SCIM_URL = st.text_input(
-                    "Source SCIM URL",
-                    value="https://workvivo.workvivo.com/scim/v2/scim/Users/",
-                )
-
-                SOURCE_API_URL = st.text_input(
-                    "Source API URL",
-                    value="https://api.workvivo.com/v1",
-                )
-
-                SOURCE_SCIM_TOKEN = st.text_input(
-                    "Source SCIM Token",
-                    value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
-                    type="password",
-                )
-
-                SOURCE_API_TOKEN = st.text_input(
-                    "Source API Token",
-                    value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
-                    type="password",
-                )
-
-                SOURCE_WORKVIVO_ID = st.text_input(
-                    "Source Workvivo-ID",
-                    value="51",
-                )
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-            # ------------------------------
-            # TARGET ENVIRONMENT
-            # ------------------------------
-            st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-            with st.expander("Target Environment", expanded=True):
-
-                TARGET_SCIM_URL = st.text_input(
-                    "Target SCIM URL",
-                    value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/",
-                )
-
-                TARGET_API_URL = st.text_input(
-                    "Target API URL",
-                    value="https://api.eu2.workvivo.com/v1",
-                )
-
-                TARGET_SCIM_TOKEN = st.text_input(
-                    "Target SCIM Token",
-                    value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
-                    type="password",
-                )
-
-                TARGET_API_TOKEN = st.text_input(
-                    "Target API Token",
-                    value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
-                    type="password",
-                )
-
-                TARGET_WORKVIVO_ID = st.text_input(
-                    "Target Workvivo-ID",
-                    value="3000384",
-                )
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-            # ------------------------------
-            # MIGRATION USER
-            # ------------------------------
-            st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-
-            SPACE_CREATOR_EXTERNAL_ID = st.text_input(
-                "Migration External ID (Space Creator)",
-                value="workvivo-migration-user",
+            SOURCE_SCIM_URL = st.text_input(
+                "Source SCIM URL",
+                value="https://workvivo.workvivo.com/scim/v2/scim/Users/",
+                help="SCIM endpoint for reading users from the SOURCE Workvivo environment."
             )
 
-            st.markdown("</div>", unsafe_allow_html=True)
+            SOURCE_API_URL = st.text_input(
+                "Source API URL",
+                value="https://api.workvivo.com/v1",
+                help="Base API URL for fetching content, spaces, images and memberships from the SOURCE tenant."
+            )
 
-            # ------------------------------
-            # VALIDATION
-            # ------------------------------
-            errors = []
+            SOURCE_SCIM_TOKEN = st.text_input(
+                "Source SCIM Token",
+                value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
+                type="password",
+                help="Authentication token for SCIM user requests in the SOURCE tenant."
+            )
 
-            if not SOURCE_SCIM_URL:
-                errors.append("Source SCIM URL is required.")
-            if not SOURCE_API_URL:
-                errors.append("Source API URL is required.")
-            if not SOURCE_SCIM_TOKEN:
-                errors.append("Source SCIM Token is required.")
-            if not SOURCE_API_TOKEN:
-                errors.append("Source API Token is required.")
-            if not SOURCE_WORKVIVO_ID:
-                errors.append("Source Workvivo-ID is required.")
+            SOURCE_API_TOKEN = st.text_input(
+                "Source API Token",
+                value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
+                type="password",
+                help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
+            )
 
-            if not TARGET_SCIM_URL:
-                errors.append("Target SCIM URL is required.")
-            if not TARGET_API_URL:
-                errors.append("Target API URL is required.")
-            if not TARGET_SCIM_TOKEN:
-                errors.append("Target SCIM Token is required.")
-            if not TARGET_API_TOKEN:
-                errors.append("Target API Token is required.")
-            if not TARGET_WORKVIVO_ID:
-                errors.append("Target Workvivo-ID is required.")
+            SOURCE_WORKVIVO_ID = st.text_input(
+                "Source Workvivo-ID",
+                value="51",
+                help="Workvivo-ID header required for API requests on the SOURCE tenant."
+            )
 
-            if not SPACE_CREATOR_EXTERNAL_ID:
-                errors.append("Migration External ID is required.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-            # Show warnings
+        # ----------------------------------------------------
+        # TARGET ENVIRONMENT
+        # ----------------------------------------------------
+        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+        with st.expander("Target Environment", expanded=True):
+
+            TARGET_SCIM_URL = st.text_input(
+                "Target SCIM URL",
+                value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/",
+                help="SCIM endpoint for creating users in the TARGET Workvivo environment."
+            )
+
+            TARGET_API_URL = st.text_input(
+                "Target API URL",
+                value="https://api.eu2.workvivo.com/v1",
+                help="Base API URL for creating spaces, memberships and content in the TARGET tenant."
+            )
+
+            TARGET_SCIM_TOKEN = st.text_input(
+                "Target SCIM Token",
+                value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
+                type="password",
+                help="Authentication token for SCIM user creation inside the TARGET tenant."
+            )
+
+            TARGET_API_TOKEN = st.text_input(
+                "Target API Token",
+                value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
+                type="password",
+                help="Bearer token for creating spaces, uploading images and writing content to the TARGET tenant."
+            )
+
+            TARGET_WORKVIVO_ID = st.text_input(
+                "Target Workvivo-ID",
+                value="3000384",
+                help="Workvivo-ID header required for API requests on the TARGET tenant."
+            )
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # ----------------------------------------------------
+        # MIGRATION USER (SPACE CREATOR)
+        # ----------------------------------------------------
+        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+
+        SPACE_CREATOR_EXTERNAL_ID = st.text_input(
+            "Migration External ID (Space Creator)",
+            value="workvivo-migration-user",
+            help="External ID of the system user used when creating spaces or system-owned content in the TARGET tenant."
+        )
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+               # ----------------------------------------------------
+        # VALIDATION + BUTTON STYLING
+        # ----------------------------------------------------
+        errors = []
+
+        # Required source fields
+        if not SOURCE_SCIM_URL:
+            errors.append("Source SCIM URL is required.")
+        if not SOURCE_API_URL:
+            errors.append("Source API URL is required.")
+        if not SOURCE_SCIM_TOKEN:
+            errors.append("Source SCIM Token is required.")
+        if not SOURCE_API_TOKEN:
+            errors.append("Source API Token is required.")
+        if not SOURCE_WORKVIVO_ID:
+            errors.append("Source Workvivo-ID is required.")
+
+        # Required target fields
+        if not TARGET_SCIM_URL:
+            errors.append("Target SCIM URL is required.")
+        if not TARGET_API_URL:
+            errors.append("Target API URL is required.")
+        if not TARGET_SCIM_TOKEN:
+            errors.append("Target SCIM Token is required.")
+        if not TARGET_API_TOKEN:
+            errors.append("Target API Token is required.")
+        if not TARGET_WORKVIVO_ID:
+            errors.append("Target Workvivo-ID is required.")
+
+        # Required migration user
+        if not SPACE_CREATOR_EXTERNAL_ID:
+            errors.append("Migration External ID (Space Creator) is required.")
+
+        # Show warnings
+        if errors:
             for e in errors:
                 st.warning("⚠️ " + e)
 
-            submitted = st.form_submit_button(
-                "Save Configuration",
-                disabled=len(errors) > 0
-            )
+        # Add styling for purple buttons
+        st.markdown("""
+        <style>
+        .purple-btn > button {
+            background-color: #6203ed !important;
+            color: white !important;
+            border: none !important;
+            padding: 10px 26px !important;
+            font-size: 17px !important;
+            font-weight: 600 !important;
+            border-radius: 6px !important;
+            height: 48px !important;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+            transition: 0.2s;
+        }
+        .purple-btn > button:hover {
+            background-color: #4c02b5 !important;
+            transform: translateY(-1px);
+        }
+        .purple-btn > button:active {
+            transform: scale(0.98);
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
-        # ------------------------------
-        # PROCESS SAVE (outside form)
-        # ------------------------------
-        if submitted:
-
-            # Save values to session
-            st.session_state.SOURCE_SCIM_URL = SOURCE_SCIM_URL
-            st.session_state.SOURCE_API_URL = SOURCE_API_URL
-            st.session_state.SOURCE_SCIM_TOKEN = SOURCE_SCIM_TOKEN
-            st.session_state.SOURCE_API_TOKEN = SOURCE_API_TOKEN
-            st.session_state.SOURCE_WORKVIVO_ID = SOURCE_WORKVIVO_ID
-
-            st.session_state.TARGET_SCIM_URL = TARGET_SCIM_URL
-            st.session_state.TARGET_API_URL = TARGET_API_URL
-            st.session_state.TARGET_SCIM_TOKEN = TARGET_SCIM_TOKEN
-            st.session_state.TARGET_API_TOKEN = TARGET_API_TOKEN
-            st.session_state.TARGET_WORKVIVO_ID = TARGET_WORKVIVO_ID
-
-            st.session_state.SPACE_CREATOR_EXTERNAL_ID = SPACE_CREATOR_EXTERNAL_ID
-
-            st.session_state.config_saved = True
-
-            st.success("Configuration saved! Click Continue to proceed.")
-
-            if st.button("➡ Continue"):
-                go_to("main")
-
-        return  # end of config page
-
-    # -----------------------------------------------------------
-    # If config *already saved* → show the Back to Edit button
-    # -----------------------------------------------------------
-    st.success("🔐 Configuration active")
-
-    if st.button("← Edit Environment Settings"):
-        st.session_state.config_saved = False
-        go_to("config")
+        # SAVE BUTTON (purple)
+        st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
+        submitted = st.form_submit_button(
+            "Save Configuration",
+            disabled=len(errors) > 0
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # ----------------------------------------------------
     # OUTSIDE THE FORM — PROCESS SAVE
@@ -507,21 +507,13 @@ def render_config_page():
         # CONTINUE BUTTON (purple)
         st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
         if st.button("➡ Continue"):
-            st.session_state.page = "main"   # ← FIX
             st.rerun()
-
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.stop()
 
     st.stop()
 
-# ============================================================
-# PAGE ROUTER HELPERS (NEW)
-# ============================================================
-def go_to(page_name):
-    st.session_state.page = page_name
-    st.rerun()
 
 # =========================================================
 # CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
@@ -559,24 +551,19 @@ if st.button("← Edit Environment Settings"):
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# Only load config values AFTER config_saved exists
-if "config_saved" not in st.session_state:
-    st.stop()
+SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
+SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
+SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
+SOURCE_API_TOKEN = st.session_state["SOURCE_API_TOKEN"]
+SOURCE_WORKVIVO_ID = st.session_state["SOURCE_WORKVIVO_ID"]
 
-SOURCE_SCIM_URL = st.session_state.get("SOURCE_SCIM_URL", "")
-SOURCE_API_URL = st.session_state.get("SOURCE_API_URL", "")
-SOURCE_SCIM_TOKEN = st.session_state.get("SOURCE_SCIM_TOKEN", "")
-SOURCE_API_TOKEN = st.session_state.get("SOURCE_API_TOKEN", "")
-SOURCE_WORKVIVO_ID = st.session_state.get("SOURCE_WORKVIVO_ID", "")
+TARGET_SCIM_URL = st.session_state["TARGET_SCIM_URL"]
+TARGET_API_URL = st.session_state["TARGET_API_URL"]
+TARGET_SCIM_TOKEN = st.session_state["TARGET_SCIM_TOKEN"]
+TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
+TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
 
-TARGET_SCIM_URL = st.session_state.get("TARGET_SCIM_URL", "")
-TARGET_API_URL = st.session_state.get("TARGET_API_URL", "")
-TARGET_SCIM_TOKEN = st.session_state.get("TARGET_SCIM_TOKEN", "")
-TARGET_API_TOKEN = st.session_state.get("TARGET_API_TOKEN", "")
-TARGET_WORKVIVO_ID = st.session_state.get("TARGET_WORKVIVO_ID", "")
-
-SPACE_CREATOR_EXTERNAL_ID = st.session_state.get("SPACE_CREATOR_EXTERNAL_ID", "")
-
+SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
 st.success("🔐 Configuration active — ready to run migrations.")
 
@@ -1117,14 +1104,14 @@ def check_cancel():
 
 
 # ============================================================
-# PAGE 2 — MAIN MIGRATION DASHBOARD
+# MAIN PAGE (Migration Dashboard)
 # ============================================================
-def render_main_page():
+if st.session_state.page == "main":
 
     st.markdown("## Migrate Workvivo Data")
 
     # ============================================================
-    # 📅 DATE RANGE
+    # 📅 Date Range for Content Migration
     # ============================================================
     st.markdown("#### 📅 Date Range")
 
@@ -1184,43 +1171,45 @@ def render_main_page():
     st.session_state.migration_end_date = end_date
 
     # ============================================================
-    # 🏢 ORGANISATION INFO
+    # 🏢 Organisation settings and information
     # ============================================================
     st.markdown("### Organisation settings and information")
     st.markdown("""
     This section migrates users, spaces and space membership.
     """)
 
-    opt_migrate_users = st.toggle("Users", value=True, disabled=True)
-    opt_migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
+    migrate_users = st.toggle("Users", value=True, disabled=True)
+    migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
 
     st.markdown("---")
 
     # ============================================================
-    # 👥 USER ACTIVITY TOGGLES
+    # 👥 User activity on Workvivo
     # ============================================================
     st.markdown("### User activity on Workvivo")
     st.markdown("Migrate content & user interactions.")
 
-    opt_updates = st.toggle("Updates", value=True)
-    opt_kudos = st.toggle("Kudos", value=True)
-    opt_articles = st.toggle("Articles", value=True)
-    opt_events = st.toggle("Events", value=True)
-    opt_comments = st.toggle("Comments", value=True)
-    opt_likes = st.toggle("Likes", value=True)
-    opt_globalPages = st.toggle("Global Pages", value=True)
-    opt_spacePages = st.toggle("Space Pages", value=True)
+    migrate_updates = st.toggle("Updates", value=True)
+    migrate_kudos = st.toggle("Kudos", value=True)
+    migrate_articles = st.toggle("Articles", value=True)
+    migrate_events = st.toggle("Events", value=True)
+    migrate_comments = st.toggle("Comments", value=True)
+    migrate_likes = st.toggle("Likes", value=True)
+    migrate_globalPages = st.toggle("Global Pages", value=True)
+    migrate_spacePages = st.toggle("Space Pages", value=True)
 
-    # ============================================================
-    # RUN MIGRATION BUTTON
-    # ============================================================
     if st.button("▶ Run Migration"):
+        st.session_state.page = "running"
         st.session_state.start_migration = True
         st.session_state.progress = 0
-        go_to("running")  # <-- correct navigation
+        st.rerun()
+        st.stop()  # ← This fixes the issue
+
+
+
 
     # ============================================================
-    # Live Log Output (Shown only if already running)
+    # LIVE LOG OUTPUT (optional)
     # ============================================================
     if "live_log_placeholder" not in st.session_state:
         st.session_state.live_log_placeholder = st.empty()
@@ -1239,17 +1228,17 @@ def render_main_page():
 
 
 # ============================================================
-# PAGE 3 — RUNNING MIGRATION
+# MIGRATION PAGE
 # ============================================================
-def render_running_page():
+elif st.session_state.page == "running":
 
     st.header("🚀 Migration In Progress")
 
-    # BACK BUTTON
+    # Back button
     if st.button("⬅ Back to Dashboard"):
-        go_to("main")
+        st.session_state.page = "main"
+        st.rerun()
 
-    # PROGRESS BAR
     progress_bar = st.progress(st.session_state.progress)
 
     # --------------------------------------------------------
@@ -1261,7 +1250,6 @@ def render_running_page():
 
         ui_log("🚀 Starting migration...")
 
-        # ---- define steps (YOUR ORIGINAL LOGIC) ----
         steps = [
             ("Migrating users…", lambda: migrate_users(st.session_state.phase1_active_only)),
             ("Migrating spaces…", migrate_spaces),
@@ -1271,25 +1259,18 @@ def render_running_page():
         total_steps = len(steps)
         pct = int(100 / total_steps)
 
-        # ---- loop through steps with progress ----
         for i, (label, fn) in enumerate(steps):
             ui_log(label)
             fn()
             st.session_state.progress = (i + 1) * pct
             progress_bar.progress(st.session_state.progress)
 
-        # ---- finish ----
         st.session_state.progress = 100
         progress_bar.progress(100)
         ui_log("🎉 Migration Complete!")
 
     # --------------------------------------------------------
-    # LIVE LOG OUTPUT
+    # Console Output
     # --------------------------------------------------------
     st.subheader("📜 Console Output")
-
-    st.text_area(
-        "Live Output",
-        st.session_state.get("log_output", ""),
-        height=400
-    )
+    st.text_area("Live Output", st.session_state.get("log_output", ""), height=400)
