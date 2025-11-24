@@ -1405,11 +1405,11 @@ elif st.session_state.page == "running":
 
 elif st.session_state.page == "summary":
 
-    st.header("🎉 Migration Completed Successfully")
+    st.header("Migration Completed Successfully")
 
     s = st.session_state.summary
 
-    st.subheader("📊 Migration Summary")
+    st.subheader("Migration Summary")
 
     st.markdown(f"""
     **Users Migrated:** {s['users_migrated']}  
@@ -1426,16 +1426,7 @@ elif st.session_state.page == "summary":
 
     st.markdown("---")
 
-    st.subheader("⚠️ Warnings")
-    if len(s["warnings"]) == 0:
-        st.success("No warnings during migration.")
-    else:
-        for w in s["warnings"]:
-            st.warning(w)
-
-    st.markdown("---")
-
-    st.subheader("📜 Full Console Log")
+    st.subheader("Full Console Log")
     st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
 
     if st.button("Finish"):
