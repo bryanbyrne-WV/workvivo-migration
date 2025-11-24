@@ -179,6 +179,30 @@ advanced_styles = f"""
 
 </style>
 """
+st.markdown("""
+<style>
+
+/* ===== PURPLE TOGGLE SWITCHES ===== */
+
+div.stSwitch > label > div[data-testid="stTickBar"] {
+    background-color: #ccc !important; /* background of OFF state */
+    border-radius: 20px !important;
+}
+
+div.stSwitch > label > div[data-testid="stTickBar"] > div {
+    background-color: #6203ed !important; /* Purple thumb when ON */
+    border-radius: 16px !important;
+    height: 22px !important;
+    width: 22px !important;
+    margin-top: -2px !important;
+}
+
+div.stSwitch > label > div[data-testid="stTickBar"][aria-checked="true"] {
+    background-color: #d7c4ff !important; /* Light purple track when ON */
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # Brand Logo (Centered)
 st.markdown("""
