@@ -342,21 +342,21 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
-                value="",
+                value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
                 type="password",
                 help="Authentication token for SCIM user requests in the SOURCE tenant."
             )
 
             SOURCE_API_TOKEN = st.text_input(
                 "Source API Token",
-                value="",
+                value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
                 type="password",
                 help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
             )
 
             SOURCE_WORKVIVO_ID = st.text_input(
                 "Source Workvivo-ID",
-                value="",
+                value="50",
                 help="Workvivo-ID header required for API requests on the SOURCE tenant."
             )
 
@@ -382,21 +382,21 @@ if "config_saved" not in st.session_state:
 
             TARGET_SCIM_TOKEN = st.text_input(
                 "Target SCIM Token",
-                value="",
+                value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
                 type="password",
-                help="Authentication token for SCIM user management in the TARGET tenant."
+                help="Authentication token for SCIM user creation inside the TARGET tenant."
             )
 
             TARGET_API_TOKEN = st.text_input(
                 "Target API Token",
-                value="",
+                value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
                 type="password",
-                help="Bearer token used for creating spaces, uploading images or writing content to the TARGET tenant."
+                help="Bearer token for creating spaces, uploading images and writing content to the TARGET tenant."
             )
 
             TARGET_WORKVIVO_ID = st.text_input(
                 "Target Workvivo-ID",
-                value="",
+                value="3000384",
                 help="Workvivo-ID header required for API requests on the TARGET tenant."
             )
 
@@ -416,11 +416,73 @@ if "config_saved" not in st.session_state:
         st.markdown("</div>", unsafe_allow_html=True)
 
         # ----------------------------------------------------
-        # SAVE BUTTON
+        # SAVE BUTTON (with validation)
         # ----------------------------------------------------
-        submitted = st.form_submit_button("Save Configuration")
+        # Validation flags
+        errors = []
 
-    # Outside 'with', inside the IF block
+        if not SOURCE_SCIM_URL:
+            errors.append("Source SCIM URL is required.")
+        if not SOURCE_API_URL:
+            errors.append("Source API URL is required.")
+        if not SOURCE_SCIM_TOKEN:
+            errors.append("Source SCIM Token is required.")
+        if not SOURCE_API_TOKEN:
+            errors.append("Source API Token is required.")
+        if not SOURCE_WORKVIVO_ID:
+            errors.append("Source Workvivo-ID is required.")
+
+        if not TARGET_SCIM_URL:
+            errors.append("Target SCIM URL is required.")
+        if not TARGET_API_URL:
+            errors.append("Target API URL is required.")
+        if not TARGET_SCIM_TOKEN:
+            errors.append("Target SCIM Token is required.")
+        if not TARGET_API_TOKEN:
+            errors.append("Target API Token is required.")
+        if not TARGET_WORKVIVO_ID:
+            errors.append("Target Workvivo-ID is required.")
+
+        if not SPACE_CREATOR_EXTERNAL_ID:
+            errors.append("Migration External ID (Space Creator) is required.")
+
+        # Show validation errors
+        if errors:
+            for e in errors:
+                st.warning("⚠️ " + e)
+
+        # Style for "Continue" button
+        st.markdown("""
+        <style>
+        .next-btn > button {
+            border-radius: 6px;
+            height: 48px;
+            background-color: #6203ed !important;
+            border: none;
+            color: white;
+            font-size: 17px;
+            font-weight: 550;
+            padding: 8px 20px;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+            transition: 0.2s;
+        }
+        .next-btn > button:hover {
+            background-color: #4c02b5 !important;
+            transform: translateY(-1px);
+        }
+        .next-btn > button:active {
+            transform: scale(0.98);
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # Save button disabled if errors
+        submitted = st.form_submit_button(
+            "Save Configuration",
+            disabled=len(errors) > 0
+        )
+
+    # ------------ OUTSIDE the form(), STILL inside "if not config_saved" ------------
     if submitted:
 
         st.session_state["config_saved"] = True
@@ -439,14 +501,20 @@ if "config_saved" not in st.session_state:
 
         st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
 
-        st.success("Configuration saved! Click Next to continue.")
+        st.success("Configuration saved! Click Continue to proceed.")
 
-        if st.button("➡ Next"):
+        # Purple Continue button
+        st.markdown('<div class="next-btn">', unsafe_allow_html=True)
+        if st.button("➡ Continue"):
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
         st.stop()
 
     st.stop()
+
+
+
 
 # =========================================================
 # CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
