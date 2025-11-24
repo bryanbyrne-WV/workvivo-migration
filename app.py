@@ -347,6 +347,54 @@ if "config_saved" not in st.session_state:
                 help="Workvivo-ID header required for API requests on the SOURCE tenant."
             )
 
+                    # ----------------------------------------------------
+            # TEST CONNECTION (Source)
+            # ----------------------------------------------------
+            st.markdown("### 🔌 Test Source Connection")
+
+            if st.button("Test Source Connection", key="test_source"):
+                with st.spinner("Testing source connection..."):
+
+                    # ---- SCIM CHECK ----
+                    scim_ok = False
+                    try:
+                        test_scim = requests.get(
+                            f"{SOURCE_SCIM_URL}?count=1",
+                            headers={
+                                "Authorization": f"Bearer {SOURCE_SCIM_TOKEN}",
+                                "Accept": "application/json"
+                            }
+                        )
+                        scim_ok = test_scim.status_code == 200
+                    except:
+                        scim_ok = False
+
+                    # ---- API CHECK ----
+                    api_ok = False
+                    try:
+                        test_api = requests.get(
+                            f"{SOURCE_API_URL}/users?skip=0&take=1",
+                            headers={
+                                "Authorization": f"Bearer {SOURCE_API_TOKEN}",
+                                "Workvivo-Id": SOURCE_WORKVIVO_ID,
+                                "Accept": "application/json"
+                            }
+                        )
+                        api_ok = test_api.status_code == 200
+                    except:
+                        api_ok = False
+
+                # ---- Display Results ----
+                if scim_ok and api_ok:
+                    st.success("✅ Source connection successful! SCIM + API responded correctly.")
+                elif scim_ok and not api_ok:
+                    st.warning("⚠️ SCIM OK, but API failed. Check API URL, token or Workvivo-ID.")
+                elif api_ok and not scim_ok:
+                    st.warning("⚠️ API OK, but SCIM failed. Check SCIM URL or SCIM token.")
+                else:
+                    st.error("❌ Both SCIM and API tests failed. Check your source credentials.")
+
+
         st.markdown("</div>", unsafe_allow_html=True)
 
         # ----------------------------------------------------
