@@ -1113,33 +1113,6 @@ if st.session_state.page == "main":
     # (your toggles here)
     # (any other migration options here)
 
-    # ============================================================
-    # RUN EVERYTHING AT ONCE
-    # ============================================================
-    if st.button("▶ Run Migration"):
-        st.session_state.page = "running"   # go to progress page
-        st.session_state.start_migration = True
-        st.session_state.progress = 0
-        st.rerun()
-
-    # ============================================================
-    # LIVE LOG OUTPUT (optional)
-    # ============================================================
-    if "live_log_placeholder" not in st.session_state:
-        st.session_state.live_log_placeholder = st.empty()
-
-    if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
-
-        st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-        st.header("🖥️ Migration Console")
-
-        st.session_state.live_log_placeholder.text_area(
-            "📡 Live Console Output",
-            st.session_state.get("log_output", ""),
-            height=400,
-            disabled=True
-        )
-
 
 
 # ============================================================
@@ -1241,6 +1214,33 @@ migrate_comments = st.toggle("Comments", value=True)
 migrate_likes = st.toggle("Likes", value=True)
 migrate_globalPages = st.toggle("Global Pages", value=True)
 migrate_spacePages = st.toggle("Space Pages", value=True)
+
+    # ============================================================
+    # RUN EVERYTHING AT ONCE
+    # ============================================================
+    if st.button("▶ Run Migration"):
+        st.session_state.page = "running"   # go to progress page
+        st.session_state.start_migration = True
+        st.session_state.progress = 0
+        st.rerun()
+
+    # ============================================================
+    # LIVE LOG OUTPUT (optional)
+    # ============================================================
+    if "live_log_placeholder" not in st.session_state:
+        st.session_state.live_log_placeholder = st.empty()
+
+    if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
+
+        st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
+        st.header("🖥️ Migration Console")
+
+        st.session_state.live_log_placeholder.text_area(
+            "📡 Live Console Output",
+            st.session_state.get("log_output", ""),
+            height=400,
+            disabled=True
+        )
 
 
 # ============================================================
