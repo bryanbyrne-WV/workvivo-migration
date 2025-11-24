@@ -1265,10 +1265,28 @@ elif st.session_state.page == "running":
             ui_log("🛑 Cancel requested by user…")
             st.rerun()
     else:
-        # Migration complete or cancelled
+        # Migration complete or cancelled → show FINISH
         if st.button("✔ Finish"):
+    
+            # Fully clear old migration state
+            keys_to_clear = [
+                "progress",
+                "log_output",
+                "migration_finished",
+                "cancel_requested",
+                "start_migration",
+                "phase1_running",
+                "live_log_placeholder"
+            ]
+    
+            for k in keys_to_clear:
+                if k in st.session_state:
+                    del st.session_state[k]
+    
+            # Navigate back to main
             st.session_state.page = "main"
             st.rerun()
+    
 
     # --------------------------------------------------------
     # PROGRESS BAR
