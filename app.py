@@ -1513,9 +1513,24 @@ elif st.session_state.page == "summary":
     st.markdown("---")
 
     st.subheader("Full Console Log")
-    st.text_area("Log Output", st.session_state.get("log_output", ""), height=300)
 
-    st.markdown('<div class="green-finish">', unsafe_allow_html=True)
+    col1, col2 = st.columns([4, 1])
+
+    with col1:
+        st.text_area(
+            "Log Output",
+            st.session_state.get("log_output", ""),
+            height=300
+        )
+
+    with col2:
+        st.download_button(
+            "⬇️ Download Logs",
+            st.session_state.get("log_output", ""),
+            file_name="migration_logs.txt",
+            mime="text/plain"
+        )
+
 
     # ✅ FINISH BUTTON
     if st.button("Finish"):
