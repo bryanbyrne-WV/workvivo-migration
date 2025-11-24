@@ -9,6 +9,41 @@ import random
 import os
 import mimetypes
 
+# ------------------------------
+# 🔐 SIMPLE PASSWORD PROTECTION
+# ------------------------------
+
+# Hardcoded password
+APP_PASSWORD = "Workvivo2025!"
+
+# Track login state
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+# Show login screen if not authenticated
+if not st.session_state.authenticated:
+
+    st.title("🔐 Secure Access Required")
+    st.markdown("Please enter the password to access the Migration Tool.")
+
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if password == APP_PASSWORD:
+            st.session_state.authenticated = True
+            st.success("Logged in successfully!")
+            st.rerun()
+        else:
+            st.error("❌ Incorrect password. Try again.")
+
+    # Stop the app here until they log in
+    st.stop()
+
+# ------------------------------
+# END PASSWORD PROTECTION
+# ------------------------------
+
+
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 # ==========================================
