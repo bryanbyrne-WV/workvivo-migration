@@ -1525,7 +1525,7 @@ elif st.session_state.page == "summary":
 
     with col2:
         st.download_button(
-            "⬇️ Download Logs",
+            "Download Logs",
             st.session_state.get("log_output", ""),
             file_name="migration_logs.txt",
             mime="text/plain"
