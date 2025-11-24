@@ -439,12 +439,12 @@ if "config_saved" not in st.session_state:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
+               # ----------------------------------------------------
+        # VALIDATION + BUTTON STYLING
         # ----------------------------------------------------
-        # SAVE BUTTON (with validation)
-        # ----------------------------------------------------
-        # Validation flags
         errors = []
 
+        # Required source fields
         if not SOURCE_SCIM_URL:
             errors.append("Source SCIM URL is required.")
         if not SOURCE_API_URL:
@@ -456,6 +456,7 @@ if "config_saved" not in st.session_state:
         if not SOURCE_WORKVIVO_ID:
             errors.append("Source Workvivo-ID is required.")
 
+        # Required target fields
         if not TARGET_SCIM_URL:
             errors.append("Target SCIM URL is required.")
         if not TARGET_API_URL:
@@ -467,51 +468,54 @@ if "config_saved" not in st.session_state:
         if not TARGET_WORKVIVO_ID:
             errors.append("Target Workvivo-ID is required.")
 
+        # Required migration user
         if not SPACE_CREATOR_EXTERNAL_ID:
             errors.append("Migration External ID (Space Creator) is required.")
 
-        # Show validation errors
+        # Show warnings
         if errors:
             for e in errors:
                 st.warning("⚠️ " + e)
 
-        # Style for "Continue" button
+        # Add styling for purple buttons
         st.markdown("""
         <style>
-        .next-btn > button {
-            border-radius: 6px;
-            height: 48px;
+        .purple-btn > button {
             background-color: #6203ed !important;
-            border: none;
-            color: white;
-            font-size: 17px;
-            font-weight: 550;
-            padding: 8px 20px;
+            color: white !important;
+            border: none !important;
+            padding: 10px 26px !important;
+            font-size: 17px !important;
+            font-weight: 600 !important;
+            border-radius: 6px !important;
+            height: 48px !important;
             box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
             transition: 0.2s;
         }
-        .next-btn > button:hover {
+        .purple-btn > button:hover {
             background-color: #4c02b5 !important;
             transform: translateY(-1px);
         }
-        .next-btn > button:active {
+        .purple-btn > button:active {
             transform: scale(0.98);
         }
         </style>
         """, unsafe_allow_html=True)
 
-    # Save button disabled if errors
-    st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
-    submitted = st.form_submit_button(
-        "Save Configuration",
-        disabled=len(errors) > 0
+        # SAVE BUTTON (purple)
+        st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
+        submitted = st.form_submit_button(
+            "Save Configuration",
+            disabled=len(errors) > 0
         )
-st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-
-    # ------------ OUTSIDE the form(), STILL inside "if not config_saved" ------------
+    # ----------------------------------------------------
+    # OUTSIDE THE FORM — PROCESS SAVE
+    # ----------------------------------------------------
     if submitted:
 
+        # Save all values
         st.session_state["config_saved"] = True
 
         st.session_state["SOURCE_SCIM_URL"] = SOURCE_SCIM_URL
@@ -530,8 +534,8 @@ st.markdown('</div>', unsafe_allow_html=True)
 
         st.success("Configuration saved! Click Continue to proceed.")
 
-        # Purple Continue button
-        st.markdown('<div class="next-btn">', unsafe_allow_html=True)
+        # CONTINUE BUTTON (purple)
+        st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
         if st.button("➡ Continue"):
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
@@ -539,8 +543,6 @@ st.markdown('</div>', unsafe_allow_html=True)
         st.stop()
 
     st.stop()
-
-
 
 
 # =========================================================
