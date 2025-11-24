@@ -349,9 +349,9 @@ if "config_saved" not in st.session_state:
             )
 
             SOURCE_WORKVIVO_ID = st.text_input(
-                "Source Workvivo-ID",
+                "Source Workvivo ID",
                 value="51",
-                help="Workvivo-ID header required for API requests on the SOURCE tenant."
+                help="Workvivo ID required for API requests on the SOURCE tenant."
             )
 
         st.markdown("</div>", unsafe_allow_html=True)
@@ -389,9 +389,9 @@ if "config_saved" not in st.session_state:
             )
 
             TARGET_WORKVIVO_ID = st.text_input(
-                "Target Workvivo-ID",
+                "Target Workvivo ID",
                 value="3000384",
-                help="Workvivo-ID header required for API requests on the TARGET tenant."
+                help="Workvivo ID required for API requests on the TARGET tenant."
             )
 
         st.markdown("</div>", unsafe_allow_html=True)
@@ -446,6 +446,18 @@ if "config_saved" not in st.session_state:
         if errors:
             for e in errors:
                 st.warning("⚠️ " + e)
+
+
+                # ----------------------------------------------------
+        # SUPPORT NOTE
+        # ----------------------------------------------------
+        st.markdown("""
+        <div style="margin-top: 20px; padding: 12px; background: #f4ecff; border-left: 4px solid #6203ed; border-radius: 6px;">
+        <strong>Need help?</strong><br>
+        If you cannot find any of this information, please contact 
+        <a href="mailto:support@workvivo.com">support@workvivo.com</a>.
+        </div>
+        """, unsafe_allow_html=True)
 
         # Add styling for purple buttons
         st.markdown("""
