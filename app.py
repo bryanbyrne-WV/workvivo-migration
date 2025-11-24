@@ -11,6 +11,13 @@ import mimetypes
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
+# ==========================================
+# Page state (2-page layout)
+# ==========================================
+if "page" not in st.session_state:
+    st.session_state.page = "main"   # "main" = setup page, "running" = progress page
+
+
 # ============================================================
 # WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
 # ============================================================
@@ -1096,9 +1103,12 @@ def check_cancel():
 
 
 # ============================================================
-# Migrate Workvivo Data
+# MAIN PAGE (Setup)
 # ============================================================
-st.markdown("## Migrate Workvivo Data")
+if st.session_state.page == "main":
+
+    st.markdown("## Migrate Workvivo Data")
+
 
 # ============================================================
 # 📅 Date Range for Content Migration
@@ -1192,7 +1202,7 @@ This ensures user activity, engagement data, and content history are accurately 
 """)
 
 migrate_updates = st.toggle("Updates", value=True)
-migrate_kudos = st.toggle("Kudos'", value=True)
+migrate_kudos = st.toggle("Kudos", value=True)
 migrate_articles = st.toggle("Articles", value=True)
 migrate_events = st.toggle("Events", value=True)
 migrate_comments = st.toggle("Comments", value=True)
@@ -1205,6 +1215,9 @@ migrate_spacePages = st.toggle("Space Pages", value=True)
 # RUN EVERYTHING AT ONCE
 # ============================================================
 if st.button("▶ Run Migration"):
+    st.session_state.page = "running"   # switch page
+    st.session_state.progress = 0       # reset progress
+    st.rerun()
 
     ui_log("🚀 Starting Migration...")
 
@@ -1372,3 +1385,37 @@ elif phase.startswith("Phase 2"):
         st.warning("Migration is currently running…")
         if st.button("❌ Cancel Migration"):
             cancel_migration()
+
+
+# ============================================================
+# MIGRATION RUNNING PAGE
+# ============================================================
+if st.session_state.get("page") == "running":
+
+    st.header("🚀 Migration In Progress")
+
+    # Back button
+    if st.button("⬅ Back to Setup"):
+        st.session_state.page = "main"
+        st.rerun()
+
+    st.markdown("### Processing migration… Please wait.")
+
+    # Progress bar
+    if "progress" not in st.session_state:
+        st.session_state.progress = 0
+
+    progress_bar = st.progress(st.session_state.progress)
+
+    # Simulated progress: replace with your actual migration operations
+    for i in range(st.session_state.progress, 101):
+        st.session_state.progress = i
+        progress_bar.progress(i)
+        time.sleep(0.03)
+
+    st.success("🎉 Migration completed!")
+
+    # Show log output live
+    st.subheader("📜 Migration Log")
+    st.text_area("Live Output", st.session_state.get("log_output", ""), height=400)
+
