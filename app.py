@@ -19,174 +19,150 @@ if "page" not in st.session_state:
 
 
 # ============================================================
-# WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
+# WORKVIVO ADVANCED UI THEME + BUTTONS + DARK-MODE + TOGGLES
 # ============================================================
+
 WORKVIVO_LOGO_URL = "https://www.festivalofwork.com/media/Workvivo%20(1).png"
 
-advanced_styles = f"""
-<style>
-
-    /* GLOBAL PAGE BACKGROUND */
-    .main {{
-        background-color: #F7F9FC !important;
-    }}
-
-    /* DARK MODE SUPPORT */
-    @media (prefers-color-scheme: dark) {{
-        .main {{
-            background-color: #0d1117 !important;
-        }}
-        .header-bar {{
-            background-color: #3d0199 !important;
-        }}
-        .header-title {{
-            color: #ffffff !important;
-        }}
-        section[data-testid="stSidebar"] {{
-            background-color: #1a0638 !important;
-        }}
-        .sidebar-link {{
-            color: #cbd5e1 !important;
-        }}
-        .sidebar-footer {{
-            color: #94a3b8 !important;
-        }}
-    }}
-
-    /* HEADER BAR */
-    .header-bar {{
-        background-color: #6203ed;
-        padding: 18px 28px;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        border-radius: 8px;
-        margin-bottom: 25px;
-        box-shadow: 0px 3px 12px rgba(0,0,0,0.18);
-        animation: fade-slide-down 0.6s ease-out;
-    }}
-
-    .header-logo {{
-        height: 46px;
-        margin-right: 18px;
-    }}
-
-    .header-title {{
-        color: white;
-        font-size: 42px;
-        font-weight: 650;
-        letter-spacing: -0.5px;
-        margin-top: 2px;
-    }}
-
-    @keyframes fade-slide-down {{
-        0% {{ opacity: 0; transform: translateY(-10px); }}
-        100% {{ opacity: 1; transform: translateY(0); }}
-    }}
-
-    /* SIDEBAR */
-    section[data-testid="stSidebar"] {{
-        background-color: #4502b4 !important;
-        padding: 20px 15px;
-    }}
-
-    .sidebar-logo {{
-        width: 170px;
-        margin-bottom: 20px;
-        margin-top: 10px;
-        animation: fade-in 0.8s;
-    }}
-
-    @keyframes fade-in {{
-        0% {{ opacity: 0; }}
-        100% {{ opacity: 1; }}
-    }}
-
-    .sidebar-title {{
-        color: #ffffff;
-        font-size: 20px;
-        font-weight: 600;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }}
-
-    .sidebar-link {{
-        color: #ffffff !important;
-        padding: 10px 6px;
-        display: block;
-        font-size: 17px;
-        font-weight: 500;
-        border-radius: 5px;
-        margin-bottom: 6px;
-        text-decoration: none !important;
-        transition: 0.2s;
-    }}
-
-    .sidebar-link:hover {{
-        background-color: rgba(255,255,255,0.18);
-        padding-left: 12px;
-    }}
-
-    .sidebar-footer {{
-        margin-top: 40px;
-        padding: 12px;
-        border-top: 1px solid rgba(255,255,255,0.25);
-        color: #d0d8e8;
-        font-size: 14px;
-        text-align: center;
-        line-height: 1.4;
-    }}
-
-    /* BEAUTIFUL BUTTONS */
-    .stButton > button {{
-        border-radius: 6px;
-        height: 48px;
-        background-color: #6203ed;
-        border: none;
-        color: white;
-        font-size: 17px;
-        font-weight: 550;
-        padding: 8px 20px;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-        transition: 0.2s;
-    }}
-
-    .stButton > button:hover {{
-        background-color: #4c02b5;
-        transform: translateY(-1px);
-    }}
-
-    .stButton > button:active {{
-        transform: scale(0.98);
-    }}
-
-    /* COLLAPSIBLE LOG CONTAINER */
-    details {{
-        background: #ffffff;
-        border-radius: 8px;
-        padding: 10px 14px;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.12);
-        margin-bottom: 10px;
-    }}
-
-    summary {{
-        font-size: 18px;
-        font-weight: 600;
-        cursor: pointer;
-        color: #6203ed;
-        padding: 6px;
-    }}
-
-</style>
-"""
+# MASTER STYLE BLOCK
 st.markdown("""
 <style>
 
-st.markdown("""
-<style>
+/* -------------------------------------------------------
+   GLOBAL LAYOUT
+------------------------------------------------------- */
+.main {
+    background-color: #F7F9FC !important;
+}
 
-st.markdown("""
-<style>
+@media (prefers-color-scheme: dark) {
+    .main { background-color: #0d1117 !important; }
+    .header-bar { background-color: #3d0199 !important; }
+    .header-title { color: white !important; }
+    section[data-testid="stSidebar"] { background-color: #1a0638 !important; }
+    .sidebar-link { color: #cbd5e1 !important; }
+    .sidebar-footer { color: #94a3b8 !important; }
+}
+
+/* -------------------------------------------------------
+   HEADER BAR
+------------------------------------------------------- */
+.header-bar {
+    background-color: #6203ed;
+    padding: 18px 28px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    box-shadow: 0px 3px 12px rgba(0,0,0,0.18);
+}
+.header-logo { height: 46px; margin-right: 18px; }
+.header-title {
+    color: white; font-size: 42px; font-weight: 650;
+    letter-spacing: -0.5px; margin-top: 2px;
+}
+
+/* -------------------------------------------------------
+   SIDEBAR
+------------------------------------------------------- */
+section[data-testid="stSidebar"] {
+    background-color: #4502b4 !important;
+    padding: 20px 15px;
+}
+.sidebar-logo { width: 170px; margin-bottom: 20px; margin-top: 10px; }
+.sidebar-title {
+    color: white; font-size: 20px; font-weight: 600;
+}
+.sidebar-link {
+    color: white !important;
+    padding: 10px 6px; display: block; font-size: 17px;
+    border-radius: 5px; font-weight: 500;
+}
+.sidebar-link:hover {
+    background-color: rgba(255,255,255,0.18);
+    padding-left: 12px;
+}
+.sidebar-footer {
+    margin-top: 40px; padding: 12px; text-align: center;
+    color: #d0d8e8; font-size: 14px;
+    border-top: 1px solid rgba(255,255,255,0.25);
+}
+
+/* -------------------------------------------------------
+   GLOBAL BUTTON STYLE (DEFAULT PURPLE)
+------------------------------------------------------- */
+.stButton > button {
+    border-radius: 6px;
+    height: 48px;
+    background-color: #6203ed !important;
+    border: none;
+    color: white !important;
+    font-size: 17px;
+    font-weight: 550;
+    padding: 8px 20px;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+}
+.stButton > button:hover { background-color: #4c02b5 !important; }
+.stButton > button:active { transform: scale(0.98); }
+
+/* -------------------------------------------------------
+   COLLAPSIBLE LOG BOX
+------------------------------------------------------- */
+details {
+    background: white;
+    border-radius: 8px;
+    padding: 10px 14px;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.12);
+}
+summary {
+    font-size: 18px;
+    color: #6203ed;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* -------------------------------------------------------
+   PURPLE CONTINUE BUTTON CLASS
+------------------------------------------------------- */
+.custom-continue > button {
+    background-color: #6203ed !important;
+    color: white !important;
+    padding: 10px 26px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+}
+.custom-continue > button:hover {
+    background-color: #4c02b5 !important;
+    transform: translateY(-1px);
+}
+
+/* -------------------------------------------------------
+   PURPLE TOGGLE SWITCH
+------------------------------------------------------- */
+[data-testid="stSwitch"] .st-dl {
+    background-color: #d8c9ff !important;  /* ON Track */
+    border-color: #d8c9ff !important;
+}
+[data-testid="stSwitch"][aria-checked="false"] .st-dl {
+    background-color: #cccccc !important; /* OFF Track */
+}
+[data-testid="stSwitch"] .st-dm {
+    background-color: #6203ed !important; /* ON knob */
+}
+[data-testid="stSwitch"][aria-checked="false"] .st-dm {
+    background-color: white !important;   /* OFF knob */
+    border: 1px solid #aaaaaa !important;
+}
+[data-testid="stSwitch"] .st-dl {
+    height: 22px !important;
+    border-radius: 20px !important;
+}
+[data-testid="stSwitch"] .st-dm {
+    height: 20px !important; width: 20px !important;
+    border-radius: 20px !important;
+}
 
 </style>
 """, unsafe_allow_html=True)
