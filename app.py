@@ -188,42 +188,6 @@ st.markdown("""
 st.markdown("""
 <style>
 
-/* --- WORKVIVO PURPLE TOGGLE SWITCH (New Streamlit UI) --- */
-
-[data-testid="stSwitch"] .st-dl {
-    background-color: #d8c9ff !important;      /* track ON */
-    border-color: #d8c9ff !important;
-}
-
-[data-testid="stSwitch"][aria-checked="false"] .st-dl {
-    background-color: #cccccc !important;      /* track OFF */
-    border-color: #cccccc !important;
-}
-
-[data-testid="stSwitch"] .st-dm {
-    background-color: #6203ed !important;      /* knob ON */
-}
-
-[data-testid="stSwitch"][aria-checked="false"] .st-dm {
-    background-color: #ffffff !important;      /* knob OFF */
-    border: 1px solid #aaaaaa !important;
-}
-
-/* Sizing + rounding */
-[data-testid="stSwitch"] .st-dl {
-    height: 22px !important;
-    border-radius: 20px !important;
-}
-
-[data-testid="stSwitch"] .st-dm {
-    height: 20px !important;
-    width: 20px !important;
-    border-radius: 20px !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -332,6 +296,44 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
+            
+/* --- WORKVIVO PURPLE TOGGLE SWITCH (New Streamlit UI) --- */
+
+[data-testid="stSwitch"] .st-dl {
+    background-color: #d8c9ff !important;      /* track ON */
+    border-color: #d8c9ff !important;
+}
+
+[data-testid="stSwitch"][aria-checked="false"] .st-dl {
+    background-color: #cccccc !important;      /* track OFF */
+    border-color: #cccccc !important;
+}
+
+[data-testid="stSwitch"] .st-dm {
+    background-color: #6203ed !important;      /* knob ON */
+}
+
+[data-testid="stSwitch"][aria-checked="false"] .st-dm {
+    background-color: #ffffff !important;      /* knob OFF */
+    border: 1px solid #aaaaaa !important;
+}
+
+/* Sizing + rounding */
+[data-testid="stSwitch"] .st-dl {
+    height: 22px !important;
+    border-radius: 20px !important;
+}
+
+[data-testid="stSwitch"] .st-dm {
+    height: 20px !important;
+    width: 20px !important;
+    border-radius: 20px !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 
 # =========================================================
 # 1) CONFIG FORM (SHOWN ONLY IF NOT SAVED)
