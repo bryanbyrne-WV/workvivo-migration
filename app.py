@@ -615,8 +615,23 @@ SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 st.success("🔐 Configuration active — ready to run migrations.")
 
 # ============================================================
+# Ensure SUMMARY dictionary exists before any migration starts
+# ============================================================
+if "summary" not in st.session_state:
+    st.session_state.summary = {
+        "users_migrated": 0,
+        "users_skipped": 0,
+        "spaces_created": 0,
+        "spaces_skipped": 0,
+        "memberships_added": 0,
+        "start_time": datetime.utcnow(),
+        "end_time": None
+    }
+
+# ============================================================
 # Streamlit session state setup
 # ============================================================
+
 if "phase_running" not in st.session_state:
     st.session_state.phase_running = False
 
