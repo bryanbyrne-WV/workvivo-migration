@@ -475,7 +475,7 @@ if "config_saved" not in st.session_state:
 
             SOURCE_API_TOKEN = st.text_input(
                 "Source API Token",
-                value="386|1555bdfb959eb07b68b31f6ffe1ed623e9290fac",
+                value="387|ad600b9e622e48057c8d72394d1fcd2bd2291f05",
                 type="password",
                 help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
             )
