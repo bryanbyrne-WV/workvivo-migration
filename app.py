@@ -1431,7 +1431,7 @@ if st.session_state.page == "main":
     # -----------------------------------------------------------
     # Company Name Prompt (for Global Feed creation)
     # -----------------------------------------------------------
-    st.markdown("#### Organisation Name")
+    st.markdown("#### Global Feed Options")
     st.session_state.phase1_company = st.text_input(
         "Enter the organisation name for the Global Feed",
         value=st.session_state.get("phase1_company", ""),
@@ -1444,7 +1444,6 @@ if st.session_state.page == "main":
     # ============================================================
     # OPTION: Reuse existing Global Feed instead of creating one
     # ============================================================
-    st.markdown("#### Global Feed Options")
     
     if "use_existing_global" not in st.session_state:
         st.session_state.use_existing_global = False
