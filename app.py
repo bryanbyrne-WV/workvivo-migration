@@ -841,16 +841,18 @@ def ui_log(message):
     ts = datetime.utcnow().strftime("%H:%M:%S")
     line = f"[{ts}] {message}"
 
-    # Append to session buffer
     if "log_output" not in st.session_state:
         st.session_state["log_output"] = ""
 
     st.session_state["log_output"] += line + "\n"
 
-    # Real-time UI update (only if placeholder exists)
     if "live_log_placeholder" in st.session_state:
+
+        # Convert newlines to <br> so each log is on its own line
+        log_html = st.session_state["log_output"].replace("\n", "<br>")
+
         st.session_state.live_log_placeholder.markdown(
-            f"<pre style='height:400px; overflow-y: scroll; background-color:#111; color:#eee; padding:10px; border-radius:6px;'>{st.session_state['log_output']}</pre>",
+            f"<pre style='height:400px; overflow-y: scroll; background-color:#111; color:#eee; padding:10px; border-radius:6px;'>{log_html}</pre>",
             unsafe_allow_html=True
         )
 
