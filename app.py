@@ -841,14 +841,20 @@ def ui_log(message):
     ts = datetime.utcnow().strftime("%H:%M:%S")
     line = f"[{ts}] {message}"
 
+    # Append to session buffer
     if "log_output" not in st.session_state:
         st.session_state["log_output"] = ""
 
     st.session_state["log_output"] += line + "\n"
 
-    # Live refresh
-    if "refresh_log_view" in st.session_state:
-        st.session_state["refresh_log_view"]()
+    # Real-time UI update (only if placeholder exists)
+    if "live_log_placeholder" in st.session_state:
+        st.session_state.live_log_placeholder.text_area(
+            "📡 Live Console Output",
+            st.session_state["log_output"],
+            height=400,
+            disabled=True
+        )
 
 
 
@@ -1610,35 +1616,15 @@ elif st.session_state.page == "running":
     # --------------------------------------------------------
     # SHOW CONSOLE OUTPUT
     # --------------------------------------------------------
-    # --------------------------------------------------------
-    # LIVE SCROLLABLE LOG VIEWER
-    # --------------------------------------------------------
-    
-    def render_live_log():
-        log_html = st.session_state.get("log_output", "").replace("\n", "<br>")
-        return f"""
-        <div style="
-            background: #111;
-            color: #0f0;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 13px;
-            height: 350px;
-            overflow-y: scroll;
-            border: 1px solid #333;
-        ">
-            {log_html}
-        </div>
-        """
-    
-    log_box = st.empty()
-    log_box.markdown(render_live_log(), unsafe_allow_html=True)
-    
-    # Auto-refresh the container every update
-    def refresh_log_view():
-        log_box.markdown(render_live_log(), unsafe_allow_html=True)
-    
+    st.subheader("Live Console Output")
+
+    st.text_area(
+        "Console",
+        st.session_state.get("log_output", ""),
+        height=400,
+        disabled=True
+    )
+
 
 elif st.session_state.page == "summary":
 
