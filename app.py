@@ -1630,13 +1630,13 @@ elif st.session_state.page == "summary":
     .summary-title {
         font-size: 40px;
         font-weight: 800;
-        color: #6203ed;
+        color: #000000;
         text-align: center;
         margin-bottom: 25px;
         margin-top: 10px;
     }
     </style>
-    <div class="summary-title">🎉 Migration Completed Successfully</div>
+    <div class="summary-title">Migration Completed Successfully</div>
     """, unsafe_allow_html=True)
 
 
@@ -1667,7 +1667,7 @@ elif st.session_state.page == "summary":
 
     # ======== USERS & SPACES ========
     st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='summary-header'>👥 Users & Spaces Migrated</div>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-header'>Users & Spaces Migrated</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-item"><strong>Users Migrated:</strong> {s['users_migrated']}</div>
@@ -1682,7 +1682,7 @@ elif st.session_state.page == "summary":
 
     # ======== CONTENT MIGRATED ========
     st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='summary-header'>📝 Content Migrated</div>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-header'>Content Migrated</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-item"><strong>Updates Migrated:</strong> {s.get('updates_migrated', 0)}</div>
@@ -1698,7 +1698,7 @@ elif st.session_state.page == "summary":
 
     # ======== START / END TIME ========
     st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='summary-header'>⏱ Migration Timeline</div>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-header'>Migration Timeline</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-item"><strong>Start Time:</strong> {s['start_time']}</div>
@@ -1710,7 +1710,7 @@ elif st.session_state.page == "summary":
 
     # ======== LOGS ========
     st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='summary-header'>📄 Full Console Log</div>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-header'>Full Console Log</div>", unsafe_allow_html=True)
 
     st.text_area(
         "Console Output",
