@@ -174,7 +174,7 @@ if not st.session_state.authenticated:
             st.success("Logged in!")
             st.rerun()
         else:
-            st.error("Invalid username or password.")
+            st.error("❌ Invalid username or password.")
 
     # Request Access link
     st.markdown(
@@ -187,8 +187,10 @@ if not st.session_state.authenticated:
         unsafe_allow_html=True
     )
 
-    st.markdown("</div>", unsafe_allow_html
+    st.markdown("</div>", unsafe_allow_html=True)  # end glass card
+    st.markdown("</div>", unsafe_allow_html=True)  # end wrapper
 
+    st.stop()
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
