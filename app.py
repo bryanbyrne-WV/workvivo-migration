@@ -1636,7 +1636,7 @@ elif st.session_state.page == "summary":
         margin-top: 10px;
     }
     </style>
-    <div class="summary-title">Migration Completed Successfully</div>
+    <div class="summary-title">Migration Completed Successfully!!</div>
     """, unsafe_allow_html=True)
 
 
