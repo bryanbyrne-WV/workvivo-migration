@@ -1479,18 +1479,24 @@ if st.session_state.page == "main":
 # ============================================================
 elif st.session_state.page == "running":
 
-    # ⭐ Auto-scroll to top when migration page loads
+    # Invisible scroll anchor
+    scroll_anchor = st.empty()
+    scroll_anchor.markdown("<div id='top'></div>", unsafe_allow_html=True)
+
+        # Force scroll to the anchor
     st.components.v1.html(
         """
         <script>
-            window.parent.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+            var topElement = window.parent.document.querySelector("div[id='top']");
+            if (topElement) {
+                topElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+            }
         </script>
         """,
         height=0,
     )
+
+    
 
     # --------------------------------------------------------
     # HEADER LOGIC
