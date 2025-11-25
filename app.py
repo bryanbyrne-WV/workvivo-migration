@@ -944,25 +944,28 @@ def fetch_users(active_only=True):
     return users
 
 def create_global_space_and_enroll(company_name):
-    """Creates a private Global Feed space and enrolls all users."""
-    ui_log(f"🌍 Creating Global Feed space for: {company_name}")
 
-    global_space_name = f"{company_name.strip()} Global Feed"
+    # ❗ DO NOT CREATE GLOBAL FEED IF NAME IS EMPTY
+    if not company_name or not company_name.strip():
+        ui_log("⏭ Skipping Global Feed — no company name entered.")
+        return None
 
-    # Step 1 — Check if already exists
-    existing_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
-    match = next((s for s in existing_spaces if s["name"] == global_space_name), None)
+    ui_log(f"🌍 Creating Global Feed: {company_name}")
 
-    if match:
-        ui_log(f"⚠️ Global space already exists (ID {match['id']}) — using existing.")
-        space_id = match["id"]
+    global_name = f"{company_name} Global Feed"
+
+    spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
+    existing = next((s for s in spaces if s["name"] == global_name), None)
+
+    if existing:
+        ui_log(f"⚠️ Global space already exists → ID {existing['id']}")
+        space_id = existing["id"]
     else:
-        # Step 2 — CREATE SPACE with PRIVATE visibility (matching your Python script)
         payload = {
             "user_external_id": SPACE_CREATOR_EXTERNAL_ID,
-            "name": global_space_name,
-            "visibility": "private",   # <-- FIXED!!
-            "description": f"{company_name} Global Feed private space.",
+            "name": global_name,
+            "visibility": "private",
+            "description": f"{company_name} Global Feed",
             "is_external": False
         }
 
@@ -972,20 +975,20 @@ def create_global_space_and_enroll(company_name):
             json=payload
         )
 
-        if resp.status_code not in (200,201):
+        if resp.status_code not in (200, 201):
             ui_log(f"❌ Failed to create Global Space: {resp.text}")
             return None
 
         space_id = resp.json()["data"]["id"]
-        ui_log(f"✅ Created Global Space '{global_space_name}' (ID {space_id})")
+        ui_log(f"✅ Created Global Space (ID {space_id})")
 
-    # Step 3 — Enroll all target users
-    ui_log("👥 Enrolling users into Global Space…")
-
+    # Enroll ALL users
     users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
-    numeric_ids = [u["id"] for u in users]
+    user_ids = [u["id"] for u in users]
 
-    chunks = [numeric_ids[i:i+100] for i in range(0, len(numeric_ids), 100)]
+    ui_log(f"👥 Enrolling {len(user_ids)} users…")
+
+    chunks = [user_ids[i:i + 100] for i in range(0, len(user_ids), 100)]
 
     for chunk in chunks:
         resp = requests.patch(
@@ -994,11 +997,12 @@ def create_global_space_and_enroll(company_name):
             json={"ids_to_add": chunk}
         )
 
-        if resp.status_code not in (200,201):
-            ui_log(f"⚠️ Failed to add user chunk: {resp.text}")
+        if resp.status_code not in (200, 201):
+            ui_log(f"⚠️ Failed to add batch: {resp.text[:200]}")
 
-    ui_log("✅ Global Space enrollment complete!")
+    ui_log("✅ Global Space Enrollment Complete!")
     return space_id
+
 
 # ============================
 # Helper: Selectable Card Component
