@@ -1428,7 +1428,21 @@ if st.session_state.page == "main":
     st.session_state.migration_start_date = start_date
     st.session_state.migration_end_date = end_date
 
-    # -----------------------------------------------------------
+    
+    # ============================================================
+    # 🏢 Organisation settings and information
+    # ============================================================
+    st.markdown("### Organisation settings and information")
+    st.markdown("""
+    This section migrates users, spaces and space membership.
+    """)
+
+    migrate_users = st.toggle("Users", value=True, disabled=True)
+    migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
+
+    st.markdown("---")
+
+# -----------------------------------------------------------
     # Company Name Prompt (for Global Feed creation)
     # -----------------------------------------------------------
     st.markdown("#### Global Feed Options")
@@ -1462,18 +1476,6 @@ if st.session_state.page == "main":
     else:
         st.session_state.existing_global_id = ""
 
-    # ============================================================
-    # 🏢 Organisation settings and information
-    # ============================================================
-    st.markdown("### Organisation settings and information")
-    st.markdown("""
-    This section migrates users, spaces and space membership.
-    """)
-
-    migrate_users = st.toggle("Users", value=True, disabled=True)
-    migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
-
-    st.markdown("---")
 
     # ============================================================
     # 👥 User activity on Workvivo
