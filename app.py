@@ -1570,6 +1570,10 @@ elif st.session_state.page == "running":
     else:
         st.header("Migration In Progress...")
 
+    if "live_log_placeholder" not in st.session_state:
+    st.session_state.live_log_placeholder = st.empty()
+
+
     # --------------------------------------------------------
     # CANCEL vs FINISH BUTTON
     # --------------------------------------------------------
