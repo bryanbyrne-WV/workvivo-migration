@@ -1620,20 +1620,21 @@ elif st.session_state.page == "summary":
 
     st.markdown("---")
 
-    st.subheader("Full Console Log")
+st.subheader("Full Console Log")
 
-# Log output (full width)
 st.text_area(
     "Log Output",
     st.session_state.get("log_output", ""),
     height=300
 )
 
-# Buttons on the same row
+# Only show Download Logs if we actually have logs
+has_logs = bool(st.session_state.get("log_output"))
+
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    # Green Finish button
+    # Finish Button
     if st.button("✔ Finish", key="finish_button"):
 
         # Clear migration-related session keys
@@ -1661,12 +1662,15 @@ with col1:
         st.rerun()
 
 with col2:
-    st.download_button(
-        "⬇ Download Logs",
-        st.session_state.get("log_output", ""),
-        file_name="migration_logs.txt",
-        mime="text/plain"
-    )
+    if has_logs:
+        st.download_button(
+            "⬇ Download Logs",
+            st.session_state["log_output"],
+            file_name="migration_logs.txt",
+            mime="text/plain"
+        )
+    else:
+        st.markdown("<div style='opacity:0.4;'>No logs yet</div>", unsafe_allow_html=True)
 
     # ✅ FINISH BUTTON
     if st.button("Finish"):
