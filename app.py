@@ -1515,7 +1515,7 @@ elif st.session_state.page == "running":
     # --------------------------------------------------------
     if not st.session_state.get("migration_finished", False) and not st.session_state.cancel_requested:
         # Migration is still running
-        if st.button("🛑 Cancel Migration"):
+        if st.button("CANCEL"):
             st.session_state.cancel_requested = True
             ui_log("🛑 Cancel requested by user…")
             st.rerun()
