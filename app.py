@@ -1453,6 +1453,23 @@ if st.session_state.page == "main":
         # ⭐ REQUIRED or user must click twice
         st.rerun()
 
+        # Auto-scroll to the "Migration In Progress..." header
+    st.components.v1.html(
+        """
+        <script>
+            const el = Array.from(
+                document.querySelectorAll('h1, h2, h3, h4')
+            ).find(e => e.innerText.includes("Migration In Progress"));
+            
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        </script>
+        """,
+        height=0,
+)
+
+
     # ============================================================
     # LIVE LOG OUTPUT (optional)
     # ============================================================
