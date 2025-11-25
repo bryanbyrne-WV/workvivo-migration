@@ -847,14 +847,9 @@ def ui_log(message):
 
     st.session_state["log_output"] += line + "\n"
 
-    # Real-time UI update (only if placeholder exists)
-    if "live_log_placeholder" in st.session_state:
-        st.session_state.live_log_placeholder.text_area(
-            "📡 Live Console Output",
-            st.session_state["log_output"],
-            height=400,
-            disabled=True
-        )
+    # Refresh HTML log viewer if it exists
+    if "log_box" in st.session_state:
+        st.session_state.log_box.markdown(render_log_html(), unsafe_allow_html=True)
 
 
 
@@ -1620,13 +1615,29 @@ elif st.session_state.page == "running":
     # --------------------------------------------------------
     st.subheader("Live Console Output")
 
-    st.text_area(
-        "Console",
-        st.session_state.get("log_output", ""),
-        height=400,
-        disabled=True
-    )
-
+    # LIVE HTML LOG VIEWER
+    if "log_box" not in st.session_state:
+        st.session_state.log_box = st.empty()
+    
+    def render_log_html():
+        logs = st.session_state.get("log_output", "").replace("\n", "<br>")
+        return f"""
+        <div id="log-container" style="
+            background:#111; color:#0f0;
+            padding:10px; border-radius:6px;
+            font-family:monospace; font-size:13px;
+            height:400px; overflow-y:auto;
+            border:1px solid #333;
+        ">
+            {logs}
+        </div>
+        <script>
+            var container = document.getElementById('log-container');
+            container.scrollTop = container.scrollHeight;
+        </script>
+        """
+    
+    st.session_state.log_box.markdown(render_log_html(), unsafe_allow_html=True)
 
 elif st.session_state.page == "summary":
 
