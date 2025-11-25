@@ -456,7 +456,7 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_URL = st.text_input(
                 "Source SCIM URL",
-                value="https://migration-testing.workvivo.com/scim/v1/scim/Users/",
+                value="https://migration-testing.workvivo.com/scim/v2/scim/Users/",
                 help="SCIM endpoint for reading users from the SOURCE Workvivo environment."
             )
 
