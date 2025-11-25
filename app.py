@@ -780,6 +780,14 @@ if "summary" not in st.session_state:
         "end_time": None,
     }
 
+# Track newly created users + spaces
+if "new_users" not in st.session_state:
+    st.session_state.new_users = set()
+
+if "new_spaces" not in st.session_state:
+    st.session_state.new_spaces = set()
+
+
 # ============================================================
 # Streamlit session state setup
 # ============================================================
@@ -1057,7 +1065,9 @@ def migrate_users(active_only):
         if resp.status_code in (200, 201):
             migrated += 1
             st.session_state.summary["users_migrated"] += 1
+            st.session_state.new_users.add(ext)      # ⭐ NEW LINE
             ui_log(f"✅ Created {email}")
+
         else:
             skipped += 1
             st.session_state.summary["spaces_skipped"] += 1
@@ -1101,6 +1111,12 @@ def migrate_user_images():
 
         if not ext or not url:
             continue
+
+        # Skip avatar upload unless user was newly created
+        if ext not in st.session_state.new_users:
+            ui_log(f"⏭ Skipping avatar: user existed already ({ext})")
+            continue
+
 
         file_path = download_file(url, f"user_{ext}.jpg")
         if not file_path:
@@ -1151,13 +1167,15 @@ def migrate_spaces():
             json=payload
         )
 
-        if resp.status_code not in (200, 201):
+        if resp.status_code in (200, 201):
+            created += 1
+            st.session_state.summary["spaces_created"] += 1
+            new_space_id = resp.json()["data"]["id"]     # ⭐ NEW
+            st.session_state.new_spaces.add(new_space_id) # ⭐ NEW
+            ui_log(f"✅ Created space '{name}'")
+        else:
             ui_log(f"❌ Failed creating '{name}': {resp.text}")
-            continue
-
-        created += 1
-        st.session_state.summary["spaces_created"] += 1
-        ui_log(f"✅ Created space '{name}'")
+        
 
     ui_log(f"=== SPACE MIGRATION END — created={created}, skipped={skipped} ===")
 
@@ -1228,6 +1246,11 @@ def migrate_memberships():
                 numeric_ids.append(target_uid)
 
         ui_log(f"👥 '{space_name}': {len(numeric_ids)} members mapped")
+
+        # Skip membership unless space was newly created
+        if target_space_id not in st.session_state.new_spaces:
+            ui_log(f"⏭ Skipping memberships for existing space '{space_name}'")
+            continue
 
         # 5) PATCH memberships to target
         for chunk in [numeric_ids[i:i+100] for i in range(0, len(numeric_ids), 100)]:
