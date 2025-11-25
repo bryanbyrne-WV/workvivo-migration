@@ -98,6 +98,15 @@ if not st.session_state.authenticated:
     # Centered layout
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
+    # Centered Workvivo logo above login form
+    st.markdown("""
+    <div style="text-align:center; margin-top:40px; margin-bottom:10px;">
+        <img src="https://www.festivalofwork.com/media/Workvivo%20(1).png"
+             style="height:65px;">
+    </div>
+    """, unsafe_allow_html=True)
+    
+
     # Header text (no logo)
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
     st.markdown('<div class="login-note">Please sign in to access the Migration Tool</div>',
