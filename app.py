@@ -24,86 +24,113 @@ if not st.session_state.authenticated:
         """
         <style>
 
-            /* Full gradient background */
+            /* --- Modern Soft Gradient Background --- */
             body {
                 background: linear-gradient(
-                    to bottom,
-                    #E3B8FF 0%,
-                    #D7C7FF 30%,
-                    #C9DEFF 70%,
-                    #B7F3FF 100%
+                    180deg,
+                    #EFE8FF 0%,
+                    #E1D9FF 30%,
+                    #D3EDFF 80%,
+                    #FFFFFF 100%
                 ) !important;
             }
 
+            /* --- Center Wrapper --- */
             .login-wrapper {
                 max-width: 420px;
-                margin: 5rem auto;
-                text-align: center !important;   /* 🔥 forces all children centered */
+                margin: 7rem auto;
+                text-align: center;
+                animation: fadeIn 1s ease-out;
             }
 
-            /* Center the logo block explicitly */
-            .login-logo {
-                display: block !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
+            /* --- Glass Card Effect --- */
+            .glass-card {
+                background: rgba(255, 255, 255, 0.45);
+                padding: 2.8rem 2.4rem;
+                border-radius: 20px;
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+                animation: slideUp 0.8s ease-out;
             }
 
-            /* Purple heading */
+            /* Logo */
+            .logo {
+                width: 180px;
+                margin: 0 auto 1.6rem auto;
+                display: block;
+                animation: fadeIn 1.3s ease-in;
+            }
+
+            /* Title */
             .login-title {
-                font-size: 2.2rem;
+                font-size: 1.9rem;
                 color: #5A3EA6;
                 font-weight: 600;
-                margin-top: 1.2rem;
-                margin-bottom: 0.5rem;
-                text-align: center !important;   /* 🔥 ensure centered */
+                margin-bottom: 0.2rem;
             }
 
-            /* Notes under heading */
+            /* Subtitle */
             .login-note {
                 font-size: 1rem;
-                color: #4A2F8A;
-                opacity: 0.85;
-                margin-bottom: 2.5rem;
-                text-align: center !important;   /* 🔥 ensure centered */
+                color: #6A52B6;
+                opacity: 0.8;
+                margin-bottom: 2.2rem;
             }
 
-            /* Underline input styling */
+            /* Inputs */
             .underline-input input {
                 background: transparent !important;
                 border: none !important;
-                border-bottom: 1px solid #5A3EA6 !important;
+                border-bottom: 1px solid #8368D0 !important;
                 border-radius: 0 !important;
                 color: #5A3EA6 !important;
                 padding: 0.6rem 0 !important;
+                font-size: 1.05rem;
             }
 
             .underline-input input::placeholder {
-                color: #7D64C6 !important;
-                opacity: 0.7;
+                color: #8C76D6 !important;
+                opacity: 0.6;
             }
 
-            /* Login button */
+            /* Button */
             .blue-btn button {
                 width: 100%;
-                background-color: #2F4A7D !important;
+                background: linear-gradient(90deg, #3C4FA8, #6B3EA4) !important;
                 color: white !important;
-                border-radius: 6px !important;
+                border-radius: 10px !important;
                 height: 3rem !important;
                 font-weight: 600;
-                margin-top: 1.5rem;
-                letter-spacing: 1px;
                 border: none !important;
+                letter-spacing: 1px;
+                margin-top: 1.6rem;
+                transition: 0.2s;
             }
 
-            /* Request access button */
+            .blue-btn button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+            }
+
+            /* Request link */
             .request-button {
                 display: inline-block;
                 margin-top: 1.6rem;
-                color: #2F4A7D !important;
+                color: #3C4FA8 !important;
                 font-weight: 500;
                 text-decoration: underline;
-                font-size: 0.95rem;
-                text-align: center !important;
+            }
+
+            /* --- Animations --- */
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            @keyframes slideUp {
+                from { transform: translateY(25px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
             }
 
         </style>
@@ -114,19 +141,20 @@ if not st.session_state.authenticated:
     # UI wrapper
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
-    # ---- Centered LOGO ----
-    st.image(WORKVIVO_LOGO_URL, width=220, use_column_width=False)
+    # Glass card
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 
-    # ---- Heading ----
+    # Logo (centered)
+    st.image(WORKVIVO_LOGO_URL, use_column_width=False, width=180)
+
+    # Title
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
 
-    # ---- Notes under the heading ----
-    st.markdown(
-        '<div class="login-note">Please sign in to access the Migration Tool</div>',
-        unsafe_allow_html=True
-    )
+    # Subtitle
+    st.markdown('<div class="login-note">Please sign in to access the Migration Tool</div>',
+                unsafe_allow_html=True)
 
-    # ---- Underline Inputs ----
+    # Underline Inputs
     st.markdown('<div class="underline-input">', unsafe_allow_html=True)
     username = st.text_input("Username", placeholder="Username")
     password = st.text_input("Password", placeholder="Password", type="password")
@@ -134,11 +162,12 @@ if not st.session_state.authenticated:
 
     remember = st.checkbox("Remember me")
 
-    # ---- Login Button ----
+    # Login Button
     st.markdown('<div class="blue-btn">', unsafe_allow_html=True)
     login_button = st.button("LOGIN")
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # Logic
     if login_button:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             st.session_state.authenticated = True
@@ -147,7 +176,7 @@ if not st.session_state.authenticated:
         else:
             st.error("Invalid username or password.")
 
-    # ---- Request Access ----
+    # Request Access link
     st.markdown(
         """
         <a class="request-button"
@@ -158,8 +187,7 @@ if not st.session_state.authenticated:
         unsafe_allow_html=True
     )
 
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.stop()
+    st.markdown("</div>", unsafe_allow_html
 
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
