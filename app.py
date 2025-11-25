@@ -1453,7 +1453,7 @@ if st.session_state.page == "main":
     )
     
     if not st.session_state.phase1_company:
-        st.warning("Please enter a company name — required on the first migration to create the Global Feed Space for Global audience data.")
+        st.warning("Required on the first migration to create the Global Feed Space for Global audience data.")
     
     # ============================================================
     # OPTION: Reuse existing Global Feed instead of creating one
@@ -1475,7 +1475,9 @@ if st.session_state.page == "main":
         )
     else:
         st.session_state.existing_global_id = ""
-
+        
+    # ⭐ Add separator line (same style as other sections)
+    st.markdown("---")
 
     # ============================================================
     # 👥 User activity on Workvivo
