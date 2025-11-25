@@ -9,6 +9,9 @@ import random
 import os
 import mimetypes
 
+=======
+
+======
 import streamlit as st
 
 ADMIN_USERNAME = "admin"
@@ -47,11 +50,11 @@ if not st.session_state.authenticated:
                 font-size: 2.2rem;
                 color: #5A3EA6;
                 font-weight: 600;
-                margin-top: 1rem;
+                margin-top: 1.2rem;
                 margin-bottom: 0.5rem;
             }
 
-            /* Sub-text / Notes */
+            /* Notes under heading */
             .login-note {
                 font-size: 1rem;
                 color: #4A2F8A;
@@ -59,7 +62,7 @@ if not st.session_state.authenticated:
                 margin-bottom: 2.5rem;
             }
 
-            /* Underline input styles */
+            /* Underline input styling */
             .underline-input input {
                 background: transparent !important;
                 border: none !important;
@@ -101,30 +104,30 @@ if not st.session_state.authenticated:
         unsafe_allow_html=True
     )
 
-    # Wrapper
+    # UI wrapper
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
-    # Logo
-    st.image(WORKVIVO_LOGO_URL, width=150)
+    # ---- CENTERED + LARGE LOGO ----
+    st.image(WORKVIVO_LOGO_URL, width=220, use_column_width=False)
 
-    # User Login heading
+    # ---- Heading ----
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
 
-    # Sub-header notes (restored!)
+    # ---- Notes under the heading ----
     st.markdown(
         '<div class="login-note">Please sign in to access the Migration Tool</div>',
         unsafe_allow_html=True
     )
 
-    # Inputs
+    # ---- Underline Inputs ----
     st.markdown('<div class="underline-input">', unsafe_allow_html=True)
-    username = st.text_input("Email", placeholder="Email ID", key="email_input")
-    password = st.text_input("Password", placeholder="Password", type="password", key="password_input")
+    username = st.text_input("Username", placeholder="Username")
+    password = st.text_input("Password", placeholder="Password", type="password")
     st.markdown('</div>', unsafe_allow_html=True)
 
     remember = st.checkbox("Remember me")
 
-    # Login button
+    # ---- Login Button ----
     st.markdown('<div class="blue-btn">', unsafe_allow_html=True)
     login_button = st.button("LOGIN")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -137,11 +140,11 @@ if not st.session_state.authenticated:
         else:
             st.error("❌ Invalid username or password.")
 
-    # Request Access
+    # ---- Request Access ----
     st.markdown(
         """
         <a class="request-button"
-           href="mailto:bryan.byrne@workvivo.com?subject=Access Request - Migration Tool&body=Hi Bryan,%0D%0A%0D%0ACould I please get access to the Migration Tool?%0D%0A%0D%0AThanks!">
+           href="mailto:bryan.byrne@workvivo.com?subject=Access Request - Migration Tool&body=Hi Bryan,%0D%0A%0D%0ACan I please get access to the Migration Tool?%0D%0A%0D%0AThanks!">
             Request Access
         </a>
         """,
@@ -150,7 +153,6 @@ if not st.session_state.authenticated:
 
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
-
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
