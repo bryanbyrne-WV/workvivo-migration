@@ -1723,18 +1723,37 @@ elif st.session_state.page == "summary":
     # ======== BUTTON ROW ========
     c1, c2 = st.columns([1, 1])
 
-    with c1:
-        if st.button("✔ Finish", key="finish_button"):
-            for key in [
-                "progress", "log_output", "migration_finished", "cancel_requested",
-                "start_migration", "phase1_running", "live_log_placeholder",
-                "summary"
-            ]:
-                if key in st.session_state:
-                    del st.session_state[key]
+   with col1:
+    if st.button("✔ Finish", key="finish_button"):
 
-            st.session_state.page = "main"
-            st.rerun()
+        keys_to_reset = [
+            # Migration progress & logs
+            "progress", "log_output", "migration_finished", "cancel_requested",
+            "start_migration", "phase1_running", "live_log_placeholder",
+            "summary", "summary_type",
+
+            # Migration page inputs
+            "phase1_company",
+            "migration_date_choice",
+            "migration_start_date",
+            "migration_end_date",
+
+            # Toggles
+            "migrate_updates", "migrate_kudos", "migrate_articles",
+            "migrate_events", "migrate_comments", "migrate_likes",
+            "migrate_globalPages", "migrate_spacePages",
+            "phase1_active_only",
+        ]
+
+        for key in keys_to_reset:
+            if key in st.session_state:
+                del st.session_state[key]
+
+        # Reset page
+        st.session_state.page = "main"
+
+        st.rerun()
+
 
     with c2:
         if st.session_state.get("log_output"):
