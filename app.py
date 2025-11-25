@@ -947,6 +947,12 @@ def create_global_space_and_enroll(company_name):
     """Creates a private Global Feed space and enrolls all users."""
     ui_log(f"🌍 Creating Global Feed space for: {company_name}")
 
+    # ❌ No company name → skip global space creation
+    if not company_name or not company_name.strip():
+        ui_log("⏭ Skipping Global Space creation — no organisation name entered.")
+        return None
+
+
     global_space_name = f"{company_name.strip()} Global Feed"
 
     # Step 1 — Check if already exists
@@ -1304,11 +1310,43 @@ def create_global_space_and_enroll(company_name):
         space_id = resp.json()["data"]["id"]
         ui_log(f"✅ Created Global Space (ID {space_id})")
 
-    # Enroll ALL users
-    users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
-    user_ids = [u["id"] for u in users]
+    # ⭐ ENROLL ONLY NEWLY-CREATED USERS
+    ui_log(f"👥 Preparing list of newly migrated users…")
 
-    ui_log(f"👥 Enrolling {len(user_ids)} users…")
+    # Map ext → numeric
+    target_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
+    ext_to_numeric = {
+        u.get("external_id"): u.get("id")
+        for u in target_users
+        if u.get("external_id")
+    }
+
+    # Convert st.session_state.new_users → numeric IDs
+    new_numeric_ids = [
+        ext_to_numeric.get(ext)
+        for ext in st.session_state.new_users
+        if ext_to_numeric.get(ext)
+    ]
+
+    if not new_numeric_ids:
+        ui_log("⏭ No newly migrated users to enroll.")
+        return space_id
+
+    ui_log(f"👥 Enrolling {len(new_numeric_ids)} newly migrated users…")
+
+    # Chunk + enroll
+    chunks = [new_numeric_ids[i:i + 100] for i in range(0, len(new_numeric_ids), 100)]
+
+    for chunk in chunks:
+        resp = requests.patch(
+            f"{TARGET_API_URL}/spaces/{space_id}/users",
+            headers=target_headers,
+            json={"ids_to_add": chunk}
+        )
+
+        if resp.status_code not in (200, 201):
+            ui_log(f"⚠️ Failed to enroll chunk: {resp.text[:200]}")
+
 
     chunks = [user_ids[i:i + 100] for i in range(0, len(user_ids), 100)]
 
