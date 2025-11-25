@@ -13,7 +13,7 @@ import mimetypes
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
 
-WORKVIVO_LOGO_URL = "https://www.festivalofwork.com/media/Workvivo%20(1).png"
+WORKVIVO_LOGO_URL = "https://hrsummits.co.uk/wp-content/uploads/2020/07/Workvivo-Logo_Positive.png"
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
