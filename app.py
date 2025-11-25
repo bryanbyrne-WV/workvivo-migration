@@ -849,12 +849,11 @@ def ui_log(message):
 
     # Real-time UI update (only if placeholder exists)
     if "live_log_placeholder" in st.session_state:
-        st.session_state.live_log_placeholder.text_area(
-            "📡 Live Console Output",
-            st.session_state["log_output"],
-            height=400,
-            disabled=True
+        st.session_state.live_log_placeholder.markdown(
+            f"<pre style='height:400px; overflow-y: scroll; background-color:#111; color:#eee; padding:10px; border-radius:6px;'>{st.session_state['log_output']}</pre>",
+            unsafe_allow_html=True
         )
+
 
 
 
