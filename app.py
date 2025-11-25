@@ -1255,9 +1255,6 @@ def run_phase_1(company_name, active_only):
     ui_log("▶ Starting Phase 1…")
 
     try:
-        # 1) Global Space
-        check_cancel()
-        create_global_space_and_enroll(company_name)
 
         # 2) Users
         check_cancel()
@@ -1274,6 +1271,10 @@ def run_phase_1(company_name, active_only):
         # 5) Memberships
         check_cancel()
         migrate_memberships()
+
+        # 1) Global Space
+        check_cancel()
+        create_global_space_and_enroll(company_name)
 
         ui_log("🎉 Phase 1 Completed Successfully!")
 
@@ -1403,7 +1404,7 @@ if st.session_state.page == "main":
     )
     
     if not st.session_state.phase1_company:
-        st.warning("Please enter a company name — required to create the Global Feed.")
+        st.warning("Please enter a company name — required to create the Global Feed Space for Global data.")
 
     # ============================================================
     # 🏢 Organisation settings and information
