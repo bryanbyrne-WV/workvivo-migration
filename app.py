@@ -650,7 +650,7 @@ if "config_saved" not in st.session_state:
 
         # CONTINUE BUTTON (purple)
         st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
-        if st.button("➡ Continue"):
+        if st.button("➡ CONTINUE"):
             st.session_state.page = "main"
             st.rerun()
 
@@ -1498,7 +1498,7 @@ elif st.session_state.page == "running":
             st.rerun()
     else:
         # Migration complete or cancelled → show FINISH
-        if st.button("✔ Finish"):
+        if st.button("✔ FINISH"):
     
             # Fully clear old migration state
             keys_to_clear = [
