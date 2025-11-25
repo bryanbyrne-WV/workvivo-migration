@@ -721,13 +721,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-st.markdown('<div class="back-btn">', unsafe_allow_html=True)
-if st.button("← Edit Environment Settings"):
-    # Reset config state so the form shows again
-    if "config_saved" in st.session_state:
-        del st.session_state["config_saved"]
-    st.rerun()
-st.markdown('</div>', unsafe_allow_html=True)
+if st.session_state.page != "summary":
+    st.markdown('<div class="back-btn">', unsafe_allow_html=True)
+    if st.button("← Edit Environment Settings"):
+        if "config_saved" in st.session_state:
+            del st.session_state["config_saved"]
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
@@ -744,7 +745,8 @@ TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
 
 SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
-st.success("🔐 Configuration active — ready to run migrations.")
+if st.session_state.page != "summary":
+    st.success("🔐 Configuration active — ready to run migrations.")
 
 # ============================================================
 # Ensure SUMMARY dictionary exists before any migration starts
