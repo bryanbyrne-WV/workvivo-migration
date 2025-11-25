@@ -1433,7 +1433,7 @@ if st.session_state.page == "main":
     )
     
     if not st.session_state.phase1_company:
-        st.warning("Please enter a company name — required to create the Global Feed Space for Global data.")
+        st.warning("Please enter a company name — required on the first migration to create the Global Feed Space for Global audience data.")
 
     # ============================================================
     # 🏢 Organisation settings and information
