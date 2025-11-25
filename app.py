@@ -1676,10 +1676,7 @@ elif st.session_state.page == "summary":
 
     st.markdown(f"""
     <div class="summary-item"><strong>Users Migrated:</strong> {s['users_migrated']}</div>
-    <div class="summary-item"><strong>Users Skipped:</strong> {s['users_skipped']}</div>
     <div class="summary-item"><strong>Spaces Created:</strong> {s['spaces_created']}</div>
-    <div class="summary-item"><strong>Spaces Skipped:</strong> {s['spaces_skipped']}</div>
-    <div class="summary-item"><strong>Memberships Added:</strong> {s['memberships_added']}</div>
     """, unsafe_allow_html=True)
 
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
@@ -1688,12 +1685,12 @@ elif st.session_state.page == "summary":
     st.markdown("<div class='section-header'>Content Migrated</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div class="summary-item"><strong>Updates:</strong> {s.get('updates_migrated', 0)}</div>
-    <div class="summary-item"><strong>Kudos:</strong> {s.get('kudos_migrated', 0)}</div>
-    <div class="summary-item"><strong>Articles:</strong> {s.get('articles_migrated', 0)}</div>
-    <div class="summary-item"><strong>Events:</strong> {s.get('events_migrated', 0)}</div>
-    <div class="summary-item"><strong>Global Pages:</strong> {s.get('global_pages_migrated', 0)}</div>
-    <div class="summary-item"><strong>Space Pages:</strong> {s.get('space_pages_migrated', 0)}</div>
+    <div class="summary-item"><strong>Updates Migrated:</strong> {s.get('updates_migrated', 0)}</div>
+    <div class="summary-item"><strong>Kudos' Migrated:</strong> {s.get('kudos_migrated', 0)}</div>
+    <div class="summary-item"><strong>Articles Migrated:</strong> {s.get('articles_migrated', 0)}</div>
+    <div class="summary-item"><strong>Events Migrated:</strong> {s.get('events_migrated', 0)}</div>
+    <div class="summary-item"><strong>Global Pages Migrated:</strong> {s.get('global_pages_migrated', 0)}</div>
+    <div class="summary-item"><strong>Space Pages Migrated:</strong> {s.get('space_pages_migrated', 0)}</div>
     """, unsafe_allow_html=True)
 
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
