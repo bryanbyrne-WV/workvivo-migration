@@ -38,7 +38,14 @@ if not st.session_state.authenticated:
             .login-wrapper {
                 max-width: 420px;
                 margin: 5rem auto;
-                text-align: center;
+                text-align: center !important;   /* 🔥 forces all children centered */
+            }
+
+            /* Center the logo block explicitly */
+            .login-logo {
+                display: block !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
             }
 
             /* Purple heading */
@@ -48,6 +55,7 @@ if not st.session_state.authenticated:
                 font-weight: 600;
                 margin-top: 1.2rem;
                 margin-bottom: 0.5rem;
+                text-align: center !important;   /* 🔥 ensure centered */
             }
 
             /* Notes under heading */
@@ -56,6 +64,7 @@ if not st.session_state.authenticated:
                 color: #4A2F8A;
                 opacity: 0.85;
                 margin-bottom: 2.5rem;
+                text-align: center !important;   /* 🔥 ensure centered */
             }
 
             /* Underline input styling */
@@ -86,6 +95,7 @@ if not st.session_state.authenticated:
                 border: none !important;
             }
 
+            /* Request access button */
             .request-button {
                 display: inline-block;
                 margin-top: 1.6rem;
@@ -93,6 +103,7 @@ if not st.session_state.authenticated:
                 font-weight: 500;
                 text-decoration: underline;
                 font-size: 0.95rem;
+                text-align: center !important;
             }
 
         </style>
@@ -103,7 +114,7 @@ if not st.session_state.authenticated:
     # UI wrapper
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
-    # ---- CENTERED + LARGE LOGO ----
+    # ---- Centered LOGO ----
     st.image(WORKVIVO_LOGO_URL, width=220, use_column_width=False)
 
     # ---- Heading ----
@@ -134,7 +145,7 @@ if not st.session_state.authenticated:
             st.success("Logged in!")
             st.rerun()
         else:
-            st.error("❌ Invalid username or password.")
+            st.error("Invalid username or password.")
 
     # ---- Request Access ----
     st.markdown(
@@ -149,6 +160,7 @@ if not st.session_state.authenticated:
 
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
+
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
