@@ -841,18 +841,14 @@ def ui_log(message):
     ts = datetime.utcnow().strftime("%H:%M:%S")
     line = f"[{ts}] {message}"
 
-    # Append to session buffer
     if "log_output" not in st.session_state:
         st.session_state["log_output"] = ""
 
     st.session_state["log_output"] += line + "\n"
 
-    # Real-time UI update for scrollable HTML log
-    try:
-        if "refresh_log_view" in st.session_state:
-            st.session_state["refresh_log_view"]()
-    except:
-        pass
+    # Live refresh
+    if "refresh_log_view" in st.session_state:
+        st.session_state["refresh_log_view"]()
 
 
 
