@@ -1632,7 +1632,7 @@ elif st.session_state.page == "summary":
 
     # ======= PAGE TITLE =======
     title_text = (
-        "Migration Completed Successfully"
+        "Migration Completed Successfully!!"
         if st.session_state.get("summary_type") != "cancelled"
         else "Migration Cancelled"
     )
