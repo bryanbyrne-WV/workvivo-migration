@@ -1622,19 +1622,20 @@ elif st.session_state.page == "summary":
 
 st.subheader("Full Console Log")
 
+# Logs
 st.text_area(
     "Log Output",
     st.session_state.get("log_output", ""),
     height=300
 )
 
-# Only show Download Logs if we actually have logs
+# Only show button if logs exist
 has_logs = bool(st.session_state.get("log_output"))
 
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    # Finish Button
+    # ✔ Single Finish Button
     if st.button("✔ Finish", key="finish_button"):
 
         # Clear migration-related session keys
@@ -1658,10 +1659,10 @@ with col1:
             """,
             height=0,
         )
-
         st.rerun()
 
 with col2:
+    # Download Logs only if logs exist
     if has_logs:
         st.download_button(
             "⬇ Download Logs",
@@ -1670,34 +1671,8 @@ with col2:
             mime="text/plain"
         )
     else:
-        st.markdown("<div style='opacity:0.4;'>No logs yet</div>", unsafe_allow_html=True)
-
-    # ✅ FINISH BUTTON
-    if st.button("Finish"):
-
-        # Clear migration-related session keys
-        for key in [
-            "progress", "log_output", "migration_finished", "cancel_requested",
-            "start_migration", "phase1_running", "live_log_placeholder",
-            "summary"
-        ]:
-            if key in st.session_state:
-                del st.session_state[key]
-
-        # Return to main migration page
-        st.session_state.page = "main"
-
-        # Inject JS to scroll to top before rerun
-        st.components.v1.html(
-            """
-            <script>
-                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-            """,
-            height=0,
-        )
-
-        # Force UI refresh
-        st.rerun()
+        # Placeholder for alignment if no logs yet
+        st.markdown("<div style='opacity:0.4; text-align:center; padding-top:10px;'>No logs yet</div>",
+                    unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
