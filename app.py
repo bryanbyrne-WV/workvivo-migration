@@ -1539,6 +1539,10 @@ if st.session_state.page == "main":
 # ============================================================
 elif st.session_state.page == "running":
 
+
+    if "live_log_placeholder" not in st.session_state:
+    st.session_state.live_log_placeholder = st.empty()
+    
     # Invisible scroll anchor
     scroll_anchor = st.empty()
     scroll_anchor.markdown("<div id='top'></div>", unsafe_allow_html=True)
@@ -1570,8 +1574,6 @@ elif st.session_state.page == "running":
     else:
         st.header("Migration In Progress...")
 
-    if "live_log_placeholder" not in st.session_state:
-    st.session_state.live_log_placeholder = st.empty()
 
 
     # --------------------------------------------------------
