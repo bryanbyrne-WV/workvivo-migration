@@ -1215,6 +1215,12 @@ def migrate_memberships():
 # GLOBAL SPACE CREATION (PRIVATE) + ENROLLMENT
 # =========================================================
 def create_global_space_and_enroll(company_name):
+
+    # 🚫 STOP if no company name entered
+    if not company_name or not company_name.strip():
+        ui_log("⏭ Skipping Global Feed — no company name entered.")
+        return None
+
     ui_log(f"🌍 Creating Global Feed: {company_name}")
 
     global_name = f"{company_name} Global Feed"
@@ -1267,6 +1273,7 @@ def create_global_space_and_enroll(company_name):
 
     ui_log("✅ Global Space Enrollment Complete!")
     return space_id
+
 
 
 # =========================================================
