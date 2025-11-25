@@ -462,27 +462,27 @@ if "config_saved" not in st.session_state:
 
             SOURCE_API_URL = st.text_input(
                 "Source API URL",
-                value="https://api.workvivo.com/v2",
+                value="https://api.eu2.workvivo.com/v1",
                 help="Base API URL for fetching content, spaces, images and memberships from the SOURCE tenant."
             )
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
-                value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
+                value="nt4JalDlDMnpW8UyfYZf1qoRod2gJSHPvAknQtiB",
                 type="password",
                 help="Authentication token for SCIM user requests in the SOURCE tenant."
             )
 
             SOURCE_API_TOKEN = st.text_input(
                 "Source API Token",
-                value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
+                value="1012|ca3d8a530427c43ecba6f0803742b157dbf0a111",
                 type="password",
                 help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
             )
 
             SOURCE_WORKVIVO_ID = st.text_input(
                 "Source Workvivo ID",
-                value="51",
+                value="3000380",
                 help="Workvivo ID required for API requests on the SOURCE tenant."
             )
 
