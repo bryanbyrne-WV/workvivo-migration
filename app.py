@@ -20,7 +20,7 @@ if not st.session_state.authenticated:
     st.markdown("""
         <style>
 
-            /* Soft gradient background only */
+            /* Soft gradient background */
             body {
                 background: linear-gradient(
                     180deg,
@@ -31,27 +31,21 @@ if not st.session_state.authenticated:
                 ) !important;
             }
 
-            /* Page wrapper */
             .login-wrapper {
                 max-width: 420px;
                 margin: 7rem auto;
                 text-align: center;
             }
 
-            /* Workvivo logo centered */
-            .logo-block {
-                margin-bottom: 2rem;
-            }
-
-            /* Title */
+            /* Title (no logo above it) */
             .login-title {
                 font-size: 2rem;
                 color: #5A3EA6;
                 font-weight: 700;
                 margin-bottom: 0.4rem;
+                margin-top: 1rem;
             }
 
-            /* Subtitle */
             .login-note {
                 font-size: 1.05rem;
                 color: #6B56B0;
@@ -88,7 +82,7 @@ if not st.session_state.authenticated:
                 margin-top: 1.8rem;
             }
 
-            /* Request access */
+            /* Request access link */
             .request-button {
                 display: inline-block;
                 margin-top: 1.6rem;
@@ -101,15 +95,10 @@ if not st.session_state.authenticated:
         </style>
     """, unsafe_allow_html=True)
 
-    # Structure
+    # Centered layout
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
-    # Logo
-    st.markdown('<div class="logo-block">', unsafe_allow_html=True)
-    st.image(WORKVIVO_LOGO_URL, width=200)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Centered heading + subtitle
+    # Header text (no logo)
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
     st.markdown('<div class="login-note">Please sign in to access the Migration Tool</div>',
                 unsafe_allow_html=True)
@@ -127,7 +116,7 @@ if not st.session_state.authenticated:
     login_button = st.button("LOGIN")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Logic
+    # Login logic
     if login_button:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             st.session_state.authenticated = True
@@ -136,7 +125,7 @@ if not st.session_state.authenticated:
         else:
             st.error("❌ Invalid username or password.")
 
-    # Request access button
+    # Request access link
     st.markdown(
         """
         <a class="request-button"
@@ -149,6 +138,7 @@ if not st.session_state.authenticated:
 
     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
+
 
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
