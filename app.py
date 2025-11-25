@@ -1538,10 +1538,6 @@ if st.session_state.page == "main":
 # MIGRATION PAGE — FINAL WORKING VERSION
 # ============================================================
 elif st.session_state.page == "running":
-
-
-    if "live_log_placeholder" not in st.session_state:
-    st.session_state.live_log_placeholder = st.empty()
     
     # Invisible scroll anchor
     scroll_anchor = st.empty()
@@ -1567,12 +1563,17 @@ elif st.session_state.page == "running":
     # --------------------------------------------------------
     if st.session_state.get("migration_finished", False):
         st.header("Migration Finished!")
-
+    
     elif st.session_state.cancel_requested:
         st.header("Migration Cancelled")
-
+    
     else:
         st.header("Migration In Progress...")
+    
+        # 🔥 Create the live log placeholder once on the running page
+        if "live_log_placeholder" not in st.session_state:
+            st.session_state.live_log_placeholder = st.empty()
+
 
 
 
