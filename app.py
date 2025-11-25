@@ -38,25 +38,28 @@ if not st.session_state.authenticated:
                 100% {background-position: 0% 50%;}
             }
 
-            /* Wrapper */
+            /* PAGE CENTER CONTAINER */
             .login-wrapper {
-                max-width: 440px;
-                margin: 7rem auto;
+                max-width: 460px;
+                margin: 6rem auto;
                 text-align: center;
+                display: flex;
+                justify-content: center;
             }
 
-            /* ----------------------------------
-               PREMIUM GLASS POP-OUT LOGIN CARD
-            ---------------------------------- */
+            /* -------------------------
+               FIXED GLASS POP-OUT CARD
+            ------------------------- */
             .glass-card {
                 background: rgba(255, 255, 255, 0.55);
+                width: 100%;
                 padding: 3rem 2.6rem;
                 border-radius: 22px;
-                backdrop-filter: blur(22px);
-                -webkit-backdrop-filter: blur(22px);
+                backdrop-filter: blur(18px);
+                -webkit-backdrop-filter: blur(18px);
                 box-shadow:
-                    0 20px 40px rgba(0,0,0,0.12),
-                    0 6px 12px rgba(0,0,0,0.07);
+                    0 18px 35px rgba(0,0,0,0.15),
+                    0 8px 18px rgba(0,0,0,0.07);
                 animation: floatIn 0.8s ease-out;
             }
 
@@ -68,7 +71,7 @@ if not st.session_state.authenticated:
             /* Logo */
             .login-logo {
                 width: 200px;
-                margin-bottom: 2.2rem;
+                margin-bottom: 2rem;
                 opacity: 0.95;
             }
 
@@ -85,7 +88,7 @@ if not st.session_state.authenticated:
                 font-size: 1.05rem;
                 color: #5A3EA6;
                 opacity: 0.75;
-                margin-bottom: 2.4rem;
+                margin-bottom: 2.3rem;
             }
 
             /* Inputs */
@@ -107,7 +110,7 @@ if not st.session_state.authenticated:
 
             .underline-input input::placeholder {
                 color: #9a84dd !important;
-                opacity: 0.7;
+                opacity: 0.6;
             }
 
             /* Button */
@@ -121,7 +124,7 @@ if not st.session_state.authenticated:
                 font-weight: 600;
                 font-size: 1rem;
                 letter-spacing: 0.5px;
-                margin-top: 1.9rem;
+                margin-top: 1.8rem;
                 transition: 0.25s ease;
             }
 
@@ -144,19 +147,21 @@ if not st.session_state.authenticated:
     """, unsafe_allow_html=True)
 
 
-    # --- PAGE STRUCTURE ---
+    # ------------------------------
+    # PAGE STRUCTURE
+    # ------------------------------
+
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
+
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 
-    # Logo (centered, no pop-out)
+    # Logo (centered)
     st.image(WORKVIVO_LOGO_URL, width=200)
 
-    # Heading
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
     st.markdown('<div class="login-note">Please sign in to access the Migration Tool</div>',
                 unsafe_allow_html=True)
 
-    # Inputs
     st.markdown('<div class="underline-input">', unsafe_allow_html=True)
     username = st.text_input("Username", placeholder="Username")
     password = st.text_input("Password", placeholder="Password", type="password")
@@ -164,21 +169,18 @@ if not st.session_state.authenticated:
 
     remember = st.checkbox("Remember me")
 
-    # Button
     st.markdown('<div class="blue-btn">', unsafe_allow_html=True)
     login_button = st.button("LOGIN")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Auth
     if login_button:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             st.session_state.authenticated = True
             st.success("Logged in!")
             st.rerun()
         else:
-            st.error("❌ Invalid username or password.")
+            st.error("Invalid username or password.")
 
-    # Request Access
     st.markdown("""
         <a class="request-button"
            href="mailto:bryan.byrne@workvivo.com?subject=Access Request - Migration Tool&body=Hi Bryan,%0D%0A%0D%0ACan I please get access to the Migration Tool?%0D%0A%0D%0AThanks!">
@@ -186,8 +188,9 @@ if not st.session_state.authenticated:
         </a>
     """, unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)  # end glass card
-    st.markdown('</div>', unsafe_allow_html=True)  # end wrapper
+    st.markdown('</div>', unsafe_allow_html=True)  # close glass card
+    st.markdown('</div>', unsafe_allow_html=True)  # close wrapper
+
     st.stop()
 
 
