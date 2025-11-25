@@ -1597,15 +1597,20 @@ elif st.session_state.page == "running":
         # FINISHED SUCCESSFULLY
         if not st.session_state.cancel_requested:
             st.session_state.progress = 100
-            progress_bar.progress(100)
             ui_log("Migration Complete!")
-        
-            # Store end time
             st.session_state.summary["end_time"] = datetime.utcnow()
-        
-            # Navigate to summary page
             st.session_state.page = "summary"
+            st.session_state.summary_type = "success"
             st.rerun()
+        
+        # CANCELLED CASE
+        else:
+            ui_log("Migration was cancelled by the user.")
+            st.session_state.summary["end_time"] = datetime.utcnow()
+            st.session_state.page = "summary"
+            st.session_state.summary_type = "cancel"
+            st.rerun()
+        
 
 
     # --------------------------------------------------------
@@ -1620,24 +1625,30 @@ elif st.session_state.page == "running":
         disabled=True
     )
 
+# SUMMARY PAGE
 elif st.session_state.page == "summary":
 
-    s = st.session_state.summary
+    summary_type = st.session_state.get("summary_type", "success")
 
-    # ======= PAGE TITLE =======
-    st.markdown("""
+    if summary_type == "success":
+        title = "Migration Completed Successfully"
+    else:
+        title = "Migration Cancelled"
+
+    st.markdown(f"""
     <style>
-    .summary-title {
+    .summary-title {{
         font-size: 40px;
         font-weight: 800;
-        color: #000000;
+        color: #000000 !important;
         text-align: center;
         margin-bottom: 25px;
         margin-top: 10px;
-    }
+    }}
     </style>
-    <div class="summary-title">Migration Completed Successfully!!</div>
+    <div class="summary-title">{title}</div>
     """, unsafe_allow_html=True)
+
 
 
     # ======= CARD STYLES =======
