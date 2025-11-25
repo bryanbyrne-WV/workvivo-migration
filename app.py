@@ -1167,26 +1167,75 @@ def migrate_spaces():
 def migrate_memberships():
     ui_log("=== MEMBERSHIP MIGRATION START ===")
 
-    source_memberships = paginated_fetch(f"{SOURCE_API_URL}/memberships", source_headers)
+    # Load spaces from both tenants
+    source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
+    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
 
-    for m in source_memberships:
-        space_id = m.get("space_id")
-        user_id = m.get("user_id")
+    # Map target space names → numeric ID
+    name_to_target_id = {
+        s["name"].strip().lower(): s["id"] for s in target_spaces
+    }
 
-        payload = {"ids_to_add": [user_id]}
+    # Fetch all target users → map externalId → numericId
+    target_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
+    ext_to_numeric = {
+        u.get("external_id"): u.get("id")
+        for u in target_users
+        if u.get("external_id")
+    }
 
-        resp = requests.patch(
-            f"{TARGET_API_URL}/spaces/{space_id}/users",
-            headers=target_headers,
-            json=payload
+    BATCH = 50
+
+    for s in source_spaces:
+        space_name = s.get("name", "").strip()
+        norm_name = space_name.lower()
+
+        target_space_id = name_to_target_id.get(norm_name)
+        if not target_space_id:
+            ui_log(f"⚠️ No matching target space for '{space_name}', skipping.")
+            continue
+
+        # Fetch source members
+        members = paginated_fetch(
+            f"{SOURCE_API_URL}/spaces/{s['id']}/users",
+            source_headers
         )
 
-        if resp.status_code in (200, 201):
-            ui_log(f"👤 Added user {user_id} to space {space_id}")
-        else:
-            ui_log(f"⚠️ Membership failed: {resp.text[:150]}")
+        ui_log(f"👥 {space_name}: Found {len(members)} members.")
+
+        # Convert source externalId → target numericId
+        numeric_ids = []
+        for m in members:
+            ext = (
+                (m.get("user") or {}).get("external_id")
+                or m.get("external_id")
+            )
+
+            if not ext:
+                continue
+
+            nid = ext_to_numeric.get(ext)
+            if nid:
+                numeric_ids.append(nid)
+
+        ui_log(f"   ↪️ Mapped {len(numeric_ids)} members to target IDs.")
+
+        # PATCH memberships in batches
+        for i in range(0, len(numeric_ids), BATCH):
+            chunk = numeric_ids[i:i+BATCH]
+            resp = requests.patch(
+                f"{TARGET_API_URL}/spaces/{target_space_id}/users",
+                headers=target_headers,
+                json={"ids_to_add": chunk}
+            )
+
+            if resp.status_code in (200, 201):
+                ui_log(f"   ✅ Added {len(chunk)} members to '{space_name}'")
+            else:
+                ui_log(f"   ❌ Failed: {resp.status_code} {resp.text[:150]}")
 
     ui_log("=== MEMBERSHIP MIGRATION END ===")
+
 
 
 # =========================================================
