@@ -1479,16 +1479,18 @@ if st.session_state.page == "main":
 # ============================================================
 elif st.session_state.page == "running":
 
-    # Auto-scroll to top when migration starts
+    # ⭐ Auto-scroll to top when migration page loads
     st.components.v1.html(
         """
         <script>
-            window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+            window.parent.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         </script>
         """,
         height=0,
     )
-
 
     # --------------------------------------------------------
     # HEADER LOGIC
