@@ -456,7 +456,7 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_URL = st.text_input(
                 "Source SCIM URL",
-                value="https://workvivo.workvivo.com/scim/v2/scim/Users/",
+                value="https://wv-migration2.workvivo.com/scim/v2/scim/Users/",
                 help="SCIM endpoint for reading users from the SOURCE Workvivo environment."
             )
 
@@ -468,21 +468,21 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
-                value="Yz1Pj7m6MOGPRmhkbpzGI85VxsCW8WdvCKFBIVcj",
+                value="9BdzwvLUw0C8gZTE9ZWv6sd4K9thRMdWdUeZdSv1",
                 type="password",
                 help="Authentication token for SCIM user requests in the SOURCE tenant."
             )
 
             SOURCE_API_TOKEN = st.text_input(
                 "Source API Token",
-                value="357|a6ad24b87add478518ae2fa2d1ff67d9a1040bf6",
+                value="386|1555bdfb959eb07b68b31f6ffe1ed623e9290fac",
                 type="password",
                 help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
             )
 
             SOURCE_WORKVIVO_ID = st.text_input(
                 "Source Workvivo ID",
-                value="50",
+                value="1584",
                 help="Workvivo ID required for API requests on the SOURCE tenant."
             )
 
