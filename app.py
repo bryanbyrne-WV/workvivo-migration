@@ -1723,7 +1723,7 @@ elif st.session_state.page == "summary":
     # ======== BUTTON ROW ========
     c1, c2 = st.columns([1, 1])
 
-   with col1:
+  with col1:
     if st.button("✔ Finish", key="finish_button"):
 
         keys_to_reset = [
@@ -1749,10 +1749,9 @@ elif st.session_state.page == "summary":
             if key in st.session_state:
                 del st.session_state[key]
 
-        # Reset page
         st.session_state.page = "main"
-
         st.rerun()
+
 
 
     with c2:
