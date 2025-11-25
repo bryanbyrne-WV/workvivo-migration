@@ -1622,38 +1622,108 @@ elif st.session_state.page == "running":
 
 elif st.session_state.page == "summary":
 
-    st.header("Migration Completed Successfully")
-
     s = st.session_state.summary
 
-    st.subheader("Migration Summary")
+    # ======= PAGE TITLE =======
+    st.markdown("""
+    <style>
+    .summary-title {
+        font-size: 40px;
+        font-weight: 800;
+        color: #6203ed;
+        text-align: center;
+        margin-bottom: 25px;
+        margin-top: 10px;
+    }
+    </style>
+    <div class="summary-title">🎉 Migration Completed Successfully</div>
+    """, unsafe_allow_html=True)
+
+
+    # ======= CARD STYLES =======
+    st.markdown("""
+    <style>
+    .summary-card {
+        background: #ffffff;
+        padding: 22px 28px;
+        border-radius: 14px;
+        box-shadow: 0px 4px 14px rgba(0,0,0,0.06);
+        margin-bottom: 22px;
+        border-left: 5px solid #6203ed20;
+    }
+    .summary-header {
+        font-size: 22px;
+        font-weight: 700;
+        color: #6203ed;
+        margin-bottom: 10px;
+    }
+    .summary-item {
+        font-size: 16px;
+        padding: 4px 0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+    # ======== USERS & SPACES ========
+    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-header'>👥 Users & Spaces Migrated</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
-    **Users Migrated:** {s['users_migrated']}  
-    **Users Skipped:** {s['users_skipped']}  
-    **Spaces Created:** {s['spaces_created']}  
-    **Spaces Skipped:** {s['spaces_skipped']}  
-    **Memberships Added:** {s['memberships_added']}  
-    **Start Time:** {s['start_time']}  
-    **End Time:** {s['end_time']}
-    """)
+    <div class="summary-item"><strong>Users Migrated:</strong> {s['users_migrated']}</div>
+    <div class="summary-item"><strong>Users Skipped:</strong> {s['users_skipped']}</div>
+    <div class="summary-item"><strong>Spaces Created:</strong> {s['spaces_created']}</div>
+    <div class="summary-item"><strong>Spaces Skipped:</strong> {s['spaces_skipped']}</div>
+    <div class="summary-item"><strong>Memberships Added:</strong> {s['memberships_added']}</div>
+    """, unsafe_allow_html=True)
 
-    st.markdown("---")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    # ✅ Now put FULL CONSOLE LOG here (and ONLY here)
-    st.subheader("Full Console Log")
+
+    # ======== CONTENT MIGRATED ========
+    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-header'>📝 Content Migrated</div>", unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="summary-item"><strong>Updates Migrated:</strong> {s.get('updates_migrated', 0)}</div>
+    <div class="summary-item"><strong>Kudos Migrated:</strong> {s.get('kudos_migrated', 0)}</div>
+    <div class="summary-item"><strong>Articles Migrated:</strong> {s.get('articles_migrated', 0)}</div>
+    <div class="summary-item"><strong>Events Migrated:</strong> {s.get('events_migrated', 0)}</div>
+    <div class="summary-item"><strong>Global Pages Migrated:</strong> {s.get('global_pages_migrated', 0)}</div>
+    <div class="summary-item"><strong>Space Pages Migrated:</strong> {s.get('space_pages_migrated', 0)}</div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # ======== START / END TIME ========
+    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-header'>⏱ Migration Timeline</div>", unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="summary-item"><strong>Start Time:</strong> {s['start_time']}</div>
+    <div class="summary-item"><strong>End Time:</strong> {s['end_time']}</div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # ======== LOGS ========
+    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='summary-header'>📄 Full Console Log</div>", unsafe_allow_html=True)
 
     st.text_area(
-        "Log Output",
+        "Console Output",
         st.session_state.get("log_output", ""),
         height=300
     )
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    has_logs = bool(st.session_state.get("log_output"))
 
-    col1, col2 = st.columns([1, 1])
+    # ======== BUTTON ROW ========
+    c1, c2 = st.columns([1, 1])
 
-    with col1:
+    with c1:
         if st.button("✔ Finish", key="finish_button"):
             for key in [
                 "progress", "log_output", "migration_finished", "cancel_requested",
@@ -1666,8 +1736,8 @@ elif st.session_state.page == "summary":
             st.session_state.page = "main"
             st.rerun()
 
-    with col2:
-        if has_logs:
+    with c2:
+        if st.session_state.get("log_output"):
             st.download_button(
                 "⬇ Download Logs",
                 st.session_state["log_output"],
@@ -1675,8 +1745,4 @@ elif st.session_state.page == "summary":
                 mime="text/plain"
             )
         else:
-            st.markdown(
-                "<div style='opacity:0.4; text-align:center; padding-top:10px;'>No logs yet</div>",
-                unsafe_allow_html=True
-            )
-
+            st.markdown("<div style='opacity:0.4;'>No logs available</div>", unsafe_allow_html=True)
