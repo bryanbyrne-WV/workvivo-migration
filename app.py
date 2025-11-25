@@ -1216,6 +1216,12 @@ def migrate_memberships():
 # =========================================================
 def create_global_space_and_enroll(company_name):
 
+    # 🔹 If user selected existing Global Feed, do not create a new one
+    if st.session_state.get("use_existing_global") and st.session_state.get("existing_global_id"):
+        space_id = st.session_state.existing_global_id
+        ui_log(f"🔁 Reusing existing Global Feed → Space ID {space_id}")
+        return space_id
+
     # 🚫 STOP if no company name entered
     if not company_name or not company_name.strip():
         ui_log("⏭ Skipping Global Feed — no company name entered.")
@@ -1434,6 +1440,28 @@ if st.session_state.page == "main":
     
     if not st.session_state.phase1_company:
         st.warning("Please enter a company name — required on the first migration to create the Global Feed Space for Global audience data.")
+    
+    # ============================================================
+    # OPTION: Reuse existing Global Feed instead of creating one
+    # ============================================================
+    st.markdown("#### Global Feed Options")
+    
+    if "use_existing_global" not in st.session_state:
+        st.session_state.use_existing_global = False
+    
+    st.session_state.use_existing_global = st.checkbox(
+        "Use existing Global Feed from a previous migration?",
+        value=st.session_state.use_existing_global
+    )
+    
+    if st.session_state.use_existing_global:
+        st.session_state.existing_global_id = st.text_input(
+            "Enter the Global Feed Space ID",
+            value=st.session_state.get("existing_global_id", ""),
+            placeholder="Example: 279184"
+        )
+    else:
+        st.session_state.existing_global_id = ""
 
     # ============================================================
     # 🏢 Organisation settings and information
