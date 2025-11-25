@@ -17,62 +17,32 @@ WORKVIVO_LOGO_URL = "https://hrsummits.co.uk/wp-content/uploads/2020/07/Workvivo
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
-
 if not st.session_state.authenticated:
 
     st.markdown("""
         <style>
 
-            /* ----------------------------
-               PREMIUM ANIMATED BACKGROUND
-            ---------------------------- */
+            /* Soft gradient background only */
             body {
-                background: linear-gradient(120deg, #EDE6FF, #DCE9FF, #E4F7FF);
-                background-size: 300% 300%;
-                animation: gradientShift 18s ease infinite;
+                background: linear-gradient(
+                    180deg,
+                    #EFE8FF 0%,
+                    #E4D9FF 30%,
+                    #DBEFFF 80%,
+                    #F9FCFF 100%
+                ) !important;
             }
 
-            @keyframes gradientShift {
-                0% {background-position: 0% 50%;}
-                50% {background-position: 100% 50%;}
-                100% {background-position: 0% 50%;}
-            }
-
-            /* PAGE CENTER CONTAINER */
+            /* Page wrapper */
             .login-wrapper {
-                max-width: 460px;
-                margin: 6rem auto;
+                max-width: 420px;
+                margin: 7rem auto;
                 text-align: center;
-                display: flex;
-                justify-content: center;
             }
 
-            /* -------------------------
-               FIXED GLASS POP-OUT CARD
-            ------------------------- */
-            .glass-card {
-                background: rgba(255, 255, 255, 0.55);
-                width: 100%;
-                padding: 3rem 2.6rem;
-                border-radius: 22px;
-                backdrop-filter: blur(18px);
-                -webkit-backdrop-filter: blur(18px);
-                box-shadow:
-                    0 18px 35px rgba(0,0,0,0.15),
-                    0 8px 18px rgba(0,0,0,0.07);
-                animation: floatIn 0.8s ease-out;
-            }
-
-            @keyframes floatIn {
-                from {opacity: 0; transform: translateY(25px);}
-                to {opacity: 1; transform: translateY(0);}
-            }
-
-            /* Logo */
-            .login-logo {
-                width: 200px;
+            /* Workvivo logo centered */
+            .logo-block {
                 margin-bottom: 2rem;
-                opacity: 0.95;
             }
 
             /* Title */
@@ -80,63 +50,50 @@ if not st.session_state.authenticated:
                 font-size: 2rem;
                 color: #5A3EA6;
                 font-weight: 700;
-                margin-bottom: 0.5rem;
+                margin-bottom: 0.4rem;
             }
 
             /* Subtitle */
             .login-note {
                 font-size: 1.05rem;
-                color: #5A3EA6;
-                opacity: 0.75;
-                margin-bottom: 2.3rem;
+                color: #6B56B0;
+                opacity: 0.8;
+                margin-bottom: 2.2rem;
             }
 
-            /* Inputs */
+            /* Underline input style */
             .underline-input input {
                 background: transparent !important;
                 border: none !important;
-                border-bottom: 1px solid #8568D8 !important;
+                border-bottom: 1px solid #8368D8 !important;
                 border-radius: 0 !important;
                 color: #4A2F8A !important;
-                padding: 10px 0 !important;
+                padding: 0.6rem 0 !important;
                 font-size: 1.05rem;
-                transition: 0.2s ease;
-            }
-
-            .underline-input input:focus {
-                border-bottom: 1px solid #5A3EA6 !important;
-                box-shadow: 0px 6px 12px rgba(90, 62, 166, 0.15);
             }
 
             .underline-input input::placeholder {
-                color: #9a84dd !important;
+                color: #9A84DD !important;
                 opacity: 0.6;
             }
 
-            /* Button */
+            /* Login button */
             .blue-btn button {
                 width: 100%;
-                height: 3.1rem !important;
-                border-radius: 12px !important;
-                background: linear-gradient(90deg, #3C4FA8, #6B3EA4) !important;
+                background-color: #3C4FA8 !important;
                 color: white !important;
-                border: none !important;
+                border-radius: 8px !important;
+                height: 3rem;
                 font-weight: 600;
-                font-size: 1rem;
                 letter-spacing: 0.5px;
+                border: none !important;
                 margin-top: 1.8rem;
-                transition: 0.25s ease;
-            }
-
-            .blue-btn button:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 10px 18px rgba(0,0,0,0.12);
             }
 
             /* Request access */
             .request-button {
                 display: inline-block;
-                margin-top: 2rem;
+                margin-top: 1.6rem;
                 font-size: 0.95rem;
                 color: #3C4FA8 !important;
                 text-decoration: underline;
@@ -146,22 +103,20 @@ if not st.session_state.authenticated:
         </style>
     """, unsafe_allow_html=True)
 
-
-    # ------------------------------
-    # PAGE STRUCTURE
-    # ------------------------------
-
+    # Structure
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-
-    # Logo (centered)
+    # Logo
+    st.markdown('<div class="logo-block">', unsafe_allow_html=True)
     st.image(WORKVIVO_LOGO_URL, width=200)
+    st.markdown('</div>', unsafe_allow_html=True)
 
+    # Centered heading + subtitle
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
     st.markdown('<div class="login-note">Please sign in to access the Migration Tool</div>',
                 unsafe_allow_html=True)
 
+    # Inputs
     st.markdown('<div class="underline-input">', unsafe_allow_html=True)
     username = st.text_input("Username", placeholder="Username")
     password = st.text_input("Password", placeholder="Password", type="password")
@@ -169,28 +124,32 @@ if not st.session_state.authenticated:
 
     remember = st.checkbox("Remember me")
 
+    # Login button
     st.markdown('<div class="blue-btn">', unsafe_allow_html=True)
     login_button = st.button("LOGIN")
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # Logic
     if login_button:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             st.session_state.authenticated = True
             st.success("Logged in!")
             st.rerun()
         else:
-            st.error("Invalid username or password.")
+            st.error("❌ Invalid username or password.")
 
-    st.markdown("""
+    # Request access button
+    st.markdown(
+        """
         <a class="request-button"
            href="mailto:bryan.byrne@workvivo.com?subject=Access Request - Migration Tool&body=Hi Bryan,%0D%0A%0D%0ACan I please get access to the Migration Tool?%0D%0A%0D%0AThanks!">
             Request Access
         </a>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True
+    )
 
-    st.markdown('</div>', unsafe_allow_html=True)  # close glass card
-    st.markdown('</div>', unsafe_allow_html=True)  # close wrapper
-
+    st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 
