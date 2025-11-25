@@ -1479,69 +1479,97 @@ if st.session_state.page == "main":
 # ============================================================
 elif st.session_state.page == "running":
 
-    # ======================================================
-    # AUTO-SCROLL TO TOP (works reliably)
-    # ======================================================
+    # Invisible scroll anchor
+    scroll_anchor = st.empty()
+    scroll_anchor.markdown("<div id='top'></div>", unsafe_allow_html=True)
+
+        # Force scroll to the anchor
     st.components.v1.html(
         """
         <script>
-            window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+            var topElement = window.parent.document.querySelector("div[id='top']");
+            if (topElement) {
+                topElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+            }
         </script>
         """,
         height=0,
     )
 
-    # ======================================================
-    # PAGE HEADER
-    # ======================================================
+    
+
+    # --------------------------------------------------------
+    # HEADER LOGIC
+    # --------------------------------------------------------
     if st.session_state.get("migration_finished", False):
-        st.header("Migration Finished")
+        st.header("Migration Finished!")
+
     elif st.session_state.cancel_requested:
         st.header("Migration Cancelled")
+
     else:
         st.header("Migration In Progress...")
 
-    # ======================================================
-    # CANCEL BUTTON ONLY (no FINISH here)
-    # ======================================================
-    if (
-        not st.session_state.get("migration_finished", False)
-        and not st.session_state.cancel_requested
-    ):
-        if st.button("🛑 Cancel Migration"):
+    # --------------------------------------------------------
+    # CANCEL vs FINISH BUTTON
+    # --------------------------------------------------------
+    if not st.session_state.get("migration_finished", False) and not st.session_state.cancel_requested:
+        # Migration is still running
+        if st.button("CANCEL"):
             st.session_state.cancel_requested = True
             ui_log("🛑 Cancel requested by user…")
             st.rerun()
+    else:
+        # Migration complete or cancelled → show FINISH
+        if st.button("✔ FINISH"):
+    
+            # Fully clear old migration state
+            keys_to_clear = [
+                "progress",
+                "log_output",
+                "migration_finished",
+                "cancel_requested",
+                "start_migration",
+                "phase1_running",
+                "live_log_placeholder"
+            ]
+    
+            for k in keys_to_clear:
+                if k in st.session_state:
+                    del st.session_state[k]
+    
+            # Navigate back to main
+            st.session_state.page = "main"
+            st.rerun()
+    
 
-    # ======================================================
+    # --------------------------------------------------------
     # PROGRESS BAR
-    # ======================================================
+    # --------------------------------------------------------
     progress_bar = st.progress(st.session_state.progress)
 
-    # ======================================================
-    # LOADING ANIMATION
-    # ======================================================
+    # --------------------------------------------------------
+    # LOADING ANIMATION (MIGRATING DATA…)
+    # --------------------------------------------------------
     loading_placeholder = st.empty()
 
     def animate_loading():
         dots = ["", ".", "..", "..."]
         for d in dots:
-            if (
-                st.session_state.get("migration_finished", False)
-                or st.session_state.cancel_requested
-            ):
+            # Stop animation if done or cancelled
+            if st.session_state.get("migration_finished", False) or st.session_state.cancel_requested:
                 loading_placeholder.empty()
                 return
             loading_placeholder.markdown(f"### ⏳ Migrating{d}")
             time.sleep(0.25)
 
-    # ======================================================
-    # RUN MIGRATION (first time arriving on page)
-    # ======================================================
+    # --------------------------------------------------------
+    # RUN MIGRATION (ONLY ON FIRST VISIT)
+    # --------------------------------------------------------
     if st.session_state.get("start_migration", False):
 
         st.session_state.start_migration = False
-        st.session_state.migration_finished = False
+        st.session_state.migration_finished = False   # Reset finish flag
 
         ui_log("Starting migration...")
 
@@ -1554,29 +1582,35 @@ elif st.session_state.page == "running":
         total_steps = len(steps)
         pct = int(100 / total_steps)
 
+        # Run step-by-step
         for i, (label, fn) in enumerate(steps):
             if st.session_state.cancel_requested:
                 break
 
             ui_log(label)
-            animate_loading()
-            fn()
+            animate_loading()  # visual animation
+            fn()  # actual migration work
 
             st.session_state.progress = (i + 1) * pct
             progress_bar.progress(st.session_state.progress)
 
+        # FINISHED SUCCESSFULLY
         if not st.session_state.cancel_requested:
             st.session_state.progress = 100
             progress_bar.progress(100)
             ui_log("Migration Complete!")
+        
+            # Store end time
             st.session_state.summary["end_time"] = datetime.utcnow()
-
+        
+            # Navigate to summary page
             st.session_state.page = "summary"
             st.rerun()
 
-    # ======================================================
-    # LIVE CONSOLE OUTPUT
-    # ======================================================
+
+    # --------------------------------------------------------
+    # SHOW CONSOLE OUTPUT
+    # --------------------------------------------------------
     st.subheader("Live Console Output")
 
     st.text_area(
@@ -1585,7 +1619,6 @@ elif st.session_state.page == "running":
         height=400,
         disabled=True
     )
-
 
 elif st.session_state.page == "summary":
 
@@ -1687,49 +1720,29 @@ elif st.session_state.page == "summary":
     st.markdown("</div>", unsafe_allow_html=True)
 
 
-# ======== BUTTON ROW ========
-c1, c2 = st.columns([1, 1])
+    # ======== BUTTON ROW ========
+    c1, c2 = st.columns([1, 1])
 
-with c1:
-    if st.button("✔ Finish", key="finish_button"):
+    with c1:
+        if st.button("✔ Finish", key="finish_button"):
+            for key in [
+                "progress", "log_output", "migration_finished", "cancel_requested",
+                "start_migration", "phase1_running", "live_log_placeholder",
+                "summary"
+            ]:
+                if key in st.session_state:
+                    del st.session_state[key]
 
-        keys_to_reset = [
-            # Migration progress & logs
-            "progress", "log_output", "migration_finished", "cancel_requested",
-            "start_migration", "phase1_running", "live_log_placeholder",
-            "summary", "summary_type",
+            st.session_state.page = "main"
+            st.rerun()
 
-            # Migration page inputs
-            "phase1_company",
-            "migration_date_choice",
-            "migration_start_date",
-            "migration_end_date",
-
-            # Toggles
-            "migrate_updates", "migrate_kudos", "migrate_articles",
-            "migrate_events", "migrate_comments", "migrate_likes",
-            "migrate_globalPages", "migrate_spacePages",
-            "phase1_active_only",
-        ]
-
-        for key in keys_to_reset:
-            if key in st.session_state:
-                del st.session_state[key]
-
-        st.session_state.page = "main"
-        st.rerun()
-
-
-with c2:
-    if st.session_state.get("log_output"):
-        st.download_button(
-            "⬇ Download Logs",
-            st.session_state["log_output"],
-            file_name="migration_logs.txt",
-            mime="text/plain"
-        )
-    else:
-        st.markdown(
-            "<div style='opacity:0.4;'>No logs available</div>",
-            unsafe_allow_html=True
-        )
+    with c2:
+        if st.session_state.get("log_output"):
+            st.download_button(
+                "⬇ Download Logs",
+                st.session_state["log_output"],
+                file_name="migration_logs.txt",
+                mime="text/plain"
+            )
+        else:
+            st.markdown("<div style='opacity:0.4;'>No logs available</div>", unsafe_allow_html=True)
