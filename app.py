@@ -13,6 +13,8 @@ import mimetypes
 # 🔐 USERNAME + PASSWORD LOGIN
 # ------------------------------
 
+import streamlit as st
+
 # Hardcoded admin credentials
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
@@ -24,26 +26,89 @@ if "authenticated" not in st.session_state:
 # Show login form if not logged in
 if not st.session_state.authenticated:
 
-    st.title("Secure Access Required")
+    # ---- PAGE STYLING ----
+    st.markdown(
+        """
+        <style>
+            .login-container {
+                max-width: 420px;
+                margin: 6rem auto;
+                padding: 2.5rem;
+                background: #ffffff;
+                border-radius: 18px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+                text-align: center;
+                animation: fadeIn 0.6s ease;
+            }
+            .login-title {
+                font-size: 2rem;
+                font-weight: 700;
+                color: #FF5A5F; /* Workvivo coral */
+                margin-bottom: 0.75rem;
+            }
+            .login-sub {
+                font-size: 1rem;
+                color: #666;
+                margin-bottom: 1.5rem;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    # ---- LOGIN CARD ----
+    st.markdown('<div class="login-container">', unsafe_allow_html=True)
 
-    if st.button("Login"):
+    st.markdown('<div class="login-title">Welcome 👋</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="login-sub">Please sign in to access the Migration Tool.</div>',
+        unsafe_allow_html=True
+    )
+
+    username = st.text_input("Username", placeholder="Enter your username")
+    password = st.text_input("Password", type="password", placeholder="Enter your password")
+
+    login_button = st.button("Login", type="primary")
+
+    if login_button:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             st.session_state.authenticated = True
-            st.success("Logged in successfully!")
+            st.success("🎉 Logged in successfully!")
             st.rerun()
         else:
             st.error("❌ Invalid username or password.")
 
-    # Stop the rest of the app from loading
+    # ---- REQUEST ACCESS BUTTON ----
+    st.markdown("###")
+    st.markdown(
+        """
+        <a href="mailto:bryan.byrne@workvivo.com?subject=Access Request - Migration Tool&body=Hi Bryan,%0D%0A%0D%0ACould I please get access to the Migration Tool?%0D%0A%0D%0AThanks!"
+            style="
+                text-decoration: none;
+                display: inline-block;
+                padding: 0.7rem 1.3rem;
+                border-radius: 10px;
+                border: 1px solid #ccc;
+                color: #444;
+            "
+        >
+        Request Access
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
     st.stop()
 
 # ------------------------------
 # END LOGIN BLOCK
 # ------------------------------
-
 
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
