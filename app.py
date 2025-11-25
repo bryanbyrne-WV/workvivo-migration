@@ -1622,23 +1622,51 @@ elif st.session_state.page == "summary":
 
     st.subheader("Full Console Log")
 
-    col1, col2 = st.columns([4, 1])
+# Log output (full width)
+st.text_area(
+    "Log Output",
+    st.session_state.get("log_output", ""),
+    height=300
+)
 
-    with col1:
-        st.text_area(
-            "Log Output",
-            st.session_state.get("log_output", ""),
-            height=300
+# Buttons on the same row
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    # Green Finish button
+    if st.button("✔ Finish", key="finish_button"):
+
+        # Clear migration-related session keys
+        for key in [
+            "progress", "log_output", "migration_finished", "cancel_requested",
+            "start_migration", "phase1_running", "live_log_placeholder",
+            "summary"
+        ]:
+            if key in st.session_state:
+                del st.session_state[key]
+
+        # Navigate back to main
+        st.session_state.page = "main"
+
+        # Smooth scroll
+        st.components.v1.html(
+            """
+            <script>
+                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+            </script>
+            """,
+            height=0,
         )
 
-    with col2:
-        st.download_button(
-            "Download Logs",
-            st.session_state.get("log_output", ""),
-            file_name="migration_logs.txt",
-            mime="text/plain"
-        )
+        st.rerun()
 
+with col2:
+    st.download_button(
+        "⬇ Download Logs",
+        st.session_state.get("log_output", ""),
+        file_name="migration_logs.txt",
+        mime="text/plain"
+    )
 
     # ✅ FINISH BUTTON
     if st.button("Finish"):
