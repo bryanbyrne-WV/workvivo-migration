@@ -1608,71 +1608,52 @@ elif st.session_state.page == "summary":
     st.markdown(f"""
     **Users Migrated:** {s['users_migrated']}  
     **Users Skipped:** {s['users_skipped']}  
-
     **Spaces Created:** {s['spaces_created']}  
     **Spaces Skipped:** {s['spaces_skipped']}  
-
     **Memberships Added:** {s['memberships_added']}  
-
     **Start Time:** {s['start_time']}  
     **End Time:** {s['end_time']}
     """)
 
     st.markdown("---")
 
-st.subheader("Full Console Log")
+    # ✅ Now put FULL CONSOLE LOG here (and ONLY here)
+    st.subheader("Full Console Log")
 
-# Logs
-st.text_area(
-    "Log Output",
-    st.session_state.get("log_output", ""),
-    height=300
-)
+    st.text_area(
+        "Log Output",
+        st.session_state.get("log_output", ""),
+        height=300
+    )
 
-# Only show button if logs exist
-has_logs = bool(st.session_state.get("log_output"))
+    has_logs = bool(st.session_state.get("log_output"))
 
-col1, col2 = st.columns([1, 1])
+    col1, col2 = st.columns([1, 1])
 
-with col1:
-    # ✔ Single Finish Button
-    if st.button("✔ Finish", key="finish_button"):
+    with col1:
+        if st.button("✔ Finish", key="finish_button"):
+            for key in [
+                "progress", "log_output", "migration_finished", "cancel_requested",
+                "start_migration", "phase1_running", "live_log_placeholder",
+                "summary"
+            ]:
+                if key in st.session_state:
+                    del st.session_state[key]
 
-        # Clear migration-related session keys
-        for key in [
-            "progress", "log_output", "migration_finished", "cancel_requested",
-            "start_migration", "phase1_running", "live_log_placeholder",
-            "summary"
-        ]:
-            if key in st.session_state:
-                del st.session_state[key]
+            st.session_state.page = "main"
+            st.rerun()
 
-        # Navigate back to main
-        st.session_state.page = "main"
+    with col2:
+        if has_logs:
+            st.download_button(
+                "⬇ Download Logs",
+                st.session_state["log_output"],
+                file_name="migration_logs.txt",
+                mime="text/plain"
+            )
+        else:
+            st.markdown(
+                "<div style='opacity:0.4; text-align:center; padding-top:10px;'>No logs yet</div>",
+                unsafe_allow_html=True
+            )
 
-        # Smooth scroll
-        st.components.v1.html(
-            """
-            <script>
-                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-            """,
-            height=0,
-        )
-        st.rerun()
-
-with col2:
-    # Download Logs only if logs exist
-    if has_logs:
-        st.download_button(
-            "⬇ Download Logs",
-            st.session_state["log_output"],
-            file_name="migration_logs.txt",
-            mime="text/plain"
-        )
-    else:
-        # Placeholder for alignment if no logs yet
-        st.markdown("<div style='opacity:0.4; text-align:center; padding-top:10px;'>No logs yet</div>",
-                    unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
