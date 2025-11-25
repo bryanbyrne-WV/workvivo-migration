@@ -1752,13 +1752,17 @@ with c1:
         st.session_state.page = "main"
         st.rerun()
 
-    with c2:
-        if st.session_state.get("log_output"):
-            st.download_button(
-                "⬇ Download Logs",
-                st.session_state["log_output"],
-                file_name="migration_logs.txt",
-                mime="text/plain"
-            )
-        else:
-            st.markdown("<div style='opacity:0.4;'>No logs available</div>", unsafe_allow_html=True)
+
+with c2:
+    if st.session_state.get("log_output"):
+        st.download_button(
+            "⬇ Download Logs",
+            st.session_state["log_output"],
+            file_name="migration_logs.txt",
+            mime="text/plain"
+        )
+    else:
+        st.markdown(
+            "<div style='opacity:0.4;'>No logs available</div>",
+            unsafe_allow_html=True
+        )
