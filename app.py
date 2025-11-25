@@ -1620,54 +1620,54 @@ elif st.session_state.page == "running":
         disabled=True
     )
 
+
 elif st.session_state.page == "summary":
 
     s = st.session_state.summary
 
     # ======= PAGE TITLE =======
-    st.markdown("""
+    title_text = (
+        "Migration Completed Successfully"
+        if st.session_state.get("summary_type") != "cancelled"
+        else "Migration Cancelled"
+    )
+
+    st.markdown(f"""
     <style>
-    .summary-title {
-        font-size: 40px;
-        font-weight: 800;
-        color: #000000;
-        text-align: center;
-        margin-bottom: 25px;
-        margin-top: 10px;
-    }
+        .summary-title {{
+            font-size: 40px;
+            font-weight: 800;
+            color: #000000;
+            text-align: center;
+            margin-bottom: 10px;
+            margin-top: 5px;
+        }}
+
+        .section-header {{
+            font-size: 22px;
+            font-weight: 700;
+            color: #6203ed;            /* purple */
+            margin-top: 25px;
+            margin-bottom: 6px;
+        }}
+
+        .summary-item {{
+            font-size: 16px;
+            color: #000;
+            padding: 2px 0;
+        }}
+
+        .divider {{
+            border-top: 1px solid #ddd;
+            margin: 18px 0;
+        }}
     </style>
-    <div class="summary-title">Migration Completed Successfully!!</div>
+
+    <div class="summary-title">{title_text}</div>
     """, unsafe_allow_html=True)
 
-
-    # ======= CARD STYLES =======
-    st.markdown("""
-    <style>
-    .summary-card {
-        background: #ffffff;
-        padding: 22px 28px;
-        border-radius: 14px;
-        box-shadow: 0px 4px 14px rgba(0,0,0,0.06);
-        margin-bottom: 22px;
-        border-left: 5px solid #6203ed20;
-    }
-    .summary-header {
-        font-size: 22px;
-        font-weight: 700;
-        color: #6203ed;
-        margin-bottom: 10px;
-    }
-    .summary-item {
-        font-size: 16px;
-        padding: 4px 0;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-
-    # ======== USERS & SPACES ========
-    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='summary-header'>Users & Spaces Migrated</div>", unsafe_allow_html=True)
+    # -------- USERS & SPACES --------
+    st.markdown("<div class='section-header'>Users & Spaces</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-item"><strong>Users Migrated:</strong> {s['users_migrated']}</div>
@@ -1677,59 +1677,67 @@ elif st.session_state.page == "summary":
     <div class="summary-item"><strong>Memberships Added:</strong> {s['memberships_added']}</div>
     """, unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
-
-    # ======== CONTENT MIGRATED ========
-    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='summary-header'>Content Migrated</div>", unsafe_allow_html=True)
+    # -------- CONTENT MIGRATED --------
+    st.markdown("<div class='section-header'>Content Migrated</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div class="summary-item"><strong>Updates Migrated:</strong> {s.get('updates_migrated', 0)}</div>
-    <div class="summary-item"><strong>Kudos Migrated:</strong> {s.get('kudos_migrated', 0)}</div>
-    <div class="summary-item"><strong>Articles Migrated:</strong> {s.get('articles_migrated', 0)}</div>
-    <div class="summary-item"><strong>Events Migrated:</strong> {s.get('events_migrated', 0)}</div>
-    <div class="summary-item"><strong>Global Pages Migrated:</strong> {s.get('global_pages_migrated', 0)}</div>
-    <div class="summary-item"><strong>Space Pages Migrated:</strong> {s.get('space_pages_migrated', 0)}</div>
+    <div class="summary-item"><strong>Updates:</strong> {s.get('updates_migrated', 0)}</div>
+    <div class="summary-item"><strong>Kudos:</strong> {s.get('kudos_migrated', 0)}</div>
+    <div class="summary-item"><strong>Articles:</strong> {s.get('articles_migrated', 0)}</div>
+    <div class="summary-item"><strong>Events:</strong> {s.get('events_migrated', 0)}</div>
+    <div class="summary-item"><strong>Global Pages:</strong> {s.get('global_pages_migrated', 0)}</div>
+    <div class="summary-item"><strong>Space Pages:</strong> {s.get('space_pages_migrated', 0)}</div>
     """, unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
-
-    # ======== START / END TIME ========
-    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='summary-header'>Migration Timeline</div>", unsafe_allow_html=True)
+    # -------- TIMELINE --------
+    st.markdown("<div class='section-header'>Migration Timeline</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-item"><strong>Start Time:</strong> {s['start_time']}</div>
     <div class="summary-item"><strong>End Time:</strong> {s['end_time']}</div>
     """, unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
-
-    # ======== LOGS ========
-    st.markdown("<div class='summary-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='summary-header'>Full Console Log</div>", unsafe_allow_html=True)
+    # -------- FULL LOG --------
+    st.markdown("<div class='section-header'>Full Console Log</div>", unsafe_allow_html=True)
 
     st.text_area(
         "Console Output",
         st.session_state.get("log_output", ""),
         height=300
     )
-    st.markdown("</div>", unsafe_allow_html=True)
-
 
     # ======== BUTTON ROW ========
     c1, c2 = st.columns([1, 1])
 
     with c1:
         if st.button("✔ Finish", key="finish_button"):
-            for key in [
+
+            keys_to_reset = [
+                # Migration progress & logs
                 "progress", "log_output", "migration_finished", "cancel_requested",
                 "start_migration", "phase1_running", "live_log_placeholder",
-                "summary"
-            ]:
+                "summary", "summary_type",
+
+                # Migration page inputs
+                "phase1_company",
+                "migration_date_choice",
+                "migration_start_date",
+                "migration_end_date",
+
+                # Toggles
+                "migrate_updates", "migrate_kudos", "migrate_articles",
+                "migrate_events", "migrate_comments", "migrate_likes",
+                "migrate_globalPages", "migrate_spacePages",
+                "phase1_active_only",
+            ]
+
+            for key in keys_to_reset:
                 if key in st.session_state:
                     del st.session_state[key]
 
@@ -1745,4 +1753,7 @@ elif st.session_state.page == "summary":
                 mime="text/plain"
             )
         else:
-            st.markdown("<div style='opacity:0.4;'>No logs available</div>", unsafe_allow_html=True)
+            st.markdown(
+                "<div style='opacity:0.4;'>No logs available</div>",
+                unsafe_allow_html=True
+            )
