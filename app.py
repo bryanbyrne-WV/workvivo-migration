@@ -1580,8 +1580,10 @@ elif st.session_state.page == "running":
 
         steps = [
             ("Migrating users…", lambda: migrate_users(st.session_state.phase1_active_only)),
+            ("Migrating user avatars…", migrate_user_images),
             ("Migrating spaces…", migrate_spaces),
-            ("Migrating memberships…", migrate_memberships)
+            ("Migrating memberships…", migrate_memberships),
+            ("Creating Global Feed…", lambda: create_global_space_and_enroll(st.session_state.phase1_company)),
         ]
 
         total_steps = len(steps)
