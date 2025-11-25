@@ -847,14 +847,12 @@ def ui_log(message):
 
     st.session_state["log_output"] += line + "\n"
 
-    # Real-time UI update (only if placeholder exists)
-    if "live_log_placeholder" in st.session_state:
-        st.session_state.live_log_placeholder.text_area(
-            "📡 Live Console Output",
-            st.session_state["log_output"],
-            height=400,
-            disabled=True
-        )
+    # Real-time UI update for scrollable HTML log
+    try:
+        if "refresh_log_view" in st.session_state:
+            st.session_state["refresh_log_view"]()
+    except:
+        pass
 
 
 
