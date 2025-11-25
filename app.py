@@ -884,6 +884,10 @@ def paginated_fetch(url, headers, take=100):
 
     return results
 
+def pretty_time(dt):
+    if not dt:
+        return ""
+    return dt.strftime("%B %-d, %Y %H:%M")  # e.g. "November 25, 2025 14:05"
 
 def download_file(url, filename):
     """Download a file from a URL to /tmp."""
@@ -1692,16 +1696,20 @@ elif st.session_state.page == "summary":
     """, unsafe_allow_html=True)
 
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
-
+    
     # -------- TIMELINE --------
     st.markdown("<div class='section-header'>Migration Timeline</div>", unsafe_allow_html=True)
-
+    
+    start_pretty = pretty_time(s['start_time'])
+    end_pretty = pretty_time(s['end_time'])
+    
     st.markdown(f"""
-    <div class="summary-item"><strong>Start Time:</strong> {s['start_time']}</div>
-    <div class="summary-item"><strong>End Time:</strong> {s['end_time']}</div>
+    <div class="summary-item"><strong>Start:</strong> {start_pretty}</div>
+    <div class="summary-item"><strong>End:</strong> {end_pretty}</div>
     """, unsafe_allow_html=True)
-
+    
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
+
 
     # -------- FULL LOG --------
     st.markdown("<div class='section-header'>Full Console Log</div>", unsafe_allow_html=True)
