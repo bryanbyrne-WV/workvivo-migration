@@ -10,7 +10,7 @@ import os
 import mimetypes
 
 # ------------------------------
-# 🔐 WORKVIVO BRANDED LOGIN SCREEN
+# 🔐 WORKVIVO BRANDED LOGIN SCREEN (FIXED ICON ALIGNMENT)
 # ------------------------------
 
 import streamlit as st
@@ -23,86 +23,93 @@ if "authenticated" not in st.session_state:
 
 if not st.session_state.authenticated:
 
-    # ---- PAGE-WIDE STYLING ----
+    # ---- GLOBAL STYLES ----
     st.markdown(
         """
         <style>
 
-            /* Background */
             body {
-                background-color: #F4F0FB !important; /* soft purple */
+                background-color: #F4F0FB !important;
             }
 
-            /* Login card with floating animation */
+            /* Floating login card */
             .login-card {
                 max-width: 430px;
                 margin: 6rem auto;
                 padding: 2.8rem;
                 background: #ffffff;
                 border-radius: 20px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
                 text-align: center;
                 animation: floatUp 3.5s ease-in-out infinite;
             }
 
             @keyframes floatUp {
-                0%   { transform: translateY(0px); }
-                50%  { transform: translateY(-6px); }
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-6px); }
                 100% { transform: translateY(0px); }
             }
 
-            /* Logo */
+            /* Inline SVG logo */
             .wkv-logo {
                 width: 150px;
-                margin-bottom: 1.4rem;
+                margin-bottom: 1.3rem;
             }
 
-            /* Title */
             .login-header {
                 font-size: 1.8rem;
                 font-weight: 800;
                 color: #5A3EA6;
-                margin-bottom: 0.5rem;
+                margin-bottom: 0.3rem;
             }
 
-            /* Subtitle */
             .login-sub {
                 color: #6B6B6B;
                 margin-bottom: 2rem;
-                font-size: 1rem;
             }
 
-            /* Input icons */
+            /* -------------------------------------- */
+            /* FIXED INPUT WRAPPER + ICON ALIGNMENT   */
+            /* -------------------------------------- */
+            .input-wrapper {
+                position: relative;
+                margin-bottom: 1.4rem;
+                width: 100%;
+            }
+
             .input-icon {
                 position: absolute;
-                margin-left: 10px;
-                margin-top: 11px;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
                 color: #8F71CF;
                 font-size: 18px;
+                pointer-events: none;
             }
 
-            /* Input field styling */
-            .stTextInput > div > div > input {
-                padding-left: 36px !important;
+            .input-wrapper input {
+                padding-left: 40px !important;
+                height: 3rem;
                 border-radius: 12px !important;
                 border: 1px solid #CDBDF1 !important;
             }
 
-            /* Gradient login button */
+            /* Button styling */
             .gradient-btn button {
                 width: 100%;
                 border-radius: 12px !important;
                 background: linear-gradient(90deg, #4C4CFF, #9D4EDD) !important;
+                border: none !important;
                 color: white !important;
                 font-weight: 600 !important;
                 height: 3rem;
-                border: none !important;
+                margin-top: 0.4rem;
             }
 
-            /* Request access link */
+            /* Request access button */
             .request-button {
                 margin-top: 1.4rem;
-                padding: 0.65rem 1.2rem;
+                padding: 0.65rem 1.3rem;
                 border-radius: 10px;
                 border: 1px solid #BFAEEA;
                 color: #5A3EA6 !important;
@@ -112,20 +119,20 @@ if not st.session_state.authenticated:
                 transition: 0.25s;
                 font-weight: 500;
             }
+
             .request-button:hover {
                 background-color: #E9DDFF;
-                border-color: #A68BEA;
             }
 
         </style>
         """,
-        unsafe_allow_html=True,
+        unsafe_allow_html=True
     )
 
     # ---- LOGIN CARD ----
     st.markdown('<div class="login-card">', unsafe_allow_html=True)
 
-    # ---- Workvivo SVG Logo ----
+    # Logo
     st.markdown(
         """
         <svg class="wkv-logo" viewBox="0 0 310 80">
@@ -134,28 +141,34 @@ if not st.session_state.authenticated:
             </text>
         </svg>
         """,
-        unsafe_allow_html=True,
+        unsafe_allow_html=True
     )
 
     st.markdown('<div class="login-header">Sign In</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="login-sub">Access the internal Migration Tool</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="login-sub">Access the internal Migration Tool</div>', unsafe_allow_html=True)
 
-    # ---- Username Input with icon ----
+    # -----------------------
+    # FIXED USERNAME FIELD
+    # -----------------------
+    st.markdown('<div class="input-wrapper">', unsafe_allow_html=True)
     st.markdown('<span class="input-icon">👤</span>', unsafe_allow_html=True)
-    username = st.text_input("Username", placeholder="Enter your username")
+    username = st.text_input("Username", placeholder="Enter your username", key="username_input")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # ---- Password Input with icon ----
+    # -----------------------
+    # FIXED PASSWORD FIELD
+    # -----------------------
+    st.markdown('<div class="input-wrapper">', unsafe_allow_html=True)
     st.markdown('<span class="input-icon">🔒</span>', unsafe_allow_html=True)
-    password = st.text_input("Password", type="password", placeholder="Enter your password")
+    password = st.text_input("Password", type="password", placeholder="Enter your password", key="password_input")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # ---- Gradient Login Button ----
-    with st.container():
-        st.markdown('<div class="gradient-btn">', unsafe_allow_html=True)
-        login_button = st.button("Login")
-        st.markdown('</div>', unsafe_allow_html=True)
+    # -----------------------
+    # GRADIENT LOGIN BUTTON
+    # -----------------------
+    st.markdown('<div class="gradient-btn">', unsafe_allow_html=True)
+    login_button = st.button("Login")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if login_button:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
@@ -165,7 +178,7 @@ if not st.session_state.authenticated:
         else:
             st.error("❌ Invalid username or password.")
 
-    # ---- Request Access Button ----
+    # Request access
     st.markdown(
         """
         <a class="request-button"
@@ -178,11 +191,6 @@ if not st.session_state.authenticated:
 
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
-
-# ------------------------------
-# END LOGIN BLOCK
-# ------------------------------
-
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
