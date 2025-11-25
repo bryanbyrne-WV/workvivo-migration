@@ -456,7 +456,7 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_URL = st.text_input(
                 "Source SCIM URL",
-                value="https://migration-testing.workvivo.com/scim/v1/scim/Users/",
+                value="https://migration-testing.workvivo.com/scim/v2/scim/Users/",
                 help="SCIM endpoint for reading users from the SOURCE Workvivo environment."
             )
 
@@ -468,7 +468,7 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
-                value="nt4JalDlDMnpW8UyfYZf1qoRod2gJSHPvAknQtiB",
+                value="BpAYwpD3TTfLKQW2tjVxsCphf4HbZHyXZll7q4SR",
                 type="password",
                 help="Authentication token for SCIM user requests in the SOURCE tenant."
             )
