@@ -1616,15 +1616,35 @@ elif st.session_state.page == "running":
     # --------------------------------------------------------
     # SHOW CONSOLE OUTPUT
     # --------------------------------------------------------
-    st.subheader("Live Console Output")
-
-    st.text_area(
-        "Console",
-        st.session_state.get("log_output", ""),
-        height=400,
-        disabled=True
-    )
-
+    # --------------------------------------------------------
+    # LIVE SCROLLABLE LOG VIEWER
+    # --------------------------------------------------------
+    
+    def render_live_log():
+        log_html = st.session_state.get("log_output", "").replace("\n", "<br>")
+        return f"""
+        <div style="
+            background: #111;
+            color: #0f0;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            height: 350px;
+            overflow-y: scroll;
+            border: 1px solid #333;
+        ">
+            {log_html}
+        </div>
+        """
+    
+    log_box = st.empty()
+    log_box.markdown(render_live_log(), unsafe_allow_html=True)
+    
+    # Auto-refresh the container every update
+    def refresh_log_view():
+        log_box.markdown(render_live_log(), unsafe_allow_html=True)
+    
 
 elif st.session_state.page == "summary":
 
