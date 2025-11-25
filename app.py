@@ -9,14 +9,12 @@ import random
 import os
 import mimetypes
 
-# ------------------------------
-# Modern Gradient Login (Workvivo theme + logo + updated header)
-# ------------------------------
-
 import streamlit as st
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
+
+logo_path = "/mnt/data/c8d613aa-a742-4a5f-b163-82752eda3e1f.png"
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -38,41 +36,34 @@ if not st.session_state.authenticated:
                 ) !important;
             }
 
-            /* Wrapper for all content */
             .login-wrapper {
                 max-width: 420px;
-                margin: 6rem auto;
+                margin: 5rem auto;
                 text-align: center;
             }
 
-            /* Workvivo SVG logo */
-            .wkv-logo {
-                width: 170px;
-                margin: 0 auto 2rem auto;
-                display: block;
-            }
-
-            /* Header text replacing the icon */
+            /* Heading text */
             .login-title {
                 font-size: 2.2rem;
-                color: white;
-                font-weight: 300;
-                letter-spacing: 1px;
+                color: #5A3EA6;   /* Workvivo purple */
+                font-weight: 600;
+                margin-top: 1rem;
                 margin-bottom: 2rem;
             }
 
-            /* Underline input fields */
+            /* Underline input */
             .underline-input input {
                 background: transparent !important;
                 border: none !important;
-                border-bottom: 1px solid rgba(255,255,255,0.7) !important;
+                border-bottom: 1px solid #5A3EA6 !important;
                 border-radius: 0 !important;
-                color: white !important;
+                color: #5A3EA6 !important;
                 padding: 0.6rem 0 !important;
             }
 
             .underline-input input::placeholder {
-                color: rgba(255,255,255,0.75) !important;
+                color: #7D64C6 !important;
+                opacity: 0.7;
             }
 
             /* Login button */
@@ -81,25 +72,18 @@ if not st.session_state.authenticated:
                 background-color: #2F4A7D !important;
                 color: white !important;
                 border-radius: 6px !important;
-                height: 3rem;
+                height: 3rem !important;
                 font-weight: 600;
-                margin-top: 1.2rem;
+                margin-top: 1.5rem;
                 letter-spacing: 1px;
+                border: none !important;
             }
 
-            /* Remember me text */
-            .remember-text {
-                color: white;
-                font-size: 0.9rem;
-                margin-top: 0.2rem;
-            }
-
-            /* Request access link */
             .request-button {
                 display: inline-block;
                 margin-top: 1.6rem;
-                color: white !important;
-                opacity: 0.85;
+                color: #2F4A7D !important;
+                font-weight: 500;
                 text-decoration: underline;
                 font-size: 0.95rem;
             }
@@ -109,31 +93,21 @@ if not st.session_state.authenticated:
         unsafe_allow_html=True
     )
 
-    # ---- UI STRUCTURE ----
+    # UI container
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
-    # ---- LOGO ----
-    st.markdown(
-        """
-        <svg class="wkv-logo" viewBox="0 0 310 80">
-            <text x="0" y="55" font-size="55" font-weight="900" fill="white">
-                Workvivo
-            </text>
-        </svg>
-        """,
-        unsafe_allow_html=True
-    )
+    # ---- LOGO (NOW VISIBLE, USING UPLOADED FILE) ----
+    st.image(logo_path, width=150)
 
-    # ---- HEADER TEXT ----
+    # ---- Heading ----
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
 
-    # ---- INPUT FIELDS ----
+    # ---- Inputs ----
     st.markdown('<div class="underline-input">', unsafe_allow_html=True)
     username = st.text_input("Email", placeholder="Email ID", key="email_input")
     password = st.text_input("Password", placeholder="Password", type="password", key="password_input")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ---- REMEMBER ME ----
     remember = st.checkbox("Remember me")
 
     # ---- LOGIN BUTTON ----
@@ -144,16 +118,16 @@ if not st.session_state.authenticated:
     if login_button:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             st.session_state.authenticated = True
-            st.success("Logged in successfully!")
+            st.success("Logged in!")
             st.rerun()
         else:
             st.error("❌ Invalid username or password.")
 
-    # ---- REQUEST ACCESS BUTTON ----
+    # ---- REQUEST ACCESS BUTTON (NOW VISIBLE) ----
     st.markdown(
         """
         <a class="request-button"
-           href="mailto:bryan.byrne@workvivo.com?subject=Access Request - Migration Tool&body=Hi Bryan,%0D%0A%0D%0ACan I please get access to the Migration Tool?%0D%0A%0D%0AThanks!">
+           href="mailto:bryan.byrne@workvivo.com?subject=Access Request - Migration Tool&body=Hi Bryan,%0D%0A%0D%0ACould I please get access to the Migration Tool?%0D%0A%0D%0AThanks!">
             Request Access
         </a>
         """,
@@ -162,7 +136,6 @@ if not st.session_state.authenticated:
 
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
-
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
