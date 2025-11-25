@@ -1428,6 +1428,9 @@ if st.session_state.page == "main":
     st.session_state.migration_start_date = start_date
     st.session_state.migration_end_date = end_date
 
+    # ⭐ Add separator line (same style as other sections)
+    st.markdown("---")
+
     
     # ============================================================
     # 🏢 Organisation settings and information
