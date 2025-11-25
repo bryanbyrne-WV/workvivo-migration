@@ -10,7 +10,7 @@ import os
 import mimetypes
 
 # ------------------------------
-# Modern Gradient Login (Workvivo theme)
+# Modern Gradient Login (Workvivo theme + logo + updated header)
 # ------------------------------
 
 import streamlit as st
@@ -27,7 +27,7 @@ if not st.session_state.authenticated:
         """
         <style>
 
-            /* Full gradient page background */
+            /* Full gradient background */
             body {
                 background: linear-gradient(
                     to bottom,
@@ -38,31 +38,30 @@ if not st.session_state.authenticated:
                 ) !important;
             }
 
-            /* Center card container */
+            /* Wrapper for all content */
             .login-wrapper {
                 max-width: 420px;
-                margin: 8rem auto;
+                margin: 6rem auto;
                 text-align: center;
             }
 
-            /* User icon */
-            .login-icon {
-                font-size: 70px;
-                color: white;
-                margin-bottom: 1rem;
-                opacity: 0.9;
+            /* Workvivo SVG logo */
+            .wkv-logo {
+                width: 170px;
+                margin: 0 auto 2rem auto;
+                display: block;
             }
 
-            /* Main heading */
+            /* Header text replacing the icon */
             .login-title {
                 font-size: 2.2rem;
                 color: white;
                 font-weight: 300;
-                margin-bottom: 2.5rem;
                 letter-spacing: 1px;
+                margin-bottom: 2rem;
             }
 
-            /* Underline input wrapper */
+            /* Underline input fields */
             .underline-input input {
                 background: transparent !important;
                 border: none !important;
@@ -73,7 +72,7 @@ if not st.session_state.authenticated:
             }
 
             .underline-input input::placeholder {
-                color: rgba(255,255,255,0.7) !important;
+                color: rgba(255,255,255,0.75) !important;
             }
 
             /* Login button */
@@ -84,15 +83,15 @@ if not st.session_state.authenticated:
                 border-radius: 6px !important;
                 height: 3rem;
                 font-weight: 600;
-                border: none !important;
+                margin-top: 1.2rem;
                 letter-spacing: 1px;
             }
 
-            /* Remember me section */
+            /* Remember me text */
             .remember-text {
                 color: white;
                 font-size: 0.9rem;
-                margin-top: 0.5rem;
+                margin-top: 0.2rem;
             }
 
             /* Request access link */
@@ -106,26 +105,38 @@ if not st.session_state.authenticated:
             }
 
         </style>
-        """, unsafe_allow_html=True
+        """,
+        unsafe_allow_html=True
     )
 
-    # UI layout
+    # ---- UI STRUCTURE ----
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
-    # Icon + title
-    st.markdown('<div class="login-icon">👤</div>', unsafe_allow_html=True)
+    # ---- LOGO ----
+    st.markdown(
+        """
+        <svg class="wkv-logo" viewBox="0 0 310 80">
+            <text x="0" y="55" font-size="55" font-weight="900" fill="white">
+                Workvivo
+            </text>
+        </svg>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # ---- HEADER TEXT ----
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
 
-    # Inputs with underline style
+    # ---- INPUT FIELDS ----
     st.markdown('<div class="underline-input">', unsafe_allow_html=True)
-    username = st.text_input("Email", placeholder="Email ID")
-    password = st.text_input("Password", placeholder="Password", type="password")
+    username = st.text_input("Email", placeholder="Email ID", key="email_input")
+    password = st.text_input("Password", placeholder="Password", type="password", key="password_input")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Remember me
+    # ---- REMEMBER ME ----
     remember = st.checkbox("Remember me")
 
-    # Login button
+    # ---- LOGIN BUTTON ----
     st.markdown('<div class="blue-btn">', unsafe_allow_html=True)
     login_button = st.button("LOGIN")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -138,7 +149,7 @@ if not st.session_state.authenticated:
         else:
             st.error("❌ Invalid username or password.")
 
-    # Request access link
+    # ---- REQUEST ACCESS BUTTON ----
     st.markdown(
         """
         <a class="request-button"
@@ -149,7 +160,7 @@ if not st.session_state.authenticated:
         unsafe_allow_html=True
     )
 
-    st.markdown('</div>', unsafe_allow_html=True)  # End wrapper
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 
