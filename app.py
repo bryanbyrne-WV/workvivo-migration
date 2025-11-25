@@ -943,67 +943,6 @@ def fetch_users(active_only=True):
 
     return users
 
-def create_global_space_and_enroll(company_name):
-
-    # ❗ DO NOT CREATE GLOBAL FEED IF NAME IS EMPTY
-    if not company_name or not company_name.strip():
-        ui_log("⏭ Skipping Global Feed — no company name entered.")
-        return None
-
-    ui_log(f"🌍 Creating Global Feed: {company_name}")
-
-    global_name = f"{company_name} Global Feed"
-
-    spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
-    existing = next((s for s in spaces if s["name"] == global_name), None)
-
-    if existing:
-        ui_log(f"⚠️ Global space already exists → ID {existing['id']}")
-        space_id = existing["id"]
-    else:
-        payload = {
-            "user_external_id": SPACE_CREATOR_EXTERNAL_ID,
-            "name": global_name,
-            "visibility": "private",
-            "description": f"{company_name} Global Feed",
-            "is_external": False
-        }
-
-        resp = requests.post(
-            f"{TARGET_API_URL}/spaces",
-            headers=target_headers,
-            json=payload
-        )
-
-        if resp.status_code not in (200, 201):
-            ui_log(f"❌ Failed to create Global Space: {resp.text}")
-            return None
-
-        space_id = resp.json()["data"]["id"]
-        ui_log(f"✅ Created Global Space (ID {space_id})")
-
-    # Enroll ALL users
-    users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
-    user_ids = [u["id"] for u in users]
-
-    ui_log(f"👥 Enrolling {len(user_ids)} users…")
-
-    chunks = [user_ids[i:i + 100] for i in range(0, len(user_ids), 100)]
-
-    for chunk in chunks:
-        resp = requests.patch(
-            f"{TARGET_API_URL}/spaces/{space_id}/users",
-            headers=target_headers,
-            json={"ids_to_add": chunk}
-        )
-
-        if resp.status_code not in (200, 201):
-            ui_log(f"⚠️ Failed to add batch: {resp.text[:200]}")
-
-    ui_log("✅ Global Space Enrollment Complete!")
-    return space_id
-
-
 # ============================
 # Helper: Selectable Card Component
 # ============================
