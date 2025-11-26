@@ -470,11 +470,8 @@ if "config_saved" not in st.session_state:
                 help="Enter your Workvivo domain (e.g. organisation.workvivo.com)"
             )
 
-            SOURCE_API_URL = st.text_input(
-                "Source API URL",
-                value="https://api.workvivo.com/v1",
-                help="Base API URL for fetching content, spaces, images and memberships from the SOURCE tenant."
-            )
+            st.info("Source API URL will be auto-detected from your Workvivo ID.")
+
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
@@ -511,11 +508,8 @@ if "config_saved" not in st.session_state:
             )
 
 
-            TARGET_API_URL = st.text_input(
-                "Target API URL",
-                value="https://api.eu2.workvivo.com/v1",
-                help="Base API URL for creating spaces, memberships and content in the TARGET tenant."
-            )
+        st.info("Target API URL will be auto-detected from your Workvivo ID.")
+
 
             TARGET_SCIM_TOKEN = st.text_input(
                 "Target SCIM Token",
@@ -560,8 +554,6 @@ if "config_saved" not in st.session_state:
         # Required source fields
         if not SOURCE_BASE_URL:
             errors.append("Source Workvivo URL is required.")
-        if not SOURCE_API_URL:
-            errors.append("Source API URL is required.")
         if not SOURCE_SCIM_TOKEN:
             errors.append("Source SCIM Token is required.")
         if not SOURCE_API_TOKEN:
@@ -572,8 +564,6 @@ if "config_saved" not in st.session_state:
         # Required target fields
         if not TARGET_BASE_URL:
             errors.append("Target Workvivo URL is required.")
-        if not TARGET_API_URL:
-            errors.append("Target API URL is required.")
         if not TARGET_SCIM_TOKEN:
             errors.append("Target SCIM Token is required.")
         if not TARGET_API_TOKEN:
@@ -646,15 +636,21 @@ if "config_saved" not in st.session_state:
         clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
         st.session_state["TARGET_SCIM_URL"] = f"https://{clean_target}/scim/v2/scim/Users/"
 
+        # Auto-generate API URLs based on prefix of Workvivo ID
+        source_api = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
+        target_api = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
+        
+        st.session_state["SOURCE_API_URL"] = source_api
+        st.session_state["TARGET_API_URL"] = target_api
+
+
         # Save all values
         st.session_state["config_saved"] = True
 
-        st.session_state["SOURCE_API_URL"] = SOURCE_API_URL
         st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
         st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
         st.session_state["SOURCE_WORKVIVO_ID"] = SOURCE_WORKVIVO_ID
 
-        st.session_state["TARGET_API_URL"] = TARGET_API_URL
         st.session_state["TARGET_SCIM_TOKEN"] = TARGET_SCIM_TOKEN
         st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
         st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
@@ -885,6 +881,23 @@ def ui_log(message):
 # =========================================================
 # HELPER: Fetch users
 # =========================================================
+
+def get_api_url_from_workvivo_id(wv_id: str):
+    """Return correct API base URL based on Workvivo ID prefix."""
+    if not wv_id or len(wv_id) < 3:
+        return "https://api.workvivo.com/v1"
+
+    prefix = str(wv_id).strip()[:3]
+
+    if prefix == "300":
+        return "https://api.eu2.workvivo.com/v1"
+    if prefix == "100":
+        return "https://api.workvivo.us/v1"
+    if prefix == "400":
+        return "https://api.us2.workvivo.us/v1"
+
+    return "https://api.workvivo.com/v1"
+
 def paginated_fetch(url, headers, take=100):
     """Fetch paginated results from Workvivo API."""
     results = []
