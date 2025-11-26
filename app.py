@@ -639,6 +639,12 @@ if "config_saved" not in st.session_state:
     # ----------------------------------------------------
     if submitted:
 
+        # Normalise the URL (remove http/https)
+        clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+        
+        # Auto-create SCIM URL
+        st.session_state["SOURCE_SCIM_URL"] = f"https://{clean_source}/scim/v2/scim/Users/"
+
         # Save all values
         st.session_state["config_saved"] = True
 
@@ -655,12 +661,6 @@ if "config_saved" not in st.session_state:
         st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
 
         st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
-
-        # Normalise the URL (remove http/https)
-        clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-        
-        # Auto-create SCIM URL
-        st.session_state["SOURCE_SCIM_URL"] = f"https://{clean_source}/scim/v2/scim/Users/"
         
         st.success("Configuration saved! Click Continue to proceed.")
 
