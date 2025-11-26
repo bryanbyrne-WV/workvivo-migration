@@ -647,12 +647,12 @@ if "config_saved" not in st.session_state:
             ok1, msg1 = test_workvivo_connection(
                 source_scim_test, SOURCE_SCIM_TOKEN, source_api_test, SOURCE_API_TOKEN, SOURCE_WORKVIVO_ID
             )
-            st.write("🟪 Source Test:", msg1)
+            st.write("Source Test:", msg1)
 
             ok2, msg2 = test_workvivo_connection(
                 target_scim_test, TARGET_SCIM_TOKEN, target_api_test, TARGET_API_TOKEN, TARGET_WORKVIVO_ID
             )
-            st.write("🟦 Target Test:", msg2)
+            st.write("Target Test:", msg2)
 
             if ok1 and ok2:
                 st.success("🎉 All configuration tests passed!")
