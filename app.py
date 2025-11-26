@@ -641,14 +641,6 @@ if "config_saved" not in st.session_state:
         }
         </style>
         """, unsafe_allow_html=True)
-
-        # SAVE BUTTON (purple)
-        st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
-        submitted = st.form_submit_button(
-            "Save Configuration",
-            disabled=len(errors) > 0
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
         
         # ----------------------------------------------------
         # 🔍 TEST CONFIGURATION BUTTON
@@ -682,6 +674,18 @@ if "config_saved" not in st.session_state:
                 st.success("🎉 All configuration tests passed! You may now save the configuration.")
             else:
                 st.error("⚠️ One or more tests failed — fix the settings before saving.")
+
+
+        # ----------------------------------------------------
+        # SAVE CONFIGURATION BUTTON (purple)
+        # ----------------------------------------------------
+        st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
+        submitted = st.form_submit_button(
+            "Save Configuration",
+            disabled=len(errors) > 0
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+        
 
 
     # ----------------------------------------------------
