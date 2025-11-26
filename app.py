@@ -33,7 +33,7 @@ if not st.session_state.authenticated:
 
             .login-wrapper {
                 max-width: 420px;
-                margin: 7rem auto;
+                margin: 7rem auto 5rem auto;;
                 text-align: center;
             }
 
