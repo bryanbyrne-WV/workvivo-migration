@@ -1268,13 +1268,13 @@ def migrate_memberships():
 # =========================================================
 def create_global_space_and_enroll(company_name):
 
-    # 🔹 If user selected existing Global Feed, do not create a new one
+    # 🔹 If reusing existing Global Feed, don't recreate
     if st.session_state.get("use_existing_global") and st.session_state.get("existing_global_id"):
         space_id = st.session_state.existing_global_id
         ui_log(f"🔁 Reusing existing Global Feed → Space ID {space_id}")
         return space_id
 
-    # 🚫 STOP if no company name entered
+    # 🚫 Missing company name
     if not company_name or not company_name.strip():
         ui_log("⏭ Skipping Global Feed — no company name entered.")
         return None
@@ -1283,6 +1283,7 @@ def create_global_space_and_enroll(company_name):
 
     global_name = f"{company_name} Global Feed"
 
+    # Check for existing space by name
     spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
     existing = next((s for s in spaces if s["name"] == global_name), None)
 
@@ -1311,13 +1312,32 @@ def create_global_space_and_enroll(company_name):
         space_id = resp.json()["data"]["id"]
         ui_log(f"✅ Created Global Space (ID {space_id})")
 
-    # Enroll ALL users
-    users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
-    user_ids = [u["id"] for u in users]
+    # ----------------------------------------------------
+    # ⭐ NEW: ONLY enroll users created in this migration
+    # ----------------------------------------------------
 
-    ui_log(f"👥 Enrolling {len(user_ids)} users…")
+    new_user_ext_ids = st.session_state.new_users  # set of ext IDs
 
-    chunks = [user_ids[i:i + 100] for i in range(0, len(user_ids), 100)]
+    all_target_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
+
+    # Map external → numeric
+    ext_to_numeric = {
+        u.get("external_id"): u.get("id")
+        for u in all_target_users
+        if u.get("external_id")
+    }
+
+    # Only numeric IDs of newly created users
+    numeric_ids = [
+        ext_to_numeric[ext]
+        for ext in new_user_ext_ids
+        if ext in ext_to_numeric
+    ]
+
+    ui_log(f"👥 Enrolling {len(numeric_ids)} newly created users…")
+
+    # Chunk & enroll
+    chunks = [numeric_ids[i:i + 100] for i in range(0, len(numeric_ids), 100)]
 
     for chunk in chunks:
         resp = requests.patch(
