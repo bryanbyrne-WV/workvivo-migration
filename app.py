@@ -376,7 +376,7 @@ advanced_styles = f"""
 # Brand Logo (Centered)
 st.markdown("""
 <div style="text-align:center; margin-top:10px; margin-bottom:5px;">
-    <img src="https://www.festivalofwork.com/media/Workvivo%20(1).png" 
+    <img src="https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png" 
          style="height:80px;">
 </div>
 """, unsafe_allow_html=True)
