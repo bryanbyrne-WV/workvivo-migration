@@ -1495,7 +1495,7 @@ if st.session_state.page == "main":
     # -----------------------------------------------------------
     # ALPHA: Selective User Migration
     # -----------------------------------------------------------
-    st.markdown("#### 🔬 Selective User Migration (Alpha Feature)")
+    st.markdown("#### Selective User Migration (Alpha Feature)")
     
     if "use_selected_users" not in st.session_state:
         st.session_state.use_selected_users = False
@@ -1518,9 +1518,11 @@ if st.session_state.page == "main":
         # Store in state
         st.session_state.selected_user_ids = selected_ids_text
     
-        st.info("⚠️ Alpha feature enabled. Only these users will be migrated.")
+        st.info("⚠️ Only these users will be migrated.")
     else:
         st.session_state.selected_user_ids = ""
+
+    st.markdown("---")
 
 
       # -----------------------------------------------------------
