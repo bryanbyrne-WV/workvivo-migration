@@ -1495,42 +1495,52 @@ if st.session_state.page == "main":
 
     st.markdown("---")
 
-# -----------------------------------------------------------
-    # Company Name Prompt (for Global Feed creation)
-    # -----------------------------------------------------------
-    st.markdown("#### Global Feed Options")
-    st.session_state.phase1_company = st.text_input(
-        "Enter the organisation name for the Global Feed",
-        value=st.session_state.get("phase1_company", ""),
-        placeholder="Example: Workvivo, Zoom, etc..."
-    )
-    
-    if not st.session_state.phase1_company:
-        st.warning("Required on the first migration to create the Global Feed Space for Global audience data.")
-    
-    # ============================================================
-    # OPTION: Reuse existing Global Feed instead of creating one
-    # ============================================================
-    
-    if "use_existing_global" not in st.session_state:
-        st.session_state.use_existing_global = False
-    
-    st.session_state.use_existing_global = st.checkbox(
-        "Use existing Global Feed from a previous migration?",
-        value=st.session_state.use_existing_global
-    )
-    
-    if st.session_state.use_existing_global:
-        st.session_state.existing_global_id = st.text_input(
-            "Enter the Global Feed Space ID",
-            value=st.session_state.get("existing_global_id", ""),
-            placeholder="Example: 279184"
-        )
-    else:
-        st.session_state.existing_global_id = ""
+        # -----------------------------------------------------------
+        # Company Name Prompt (for Global Feed creation)
+        # -----------------------------------------------------------
+        st.markdown("#### Global Feed Options")
         
-    # ⭐ Add separator line (same style as other sections)
-    st.markdown("---")
+        # Checkbox – reuse existing Global Feed
+        if "use_existing_global" not in st.session_state:
+            st.session_state.use_existing_global = False
+        
+        use_existing = st.checkbox(
+            "Use existing Global Feed from a previous migration?",
+            value=st.session_state.use_existing_global
+        )
+        st.session_state.use_existing_global = use_existing
+        
+        # Organisation Name input (greyed out if using existing)
+        if use_existing:
+            st.text_input(
+                "Enter the organisation name for the Global Feed",
+                value=st.session_state.get("phase1_company", ""),
+                placeholder="Disabled when using an existing Global Feed",
+                disabled=True
+            )
+        else:
+            st.session_state.phase1_company = st.text_input(
+                "Enter the organisation name for the Global Feed",
+                value=st.session_state.get("phase1_company", ""),
+                placeholder="Example: Workvivo, Zoom, etc..."
+            )
+        
+            if not st.session_state.phase1_company:
+                st.warning("Required on the first migration to create the Global Feed Space for Global audience data.")
+        
+        # Global Feed ID (only shown when reusing)
+        if use_existing:
+            st.session_state.existing_global_id = st.text_input(
+                "Enter the Global Feed Space ID",
+                value=st.session_state.get("existing_global_id", ""),
+                placeholder="Example: 279184"
+            )
+        else:
+            st.session_state.existing_global_id = ""
+        
+        # Separator
+        st.markdown("---")
+
 
     # ============================================================
     # 👥 User activity on Workvivo
