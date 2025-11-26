@@ -29,7 +29,8 @@ def get_api_url_from_workvivo_id(wv_id: str):
     return "https://api.workvivo.com/v1"
 
 def test_workvivo_connection(scim_url, scim_token, api_url, api_token, wv_id):
-    """Return (ok, message) after performing live connection tests."""
+    """Return (ok, message) with safe, non-detailed error responses."""
+
     headers_scim = {
         "Authorization": f"Bearer {scim_token}",
         "Accept": "application/json"
@@ -44,21 +45,28 @@ def test_workvivo_connection(scim_url, scim_token, api_url, api_token, wv_id):
     # ---- Test SCIM ----
     try:
         r = requests.get(f"{scim_url}?count=1", headers=headers_scim, timeout=6)
+
+        if r.status_code == 401 or r.status_code == 403:
+            return False, "❌ Invalid SCIM token"
+
         if r.status_code not in (200, 201):
-            return False, f"❌ SCIM error ({r.status_code}) → {r.text[:120]}"
-    except Exception as e:
-        return False, f"❌ SCIM connection failed: {str(e)[:120]}"
+            return False, "❌ SCIM authentication failed"
+    except Exception:
+        return False, "❌ SCIM connection failed"
 
     # ---- Test API ----
     try:
         r = requests.get(f"{api_url}/spaces?take=1", headers=headers_api, timeout=6)
+
+        if r.status_code == 401 or r.status_code == 403:
+            return False, "❌ Invalid API token"
+
         if r.status_code not in (200, 201):
-            return False, f"❌ API error ({r.status_code}) → {r.text[:120]}"
-    except Exception as e:
-        return False, f"❌ API connection failed: {str(e)[:120]}"
+            return False, "❌ API authentication failed"
+    except Exception:
+        return False, "❌ API connection failed"
 
-    return True, "✅ All tests passed! API & SCIM are valid."
-
+    return True, "All tests passed! API & SCIM are valid."
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
