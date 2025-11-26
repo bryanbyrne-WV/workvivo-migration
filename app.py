@@ -214,7 +214,7 @@ if "page" not in st.session_state:
 # ============================================================
 # WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
 # ============================================================
-WORKVIVO_LOGO_URL = "https://www.festivalofwork.com/media/Workvivo%20(1).png"
+WORKVIVO_LOGO_URL = "https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png"
 
 advanced_styles = f"""
 <style>
