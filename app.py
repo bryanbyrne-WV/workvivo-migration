@@ -526,17 +526,18 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
-                value="",
+                value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
                 type="password",
                 help="Authentication token for SCIM user requests in the SOURCE tenant."
             )
-
+            
             SOURCE_API_TOKEN = st.text_input(
                 "Source API Token",
-                value="",
+                value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
                 type="password",
                 help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
             )
+
 
             SOURCE_WORKVIVO_ID = st.text_input(
                 "Source Workvivo ID",
@@ -560,18 +561,18 @@ if "config_saved" not in st.session_state:
                 
             TARGET_SCIM_TOKEN = st.text_input(
                 "Target SCIM Token",
-                value="",
+                value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
                 type="password",
                 help="Authentication token for SCIM user creation inside the TARGET tenant."
             )
-        
+            
             TARGET_API_TOKEN = st.text_input(
                 "Target API Token",
-                value="",
+                value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
                 type="password",
                 help="Bearer token for creating spaces, uploading images and writing content to the TARGET tenant."
             )
-        
+
             TARGET_WORKVIVO_ID = st.text_input(
                 "Target Workvivo ID",
                 value="3000384",
