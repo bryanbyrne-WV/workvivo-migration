@@ -1361,14 +1361,6 @@ def run_phase_1(company_name, active_only):
     lock_ui_for_phase()
     ui_log("▶ Starting Phase 1…")
 
-    # -------------------------------------------------------
-    # RESET NEW USERS & SPACES FOR THIS MIGRATION RUN
-    # -------------------------------------------------------
-    st.session_state.new_users = set()
-    st.session_state.new_spaces = set()
-    ui_log("🔄 Reset new user & new space tracking for this migration.")
-
-
     try:
 
         # 2) Users
@@ -1773,12 +1765,12 @@ elif st.session_state.page == "running":
     # --------------------------------------------------------
     # RUN MIGRATION (ONLY ON FIRST VISIT)
     # --------------------------------------------------------
-        if st.session_state.get("start_migration", False):
-                
-                st.session_state.start_migration = False
-                st.session_state.migration_finished = False   # Reset finish flag
-        
-                ui_log("Starting migration...")
+    if st.session_state.get("start_migration", False):
+
+        st.session_state.start_migration = False
+        st.session_state.migration_finished = False   # Reset finish flag
+
+        ui_log("Starting migration...")
 
         steps = [
             ("Migrating users…", lambda: migrate_users(st.session_state.phase1_active_only)),
