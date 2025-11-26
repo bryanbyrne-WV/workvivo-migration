@@ -526,14 +526,14 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
-                value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
+                value="9BdzwvLUw0C8gZTE9ZWv6sd4K9thRMdWdUeZdSv1",
                 type="password",
                 help="Authentication token for SCIM user requests in the SOURCE tenant."
             )
             
             SOURCE_API_TOKEN = st.text_input(
                 "Source API Token",
-                value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
+                value="388|636f9f76e508ae9fde1530f987080c9b275a4371",
                 type="password",
                 help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
             )
