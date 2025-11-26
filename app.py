@@ -504,11 +504,12 @@ if "config_saved" not in st.session_state:
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
         with st.expander("Target Environment", expanded=True):
 
-            TARGET_SCIM_URL = st.text_input(
-                "Target SCIM URL",
-                value="https://migration-test-1.workvivo.com/scim/v2/scim/Users/",
-                help="SCIM endpoint for creating users in the TARGET Workvivo environment."
+            TARGET_BASE_URL = st.text_input(
+                "Target Workvivo URL",
+                value="migration-test-1.workvivo.com",
+                help="Enter your Workvivo domain (e.g. organisation.workvivo.com)"
             )
+
 
             TARGET_API_URL = st.text_input(
                 "Target API URL",
@@ -557,8 +558,8 @@ if "config_saved" not in st.session_state:
         errors = []
 
         # Required source fields
-        if not SOURCE_SCIM_URL:
-            errors.append("Source SCIM URL is required.")
+        if not SOURCE_BASE_URL:
+            errors.append("Source Workvivo URL is required.")
         if not SOURCE_API_URL:
             errors.append("Source API URL is required.")
         if not SOURCE_SCIM_TOKEN:
@@ -569,8 +570,8 @@ if "config_saved" not in st.session_state:
             errors.append("Source Workvivo-ID is required.")
 
         # Required target fields
-        if not TARGET_SCIM_URL:
-            errors.append("Target SCIM URL is required.")
+        if not TARGET_BASE_URL:
+            errors.append("Target Workvivo URL is required.")
         if not TARGET_API_URL:
             errors.append("Target API URL is required.")
         if not TARGET_SCIM_TOKEN:
@@ -639,11 +640,11 @@ if "config_saved" not in st.session_state:
     # ----------------------------------------------------
     if submitted:
 
-        # Normalise the URL (remove http/https)
         clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-        
-        # Auto-create SCIM URL
         st.session_state["SOURCE_SCIM_URL"] = f"https://{clean_source}/scim/v2/scim/Users/"
+            
+        clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+        st.session_state["TARGET_SCIM_URL"] = f"https://{clean_target}/scim/v2/scim/Users/"
 
         # Save all values
         st.session_state["config_saved"] = True
