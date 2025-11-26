@@ -1485,239 +1485,6 @@ def check_cancel():
         raise Exception("Migration Cancelled")
 
 
-
-# ============================================================
-# MAIN PAGE (Migration Dashboard)
-# ============================================================
-if st.session_state.page == "main":
-
-    st.markdown("## Migrate Workvivo Data")
-
-    # ============================================================
-    # 📅 Date Range for Content Migration
-    # ============================================================
-    st.markdown("#### 📅 Date Range")
-
-    date_options = [
-        "Last 6 months",
-        "Last 1 year",
-        "Last 2 years",
-        "Last 3 years",
-        "All time",
-        "Custom range",
-    ]
-
-    if "migration_date_choice" not in st.session_state:
-        st.session_state.migration_date_choice = "Last 1 year"
-
-    date_choice = st.selectbox(
-        "Select date range",
-        date_options,
-        index=date_options.index(st.session_state.migration_date_choice),
-        key="migration_date_choice",
-    )
-
-    from datetime import datetime, timedelta
-
-    today = datetime.utcnow()
-    start_date = None
-    end_date = today
-
-    if date_choice == "Last 6 months":
-        start_date = today - timedelta(days=182)
-    elif date_choice == "Last 1 year":
-        start_date = today - timedelta(days=365)
-    elif date_choice == "Last 2 years":
-        start_date = today - timedelta(days=365 * 2)
-    elif date_choice == "Last 3 years":
-        start_date = today - timedelta(days=365 * 3)
-    elif date_choice == "All time":
-        start_date = None
-    elif date_choice == "Custom range":
-        st.markdown("##### Custom Range")
-        start_date = st.date_input("Start date")
-        end_date = st.date_input("End date")
-
-    def fmt(d):
-        if d is None:
-            return "All time"
-        if hasattr(d, "strftime"):
-            return d.strftime("%b %d, %Y")
-        return str(d)
-
-    pretty_start = fmt(start_date)
-    pretty_end = fmt(end_date)
-
-    st.info(f"📌 Migrating content from **{pretty_start}** to **{pretty_end}**")
-
-    st.session_state.migration_start_date = start_date
-    st.session_state.migration_end_date = end_date
-
-    # ⭐ Add separator line (same style as other sections)
-    st.markdown("---")
-
-    
-    # ============================================================
-    # 🏢 Organisation settings and information
-    # ============================================================
-    st.markdown("### Organisation settings and information")
-    st.markdown("This section migrates users, spaces and space membership.")
-    
-    # Users & Spaces (always on)
-    migrate_users_flag = st.toggle("Users", value=True, disabled=True)
-    migrate_spaces_flag = st.toggle("Spaces", value=True, disabled=True)
-    
-    # -----------------------------------------------------------
-    # ALPHA: Selective User Migration
-    # -----------------------------------------------------------
-    st.markdown("#### Selective User Migration (Alpha Feature)")
-    
-    if "use_selected_users" not in st.session_state:
-        st.session_state.use_selected_users = False
-    if "selected_user_ids" not in st.session_state:
-        st.session_state.selected_user_ids = ""
-    
-    st.session_state.use_selected_users = st.checkbox(
-        "Migrate only selected users",
-        value=st.session_state.use_selected_users,
-        help="Enable this to migrate only the users whose external IDs you input."
-    )
-    
-    if st.session_state.use_selected_users:
-        selected_ids_text = st.text_area(
-            "Enter external IDs (comma-separated)",
-            value=st.session_state.selected_user_ids,
-            placeholder="e.g. 12345, abcde-1002, ext_88991"
-        )
-    
-        # Store in state
-        st.session_state.selected_user_ids = selected_ids_text
-    
-        st.info("Only these users will be migrated.")
-    else:
-        st.session_state.selected_user_ids = ""
-
-    st.markdown("---")
-
-
-      # -----------------------------------------------------------
-    # Company Name Prompt (for Global Feed creation)
-    # -----------------------------------------------------------
-    st.markdown("#### Global Feed Options")
-    
-    # Ensure keys exist
-    if "phase1_company" not in st.session_state:
-        st.session_state.phase1_company = ""
-    
-    if "use_existing_global" not in st.session_state:
-        st.session_state.use_existing_global = False
-    
-    if "existing_global_id" not in st.session_state:
-        st.session_state.existing_global_id = ""
-    
-    # --- LOCAL variable that drives UI immediately ---
-    use_existing = st.checkbox(
-        "Use existing Global Feed Space from a previous migration?",
-        value=st.session_state.use_existing_global
-    )
-    
-    # --- ORGANISATION NAME INPUT ---
-    if use_existing:
-        # Greyed-out version
-        st.text_input(
-            "Enter the organisation name for the Global Feed",
-            value=st.session_state.phase1_company,
-            placeholder="Disabled when using an existing Global Feed Space",
-            disabled=True
-        )
-    else:
-        # Editable version
-        new_company = st.text_input(
-            "Enter the organisation name for the Global Feed",
-            value=st.session_state.phase1_company,
-            placeholder="Example: Workvivo, Zoom, etc..."
-        )
-        st.session_state.phase1_company = new_company
-    
-        if not new_company:
-            st.warning("Required on the first migration to create the Global Feed Space.")
-    
-    # --- GLOBAL FEED SPACE ID INPUT (ONLY WHEN REUSING) ---
-    if use_existing:
-        new_id = st.text_input(
-            "Enter the Global Feed Space ID",
-            value=st.session_state.existing_global_id,
-            placeholder="Example: 279184"
-        )
-        st.session_state.existing_global_id = new_id
-    else:
-        st.session_state.existing_global_id = ""
-    
-    # --- Update session state AFTER UI renders ---
-    st.session_state.use_existing_global = use_existing
-    
-    st.markdown("---")
-
-
-    # ============================================================
-    # 👥 User activity on Workvivo
-    # ============================================================
-    st.markdown("### User activity on Workvivo")
-    st.markdown("Migrate content & user interactions.")
-
-    migrate_updates = st.toggle("Updates", value=True)
-    migrate_kudos = st.toggle("Kudos", value=True)
-    migrate_articles = st.toggle("Articles", value=True)
-    migrate_events = st.toggle("Events", value=True)
-    migrate_comments = st.toggle("Comments", value=True)
-    migrate_likes = st.toggle("Likes", value=True)
-    migrate_globalPages = st.toggle("Global Pages", value=True)
-    migrate_spacePages = st.toggle("Space Pages", value=True)
-
-    
-    if st.button("▶ Run Migration"):
-    
-        # Smooth scroll (optional)
-        st.components.v1.html(
-            """
-            <script>
-                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-            """,
-            height=0,
-        )
-    
-        st.session_state.start_migration = True
-        st.session_state.migration_finished = False
-        st.session_state.cancel_requested = False
-        st.session_state.progress = 0
-    
-        # Switch page
-        st.session_state.page = "running"
-    
-        # ⭐ REQUIRED or user must click twice
-        st.rerun()
-
-
-
-    # ============================================================
-    # LIVE LOG OUTPUT (optional)
-    # ============================================================
-    if "live_log_placeholder" not in st.session_state:
-        st.session_state.live_log_placeholder = st.empty()
-
-    if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
-
-        st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-        st.header("Migration Console")
-
-        st.session_state.live_log_placeholder.text_area(
-            "Live Console Output",
-            st.session_state.get("log_output", ""),
-            height=400,
-            disabled=True
-        )
-
 # ============================================================
 # PHASE 2 — CONTENT MIGRATION (Updates, Comments, Likes)
 # ============================================================
@@ -2014,6 +1781,238 @@ def run_phase2(start_date):
 
     # Return CSV text
     return csv_buffer.getvalue()
+# ============================================================
+# MAIN PAGE (Migration Dashboard)
+# ============================================================
+if st.session_state.page == "main":
+
+    st.markdown("## Migrate Workvivo Data")
+
+    # ============================================================
+    # 📅 Date Range for Content Migration
+    # ============================================================
+    st.markdown("#### 📅 Date Range")
+
+    date_options = [
+        "Last 6 months",
+        "Last 1 year",
+        "Last 2 years",
+        "Last 3 years",
+        "All time",
+        "Custom range",
+    ]
+
+    if "migration_date_choice" not in st.session_state:
+        st.session_state.migration_date_choice = "Last 1 year"
+
+    date_choice = st.selectbox(
+        "Select date range",
+        date_options,
+        index=date_options.index(st.session_state.migration_date_choice),
+        key="migration_date_choice",
+    )
+
+    from datetime import datetime, timedelta
+
+    today = datetime.utcnow()
+    start_date = None
+    end_date = today
+
+    if date_choice == "Last 6 months":
+        start_date = today - timedelta(days=182)
+    elif date_choice == "Last 1 year":
+        start_date = today - timedelta(days=365)
+    elif date_choice == "Last 2 years":
+        start_date = today - timedelta(days=365 * 2)
+    elif date_choice == "Last 3 years":
+        start_date = today - timedelta(days=365 * 3)
+    elif date_choice == "All time":
+        start_date = None
+    elif date_choice == "Custom range":
+        st.markdown("##### Custom Range")
+        start_date = st.date_input("Start date")
+        end_date = st.date_input("End date")
+
+    def fmt(d):
+        if d is None:
+            return "All time"
+        if hasattr(d, "strftime"):
+            return d.strftime("%b %d, %Y")
+        return str(d)
+
+    pretty_start = fmt(start_date)
+    pretty_end = fmt(end_date)
+
+    st.info(f"📌 Migrating content from **{pretty_start}** to **{pretty_end}**")
+
+    st.session_state.migration_start_date = start_date
+    st.session_state.migration_end_date = end_date
+
+    # ⭐ Add separator line (same style as other sections)
+    st.markdown("---")
+
+    
+    # ============================================================
+    # 🏢 Organisation settings and information
+    # ============================================================
+    st.markdown("### Organisation settings and information")
+    st.markdown("This section migrates users, spaces and space membership.")
+    
+    # Users & Spaces (always on)
+    migrate_users_flag = st.toggle("Users", value=True, disabled=True)
+    migrate_spaces_flag = st.toggle("Spaces", value=True, disabled=True)
+    
+    # -----------------------------------------------------------
+    # ALPHA: Selective User Migration
+    # -----------------------------------------------------------
+    st.markdown("#### Selective User Migration (Alpha Feature)")
+    
+    if "use_selected_users" not in st.session_state:
+        st.session_state.use_selected_users = False
+    if "selected_user_ids" not in st.session_state:
+        st.session_state.selected_user_ids = ""
+    
+    st.session_state.use_selected_users = st.checkbox(
+        "Migrate only selected users",
+        value=st.session_state.use_selected_users,
+        help="Enable this to migrate only the users whose external IDs you input."
+    )
+    
+    if st.session_state.use_selected_users:
+        selected_ids_text = st.text_area(
+            "Enter external IDs (comma-separated)",
+            value=st.session_state.selected_user_ids,
+            placeholder="e.g. 12345, abcde-1002, ext_88991"
+        )
+    
+        # Store in state
+        st.session_state.selected_user_ids = selected_ids_text
+    
+        st.info("Only these users will be migrated.")
+    else:
+        st.session_state.selected_user_ids = ""
+
+    st.markdown("---")
+
+
+      # -----------------------------------------------------------
+    # Company Name Prompt (for Global Feed creation)
+    # -----------------------------------------------------------
+    st.markdown("#### Global Feed Options")
+    
+    # Ensure keys exist
+    if "phase1_company" not in st.session_state:
+        st.session_state.phase1_company = ""
+    
+    if "use_existing_global" not in st.session_state:
+        st.session_state.use_existing_global = False
+    
+    if "existing_global_id" not in st.session_state:
+        st.session_state.existing_global_id = ""
+    
+    # --- LOCAL variable that drives UI immediately ---
+    use_existing = st.checkbox(
+        "Use existing Global Feed Space from a previous migration?",
+        value=st.session_state.use_existing_global
+    )
+    
+    # --- ORGANISATION NAME INPUT ---
+    if use_existing:
+        # Greyed-out version
+        st.text_input(
+            "Enter the organisation name for the Global Feed",
+            value=st.session_state.phase1_company,
+            placeholder="Disabled when using an existing Global Feed Space",
+            disabled=True
+        )
+    else:
+        # Editable version
+        new_company = st.text_input(
+            "Enter the organisation name for the Global Feed",
+            value=st.session_state.phase1_company,
+            placeholder="Example: Workvivo, Zoom, etc..."
+        )
+        st.session_state.phase1_company = new_company
+    
+        if not new_company:
+            st.warning("Required on the first migration to create the Global Feed Space.")
+    
+    # --- GLOBAL FEED SPACE ID INPUT (ONLY WHEN REUSING) ---
+    if use_existing:
+        new_id = st.text_input(
+            "Enter the Global Feed Space ID",
+            value=st.session_state.existing_global_id,
+            placeholder="Example: 279184"
+        )
+        st.session_state.existing_global_id = new_id
+    else:
+        st.session_state.existing_global_id = ""
+    
+    # --- Update session state AFTER UI renders ---
+    st.session_state.use_existing_global = use_existing
+    
+    st.markdown("---")
+
+
+    # ============================================================
+    # 👥 User activity on Workvivo
+    # ============================================================
+    st.markdown("### User activity on Workvivo")
+    st.markdown("Migrate content & user interactions.")
+
+    migrate_updates = st.toggle("Updates", value=True)
+    migrate_kudos = st.toggle("Kudos", value=True)
+    migrate_articles = st.toggle("Articles", value=True)
+    migrate_events = st.toggle("Events", value=True)
+    migrate_comments = st.toggle("Comments", value=True)
+    migrate_likes = st.toggle("Likes", value=True)
+    migrate_globalPages = st.toggle("Global Pages", value=True)
+    migrate_spacePages = st.toggle("Space Pages", value=True)
+
+    
+    if st.button("▶ Run Migration"):
+    
+        # Smooth scroll (optional)
+        st.components.v1.html(
+            """
+            <script>
+                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+            </script>
+            """,
+            height=0,
+        )
+    
+        st.session_state.start_migration = True
+        st.session_state.migration_finished = False
+        st.session_state.cancel_requested = False
+        st.session_state.progress = 0
+    
+        # Switch page
+        st.session_state.page = "running"
+    
+        # ⭐ REQUIRED or user must click twice
+        st.rerun()
+
+
+
+    # ============================================================
+    # LIVE LOG OUTPUT (optional)
+    # ============================================================
+    if "live_log_placeholder" not in st.session_state:
+        st.session_state.live_log_placeholder = st.empty()
+
+    if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
+
+        st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
+        st.header("Migration Console")
+
+        st.session_state.live_log_placeholder.text_area(
+            "Live Console Output",
+            st.session_state.get("log_output", ""),
+            height=400,
+            disabled=True
+        )
+
 
 # ============================================================
 # MIGRATION PAGE — FINAL WORKING VERSION
