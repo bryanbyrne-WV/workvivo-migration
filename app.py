@@ -657,7 +657,7 @@ if "config_saved" not in st.session_state:
             st.write("Target Test:", msg2)
 
             if ok1 and ok2:
-                st.success("🎉 All configuration tests passed!")
+                st.success("All configuration tests passed!")
                 st.session_state.config_test_passed = True
             else:
                 st.error("⚠️ One or more tests failed.")
