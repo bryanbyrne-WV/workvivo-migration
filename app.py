@@ -649,13 +649,11 @@ if "config_saved" not in st.session_state:
         # Save all values
         st.session_state["config_saved"] = True
 
-        st.session_state["SOURCE_SCIM_URL"] = SOURCE_SCIM_URL
         st.session_state["SOURCE_API_URL"] = SOURCE_API_URL
         st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
         st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
         st.session_state["SOURCE_WORKVIVO_ID"] = SOURCE_WORKVIVO_ID
 
-        st.session_state["TARGET_SCIM_URL"] = TARGET_SCIM_URL
         st.session_state["TARGET_API_URL"] = TARGET_API_URL
         st.session_state["TARGET_SCIM_TOKEN"] = TARGET_SCIM_TOKEN
         st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
