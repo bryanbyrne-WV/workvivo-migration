@@ -1564,7 +1564,7 @@ if st.session_state.page == "main":
     
     # --- LOCAL variable that drives UI immediately ---
     use_existing = st.checkbox(
-        "Use existing Global Feed from a previous migration?",
+        "Use existing Global Feed Space from a previous migration?",
         value=st.session_state.use_existing_global
     )
     
