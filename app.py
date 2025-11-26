@@ -627,7 +627,7 @@ if "config_saved" not in st.session_state:
         # ----------------------------------------------------
         # TEST CONFIGURATION BUTTON
         # ----------------------------------------------------
-        st.markdown("### 🔍 Test Configuration")
+        st.markdown("### Test Configuration")
 
         test_clicked = st.form_submit_button("Test Configuration")
 
