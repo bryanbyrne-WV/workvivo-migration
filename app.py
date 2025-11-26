@@ -631,7 +631,7 @@ if "config_saved" not in st.session_state:
         # ----------------------------------------------------
         st.markdown("### Test Connectivity")
 
-        test_clicked = st.form_submit_button("TEST")
+        test_clicked = st.form_submit_button("Test Now")
 
         if test_clicked:
 
