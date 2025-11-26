@@ -542,18 +542,6 @@ if "config_saved" not in st.session_state:
         
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ----------------------------------------------------
-        # MIGRATION USER (SPACE CREATOR)
-        # ----------------------------------------------------
-        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-
-        SPACE_CREATOR_EXTERNAL_ID = st.text_input(
-            "Migration External ID (Space Creator)",
-            value="workvivo-migration-user",
-            help="External ID of the system user used when creating spaces or system-owned content in the TARGET tenant."
-        )
-
-        st.markdown("</div>", unsafe_allow_html=True)
 
                # ----------------------------------------------------
         # VALIDATION + BUTTON STYLING
@@ -579,10 +567,6 @@ if "config_saved" not in st.session_state:
             errors.append("Target API Token is required.")
         if not TARGET_WORKVIVO_ID:
             errors.append("Target Workvivo-ID is required.")
-
-        # Required migration user
-        if not SPACE_CREATOR_EXTERNAL_ID:
-            errors.append("Migration External ID (Space Creator) is required.")
 
         # Show warnings
         if errors:
@@ -664,7 +648,7 @@ if "config_saved" not in st.session_state:
         st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
         st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
 
-        st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
+        st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = "workvivo-migration-user"
         
         st.success("Configuration saved! Click Continue to proceed.")
 
