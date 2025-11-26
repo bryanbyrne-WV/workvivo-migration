@@ -102,7 +102,7 @@ if not st.session_state.authenticated:
     st.markdown("""
     <div style="text-align:center; margin-top:40px; margin-bottom:10px;">
             <img src="https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png"
-             style="height:90px;">
+             style="height:170px;">
     </div>
     """, unsafe_allow_html=True)
         
