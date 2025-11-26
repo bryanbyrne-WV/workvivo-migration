@@ -1022,10 +1022,36 @@ def selectable_card(key, title, icon, subtitle):
 # =========================================================
 # PHASE 1 — USERS
 # =========================================================
+def load_target_user_maps():
+    """Fetch all target users and return:
+    - email → externalId
+    - externalId → email
+    """
+    users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
+
+    email_map = {}
+    ext_map = {}
+
+    for u in users:
+        email = (u.get("email") or u.get("userName") or "").lower().strip()
+        ext = (u.get("external_id") or "").strip()
+
+        if email:
+            email_map[email] = ext
+        if ext:
+            ext_map[ext] = email
+
+    return email_map, ext_map
+
+
 def migrate_users(active_only):
     ui_log("=== USER MIGRATION START ===")
 
+    # Load existing target users
+    target_email_map, target_ext_map = load_target_user_maps()
+
     users = fetch_users(active_only)
+
     ui_log(f"📥 Loaded {len(users)} users from source.")
 
     migrated = skipped = 0
@@ -1038,6 +1064,25 @@ def migrate_users(active_only):
             skipped += 1
             ui_log(f"⚠️ Skipped missing email → {ext}")
             continue
+        
+                # ----------------------------------------------
+        # SKIP if email already exists in target
+        # ----------------------------------------------
+        if email in target_email_map:
+            skipped += 1
+            st.session_state.summary["users_skipped"] += 1
+            ui_log(f"⏭ Skipped {email}: already exists in target (email match)")
+            continue
+        
+        # ----------------------------------------------
+        # SKIP if externalId already exists in target
+        # ----------------------------------------------
+        if ext and ext in target_ext_map:
+            skipped += 1
+            st.session_state.summary["users_skipped"] += 1
+            ui_log(f"⏭ Skipped {email}: already exists in target (extId match)")
+            continue
+
 
         # Auto externalId fallback
         if not ext:
