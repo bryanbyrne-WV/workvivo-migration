@@ -623,7 +623,7 @@ if "config_saved" not in st.session_state:
         </div>
         """, unsafe_allow_html=True)
 
-            st.markdown("---")
+        st.markdown("---")
 
 
         # ----------------------------------------------------
