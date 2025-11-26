@@ -1486,14 +1486,41 @@ if st.session_state.page == "main":
     # 🏢 Organisation settings and information
     # ============================================================
     st.markdown("### Organisation settings and information")
-    st.markdown("""
-    This section migrates users, spaces and space membership.
-    """)
-
-    migrate_users = st.toggle("Users", value=True, disabled=True)
-    migrate_spaces = st.toggle("Spaces", value=True, disabled=True)
-
-    st.markdown("---")
+    st.markdown("This section migrates users, spaces and space membership.")
+    
+    # Users & Spaces (always on)
+    migrate_users_flag = st.toggle("Users", value=True, disabled=True)
+    migrate_spaces_flag = st.toggle("Spaces", value=True, disabled=True)
+    
+    # -----------------------------------------------------------
+    # ALPHA: Selective User Migration
+    # -----------------------------------------------------------
+    st.markdown("#### 🔬 Selective User Migration (Alpha Feature)")
+    
+    if "use_selected_users" not in st.session_state:
+        st.session_state.use_selected_users = False
+    if "selected_user_ids" not in st.session_state:
+        st.session_state.selected_user_ids = ""
+    
+    st.session_state.use_selected_users = st.checkbox(
+        "Migrate only selected users (alpha)",
+        value=st.session_state.use_selected_users,
+        help="Enable this to migrate only the users whose external IDs you input."
+    )
+    
+    if st.session_state.use_selected_users:
+        selected_ids_text = st.text_area(
+            "Enter external IDs (comma-separated)",
+            value=st.session_state.selected_user_ids,
+            placeholder="e.g. 12345, abcde-1002, ext_88991"
+        )
+    
+        # Store in state
+        st.session_state.selected_user_ids = selected_ids_text
+    
+        st.info("⚠️ Alpha feature enabled. Only these users will be migrated.")
+    else:
+        st.session_state.selected_user_ids = ""
 
 
       # -----------------------------------------------------------
