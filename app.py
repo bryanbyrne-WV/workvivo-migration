@@ -1503,7 +1503,7 @@ if st.session_state.page == "main":
         st.session_state.selected_user_ids = ""
     
     st.session_state.use_selected_users = st.checkbox(
-        "Migrate only selected users (alpha)",
+        "Migrate only selected users",
         value=st.session_state.use_selected_users,
         help="Enable this to migrate only the users whose external IDs you input."
     )
@@ -1518,7 +1518,7 @@ if st.session_state.page == "main":
         # Store in state
         st.session_state.selected_user_ids = selected_ids_text
     
-        st.info("⚠️ Only these users will be migrated.")
+        st.info("Only these users will be migrated.")
     else:
         st.session_state.selected_user_ids = ""
 
