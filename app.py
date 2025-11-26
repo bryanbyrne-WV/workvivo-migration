@@ -1774,11 +1774,16 @@ elif st.session_state.page == "running":
     # RUN MIGRATION (ONLY ON FIRST VISIT)
     # --------------------------------------------------------
     if st.session_state.get("start_migration", False):
-
-        st.session_state.start_migration = False
-        st.session_state.migration_finished = False   # Reset finish flag
-
-        ui_log("Starting migration...")
+            
+            # RESET new users/spaces BEFORE ANY PROCESS
+            st.session_state.new_users = set()
+            st.session_state.new_spaces = set()
+            ui_log("🔄 Reset new_users and new_spaces for this migration.")
+    
+            st.session_state.start_migration = False
+            st.session_state.migration_finished = False
+    
+            ui_log("Starting migration...")
 
         steps = [
             ("Migrating users…", lambda: migrate_users(st.session_state.phase1_active_only)),
