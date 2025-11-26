@@ -134,16 +134,17 @@ if not st.session_state.authenticated:
         else:
             st.error("❌ Invalid username or password.")
 
-    # Request access link
     st.markdown(
         """
         <a class="request-button"
-           href="mailto:bryan.byrne@workvivo.com?subject=Access Request - Migration Tool&body=Hi Bryan,%0D%0A%0D%0ACan I please get access to the Migration Tool?%0D%0A%0D%0AThanks!">
+           href="https://support.workvivo.com/hc/en-gb/requests/new"
+           target="_blank">
             Request Access
         </a>
         """,
         unsafe_allow_html=True
     )
+
 
     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
