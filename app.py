@@ -464,10 +464,10 @@ if "config_saved" not in st.session_state:
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
         with st.expander("Source Environment", expanded=True):
 
-            SOURCE_SCIM_URL = st.text_input(
-                "Source SCIM URL",
-                value="https://wv-migration2.workvivo.com/scim/v2/scim/Users/",
-                help="SCIM endpoint for reading users from the SOURCE Workvivo environment."
+            SOURCE_BASE_URL = st.text_input(
+                "Source Workvivo URL",
+                value="wv-migration2.workvivo.com",
+                help="Enter your Workvivo domain (e.g. organisation.workvivo.com)"
             )
 
             SOURCE_API_URL = st.text_input(
@@ -656,6 +656,12 @@ if "config_saved" not in st.session_state:
 
         st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = SPACE_CREATOR_EXTERNAL_ID
 
+        # Normalise the URL (remove http/https)
+        clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+        
+        # Auto-create SCIM URL
+        st.session_state["SOURCE_SCIM_URL"] = f"https://{clean_source}/scim/v2/scim/Users/"
+        
         st.success("Configuration saved! Click Continue to proceed.")
 
         # CONTINUE BUTTON (purple)
