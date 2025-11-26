@@ -33,9 +33,9 @@ if not st.session_state.authenticated:
 
             .login-wrapper {
                 max-width: 420px;
-                margin: 7rem auto 5rem auto;;
-                text-align: center;
+                margin: 1.5rem auto 2rem auto;
             }
+
 
             /* Title (no logo above it) */
             .login-title {
