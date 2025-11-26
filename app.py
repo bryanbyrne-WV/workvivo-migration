@@ -100,7 +100,7 @@ if not st.session_state.authenticated:
 
     # Centered Workvivo logo above login form
     st.markdown("""
-    <div style="text-align:center; margin-top:10px; margin-bottom:10px;">
+    <div style="text-align:center; margin-bottom:10px;">
             <img src="https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png"
              style="height:170px;">
     </div>
