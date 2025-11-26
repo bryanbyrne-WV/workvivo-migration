@@ -1361,6 +1361,14 @@ def run_phase_1(company_name, active_only):
     lock_ui_for_phase()
     ui_log("▶ Starting Phase 1…")
 
+    # -------------------------------------------------------
+    # RESET NEW USERS & SPACES FOR THIS MIGRATION RUN
+    # -------------------------------------------------------
+    st.session_state.new_users = set()
+    st.session_state.new_spaces = set()
+    ui_log("🔄 Reset new user & new space tracking for this migration.")
+
+
     try:
 
         # 2) Users
