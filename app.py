@@ -377,7 +377,7 @@ advanced_styles = f"""
 st.markdown("""
 <div style="text-align:center; margin-top:10px; margin-bottom:5px;">
     <img src="https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png" 
-         style="height:80px;">
+         style="height:140px;">
 </div>
 """, unsafe_allow_html=True)
 
