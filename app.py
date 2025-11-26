@@ -25,6 +25,38 @@ def get_api_url_from_workvivo_id(wv_id: str):
 
     return "https://api.workvivo.com/v1"
 
+def test_workvivo_connection(scim_url, scim_token, api_url, api_token, wv_id):
+    """Return (ok, message) after performing live connection tests."""
+    headers_scim = {
+        "Authorization": f"Bearer {scim_token}",
+        "Accept": "application/json"
+    }
+
+    headers_api = {
+        "Authorization": f"Bearer {api_token}",
+        "Workvivo-Id": wv_id,
+        "Accept": "application/json"
+    }
+
+    # ---- Test SCIM ----
+    try:
+        r = requests.get(f"{scim_url}?count=1", headers=headers_scim, timeout=6)
+        if r.status_code not in (200, 201):
+            return False, f"❌ SCIM error ({r.status_code}) → {r.text[:120]}"
+    except Exception as e:
+        return False, f"❌ SCIM connection failed: {str(e)[:120]}"
+
+    # ---- Test API ----
+    try:
+        r = requests.get(f"{api_url}/spaces?take=1", headers=headers_api, timeout=6)
+        if r.status_code not in (200, 201):
+            return False, f"❌ API error ({r.status_code}) → {r.text[:120]}"
+    except Exception as e:
+        return False, f"❌ API connection failed: {str(e)[:120]}"
+
+    return True, "✅ All tests passed! API & SCIM are valid."
+
+
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
 
@@ -572,9 +604,41 @@ if "config_saved" not in st.session_state:
         if errors:
             for e in errors:
                 st.warning("⚠️ " + e)
+        # ----------------------------------------------------
+        # 🔍 TEST CONFIGURATION BUTTON
+        # ----------------------------------------------------
+        st.markdown("### 🔍 Test Configuration")
+        
+        if st.form_submit_button("Test Configuration"):
+        
+            clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+            clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+        
+            source_scim_test = f"https://{clean_source}/scim/v2/scim/Users/"
+            target_scim_test = f"https://{clean_target}/scim/v2/scim/Users/"
+        
+            source_api_test = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
+            target_api_test = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
+        
+            st.info("Running tests…")
+        
+            ok1, msg1 = test_workvivo_connection(
+                source_scim_test, SOURCE_SCIM_TOKEN, source_api_test, SOURCE_API_TOKEN, SOURCE_WORKVIVO_ID
+            )
+            st.write("🟪 Source Test:", msg1)
+        
+            ok2, msg2 = test_workvivo_connection(
+                target_scim_test, TARGET_SCIM_TOKEN, target_api_test, TARGET_API_TOKEN, TARGET_WORKVIVO_ID
+            )
+            st.write("🟦 Target Test:", msg2)
+        
+            if ok1 and ok2:
+                st.success("🎉 All configuration tests passed! You may now save the configuration.")
+            else:
+                st.error("⚠️ One or more tests failed — fix the settings before saving.")
 
 
-                # ----------------------------------------------------
+        # ----------------------------------------------------
         # SUPPORT NOTE
         # ----------------------------------------------------
         st.markdown("""
