@@ -9,6 +9,9 @@ import random
 import os
 import mimetypes
 
+if "config_test_passed" not in st.session_state:
+    st.session_state.config_test_passed = False
+
 def get_api_url_from_workvivo_id(wv_id: str):
     """Return correct API base URL based on Workvivo ID prefix."""
     if not wv_id or len(wv_id) < 3:
@@ -506,6 +509,39 @@ if "config_saved" not in st.session_state:
         </style>
         """, unsafe_allow_html=True)
 
+        # ============================================================
+# CLEAN CONFIG FORM — FINAL WORKING VERSION
+# ============================================================
+
+# Ensure test flag exists
+if "config_test_passed" not in st.session_state:
+    st.session_state.config_test_passed = False
+
+if "config_saved" not in st.session_state:
+
+    with st.form("config_form"):
+
+        st.header("🔐 Environment Configuration")
+
+        st.markdown("""
+        <style>
+            .config-card {
+                background: #ffffff;
+                padding: 18px 22px;
+                border-radius: 10px;
+                box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
+                margin-bottom: 18px;
+            }
+            summary {
+                font-size: 18px;
+                font-weight: 600;
+                color: #6203ed;
+                cursor: pointer;
+                padding: 6px 0;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+
         # ----------------------------------------------------
         # SOURCE ENVIRONMENT
         # ----------------------------------------------------
@@ -520,14 +556,14 @@ if "config_saved" not in st.session_state:
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
-                value="9BdzwvLUw0C8gZTE9ZWv6sd4K9thRMdWdUeZdSv1",
+                value="",
                 type="password",
                 help="Authentication token for SCIM user requests in the SOURCE tenant."
             )
 
             SOURCE_API_TOKEN = st.text_input(
                 "Source API Token",
-                value="387|ad600b9e622e48057c8d72394d1fcd2bd2291f05",
+                value="",
                 type="password",
                 help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
             )
@@ -554,14 +590,14 @@ if "config_saved" not in st.session_state:
                 
             TARGET_SCIM_TOKEN = st.text_input(
                 "Target SCIM Token",
-                value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
+                value="",
                 type="password",
                 help="Authentication token for SCIM user creation inside the TARGET tenant."
             )
         
             TARGET_API_TOKEN = st.text_input(
                 "Target API Token",
-                value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
+                value="",
                 type="password",
                 help="Bearer token for creating spaces, uploading images and writing content to the TARGET tenant."
             )
@@ -574,9 +610,8 @@ if "config_saved" not in st.session_state:
         
         st.markdown("</div>", unsafe_allow_html=True)
 
-
-               # ----------------------------------------------------
-        # VALIDATION + BUTTON STYLING
+        # ----------------------------------------------------
+        # VALIDATION
         # ----------------------------------------------------
         errors = []
 
@@ -588,7 +623,7 @@ if "config_saved" not in st.session_state:
         if not SOURCE_API_TOKEN:
             errors.append("Source API Token is required.")
         if not SOURCE_WORKVIVO_ID:
-            errors.append("Source Workvivo-ID is required.")
+            errors.append("Source Workvivo ID is required.")
 
         # Required target fields
         if not TARGET_BASE_URL:
@@ -598,95 +633,73 @@ if "config_saved" not in st.session_state:
         if not TARGET_API_TOKEN:
             errors.append("Target API Token is required.")
         if not TARGET_WORKVIVO_ID:
-            errors.append("Target Workvivo-ID is required.")
+            errors.append("Target Workvivo ID is required.")
 
         # Show warnings
         if errors:
             for e in errors:
                 st.warning("⚠️ " + e)
 
-        
         # ----------------------------------------------------
         # SUPPORT NOTE
         # ----------------------------------------------------
         st.markdown("""
-        <div style="margin-top: 20px; padding: 12px; background: #f4ecff; border-left: 4px solid #6203ed; border-radius: 6px;">
+        <div style="margin-top: 20px; padding: 12px; background: #f4ecff; 
+        border-left: 4px solid #6203ed; border-radius: 6px;">
         <strong>Need help?</strong><br>
         If you cannot find any of this information, please contact 
         <a href="mailto:support@workvivo.com">support@workvivo.com</a>.
         </div>
         """, unsafe_allow_html=True)
 
-        # Add styling for purple buttons
-        st.markdown("""
-        <style>
-        .purple-btn > button {
-            background-color: #6203ed !important;
-            color: white !important;
-            border: none !important;
-            padding: 10px 26px !important;
-            font-size: 17px !important;
-            font-weight: 600 !important;
-            border-radius: 6px !important;
-            height: 48px !important;
-            box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-            transition: 0.2s;
-        }
-        .purple-btn > button:hover {
-            background-color: #4c02b5 !important;
-            transform: translateY(-1px);
-        }
-        .purple-btn > button:active {
-            transform: scale(0.98);
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
+
         # ----------------------------------------------------
-        # 🔍 TEST CONFIGURATION BUTTON
+        # TEST CONFIGURATION BUTTON
         # ----------------------------------------------------
-        st.markdown("### Test Configuration")
-        
-        if st.form_submit_button("Test Configuration"):
-        
+        st.markdown("### 🔍 Test Configuration")
+
+        test_clicked = st.form_submit_button("Test Configuration")
+
+        if test_clicked:
+
             clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
             clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-        
+
             source_scim_test = f"https://{clean_source}/scim/v2/scim/Users/"
             target_scim_test = f"https://{clean_target}/scim/v2/scim/Users/"
-        
+
             source_api_test = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
             target_api_test = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
-        
+
             st.info("Running tests…")
-        
+
             ok1, msg1 = test_workvivo_connection(
                 source_scim_test, SOURCE_SCIM_TOKEN, source_api_test, SOURCE_API_TOKEN, SOURCE_WORKVIVO_ID
             )
-            st.write("Source Test:", msg1)
-        
+            st.write("🟪 Source Test:", msg1)
+
             ok2, msg2 = test_workvivo_connection(
                 target_scim_test, TARGET_SCIM_TOKEN, target_api_test, TARGET_API_TOKEN, TARGET_WORKVIVO_ID
             )
-            st.write("Target Test:", msg2)
-        
+            st.write("🟦 Target Test:", msg2)
+
             if ok1 and ok2:
-                st.success("🎉 All configuration tests passed! You may now save the configuration.")
+                st.success("🎉 All configuration tests passed!")
+                st.session_state.config_test_passed = True
             else:
-                st.error("⚠️ One or more tests failed — fix the settings before saving.")
+                st.error("⚠️ One or more tests failed.")
+                st.session_state.config_test_passed = False
 
 
         # ----------------------------------------------------
-        # SAVE CONFIGURATION BUTTON (purple)
+        # SAVE CONFIG BUTTON — DISABLED UNTIL TEST PASSES
         # ----------------------------------------------------
         st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
         submitted = st.form_submit_button(
             "Save Configuration",
-            disabled=len(errors) > 0
+            disabled=(len(errors) > 0) or (not st.session_state.config_test_passed)
         )
         st.markdown('</div>', unsafe_allow_html=True)
-        
-
 
     # ----------------------------------------------------
     # OUTSIDE THE FORM — PROCESS SAVE
@@ -695,20 +708,12 @@ if "config_saved" not in st.session_state:
 
         clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
         st.session_state["SOURCE_SCIM_URL"] = f"https://{clean_source}/scim/v2/scim/Users/"
-            
+
         clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
         st.session_state["TARGET_SCIM_URL"] = f"https://{clean_target}/scim/v2/scim/Users/"
 
-        # Auto-generate API URLs based on prefix of Workvivo ID
-        source_api = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
-        target_api = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
-        
-        st.session_state["SOURCE_API_URL"] = source_api
-        st.session_state["TARGET_API_URL"] = target_api
-
-
-        # Save all values
-        st.session_state["config_saved"] = True
+        st.session_state["SOURCE_API_URL"] = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
+        st.session_state["TARGET_API_URL"] = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
 
         st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
         st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
@@ -719,15 +724,14 @@ if "config_saved" not in st.session_state:
         st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
 
         st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = "workvivo-migration-user"
-        
+        st.session_state["config_saved"] = True
+
         st.success("Configuration saved! Click Continue to proceed.")
 
-        # CONTINUE BUTTON (purple)
         st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
         if st.button("➡ CONTINUE"):
             st.session_state.page = "main"
             st.rerun()
-
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.stop()
