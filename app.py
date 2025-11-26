@@ -2127,6 +2127,16 @@ elif st.session_state.page == "running":
             ("Migrating memberships…", migrate_memberships),
             ("Creating Global Feed…", lambda: create_global_space_and_enroll(st.session_state.phase1_company)),
         ]
+        
+        # Only run PHASE 2 if Updates toggle is enabled
+        if st.session_state.get("migrate_updates", True):
+            steps.append(
+                ("Migrating updates, comments & likes…",
+                 lambda: run_phase2(st.session_state.migration_start_date))
+            )
+        else:
+            ui_log("⏭ Skipping Phase 2 (Updates toggle is OFF)")
+
 
         total_steps = len(steps)
         pct = int(100 / total_steps)
