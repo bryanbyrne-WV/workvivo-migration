@@ -604,40 +604,8 @@ if "config_saved" not in st.session_state:
         if errors:
             for e in errors:
                 st.warning("⚠️ " + e)
-        # ----------------------------------------------------
-        # 🔍 TEST CONFIGURATION BUTTON
-        # ----------------------------------------------------
-        st.markdown("### 🔍 Test Configuration")
-        
-        if st.form_submit_button("Test Configuration"):
-        
-            clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-            clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-        
-            source_scim_test = f"https://{clean_source}/scim/v2/scim/Users/"
-            target_scim_test = f"https://{clean_target}/scim/v2/scim/Users/"
-        
-            source_api_test = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
-            target_api_test = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
-        
-            st.info("Running tests…")
-        
-            ok1, msg1 = test_workvivo_connection(
-                source_scim_test, SOURCE_SCIM_TOKEN, source_api_test, SOURCE_API_TOKEN, SOURCE_WORKVIVO_ID
-            )
-            st.write("🟪 Source Test:", msg1)
-        
-            ok2, msg2 = test_workvivo_connection(
-                target_scim_test, TARGET_SCIM_TOKEN, target_api_test, TARGET_API_TOKEN, TARGET_WORKVIVO_ID
-            )
-            st.write("🟦 Target Test:", msg2)
-        
-            if ok1 and ok2:
-                st.success("🎉 All configuration tests passed! You may now save the configuration.")
-            else:
-                st.error("⚠️ One or more tests failed — fix the settings before saving.")
 
-
+        
         # ----------------------------------------------------
         # SUPPORT NOTE
         # ----------------------------------------------------
@@ -681,6 +649,40 @@ if "config_saved" not in st.session_state:
             disabled=len(errors) > 0
         )
         st.markdown('</div>', unsafe_allow_html=True)
+        
+        # ----------------------------------------------------
+        # 🔍 TEST CONFIGURATION BUTTON
+        # ----------------------------------------------------
+        st.markdown("### Test Configuration")
+        
+        if st.form_submit_button("Test Configuration"):
+        
+            clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+            clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+        
+            source_scim_test = f"https://{clean_source}/scim/v2/scim/Users/"
+            target_scim_test = f"https://{clean_target}/scim/v2/scim/Users/"
+        
+            source_api_test = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
+            target_api_test = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
+        
+            st.info("Running tests…")
+        
+            ok1, msg1 = test_workvivo_connection(
+                source_scim_test, SOURCE_SCIM_TOKEN, source_api_test, SOURCE_API_TOKEN, SOURCE_WORKVIVO_ID
+            )
+            st.write("Source Test:", msg1)
+        
+            ok2, msg2 = test_workvivo_connection(
+                target_scim_test, TARGET_SCIM_TOKEN, target_api_test, TARGET_API_TOKEN, TARGET_WORKVIVO_ID
+            )
+            st.write("Target Test:", msg2)
+        
+            if ok1 and ok2:
+                st.success("🎉 All configuration tests passed! You may now save the configuration.")
+            else:
+                st.error("⚠️ One or more tests failed — fix the settings before saving.")
+
 
     # ----------------------------------------------------
     # OUTSIDE THE FORM — PROCESS SAVE
