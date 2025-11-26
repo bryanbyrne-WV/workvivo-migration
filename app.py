@@ -9,6 +9,22 @@ import random
 import os
 import mimetypes
 
+def get_api_url_from_workvivo_id(wv_id: str):
+    """Return correct API base URL based on Workvivo ID prefix."""
+    if not wv_id or len(wv_id) < 3:
+        return "https://api.workvivo.com/v1"
+
+    prefix = str(wv_id).strip()[:3]
+
+    if prefix == "300":
+        return "https://api.eu2.workvivo.com/v1"
+    if prefix == "100":
+        return "https://api.workvivo.us/v1"
+    if prefix == "400":
+        return "https://api.us2.workvivo.us/v1"
+
+    return "https://api.workvivo.com/v1"
+
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
 
@@ -470,9 +486,6 @@ if "config_saved" not in st.session_state:
                 help="Enter your Workvivo domain (e.g. organisation.workvivo.com)"
             )
 
-            st.info("Source API URL will be auto-detected from your Workvivo ID.")
-
-
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
                 value="9BdzwvLUw0C8gZTE9ZWv6sd4K9thRMdWdUeZdSv1",
@@ -506,9 +519,7 @@ if "config_saved" not in st.session_state:
                 value="migration-test-1.workvivo.com",
                 help="Enter your Workvivo domain (e.g. organisation.workvivo.com)"
             )
-        
-            st.info("Target API URL will be auto-detected from your Workvivo ID.")
-        
+                
             TARGET_SCIM_TOKEN = st.text_input(
                 "Target SCIM Token",
                 value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
@@ -879,22 +890,6 @@ def ui_log(message):
 # =========================================================
 # HELPER: Fetch users
 # =========================================================
-
-def get_api_url_from_workvivo_id(wv_id: str):
-    """Return correct API base URL based on Workvivo ID prefix."""
-    if not wv_id or len(wv_id) < 3:
-        return "https://api.workvivo.com/v1"
-
-    prefix = str(wv_id).strip()[:3]
-
-    if prefix == "300":
-        return "https://api.eu2.workvivo.com/v1"
-    if prefix == "100":
-        return "https://api.workvivo.us/v1"
-    if prefix == "400":
-        return "https://api.us2.workvivo.us/v1"
-
-    return "https://api.workvivo.com/v1"
 
 def paginated_fetch(url, headers, take=100):
     """Fetch paginated results from Workvivo API."""
