@@ -500,37 +500,35 @@ if "config_saved" not in st.session_state:
         # ----------------------------------------------------
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
         with st.expander("Target Environment", expanded=True):
-
+        
             TARGET_BASE_URL = st.text_input(
                 "Target Workvivo URL",
                 value="migration-test-1.workvivo.com",
                 help="Enter your Workvivo domain (e.g. organisation.workvivo.com)"
             )
-
-
-        st.info("Target API URL will be auto-detected from your Workvivo ID.")
-
-
+        
+            st.info("Target API URL will be auto-detected from your Workvivo ID.")
+        
             TARGET_SCIM_TOKEN = st.text_input(
                 "Target SCIM Token",
                 value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
                 type="password",
                 help="Authentication token for SCIM user creation inside the TARGET tenant."
             )
-
+        
             TARGET_API_TOKEN = st.text_input(
                 "Target API Token",
                 value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
                 type="password",
                 help="Bearer token for creating spaces, uploading images and writing content to the TARGET tenant."
             )
-
+        
             TARGET_WORKVIVO_ID = st.text_input(
                 "Target Workvivo ID",
                 value="3000384",
                 help="Workvivo ID required for API requests on the TARGET tenant."
             )
-
+        
         st.markdown("</div>", unsafe_allow_html=True)
 
         # ----------------------------------------------------
