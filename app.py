@@ -1501,18 +1501,12 @@ if st.session_state.page == "main":
     # -----------------------------------------------------------
     st.markdown("#### Global Feed Options")
     
-    # Checkbox – reuse existing Global Feed
-    if "use_existing_global" not in st.session_state:
-        st.session_state.use_existing_global = False
+    # --- Organisation Name (always shown first) ---
+    if "phase1_company" not in st.session_state:
+        st.session_state.phase1_company = ""
     
-    use_existing = st.checkbox(
-        "Use existing Global Feed from a previous migration?",
-        value=st.session_state.use_existing_global
-    )
-    st.session_state.use_existing_global = use_existing
-    
-    # Organisation Name input (greyed out if using existing)
-    if use_existing:
+    if st.session_state.get("use_existing_global", False):
+        # Greyed-out when reusing
         st.text_input(
             "Enter the organisation name for the Global Feed",
             value=st.session_state.get("phase1_company", ""),
@@ -1520,6 +1514,7 @@ if st.session_state.page == "main":
             disabled=True
         )
     else:
+        # Editable when creating a new Global Feed
         st.session_state.phase1_company = st.text_input(
             "Enter the organisation name for the Global Feed",
             value=st.session_state.get("phase1_company", ""),
@@ -1529,7 +1524,17 @@ if st.session_state.page == "main":
         if not st.session_state.phase1_company:
             st.warning("Required on the first migration to create the Global Feed Space for Global audience data.")
     
-    # Global Feed ID (only shown when reusing)
+    # --- Checkbox BELOW the name input ---
+    if "use_existing_global" not in st.session_state:
+        st.session_state.use_existing_global = False
+    
+    use_existing = st.checkbox(
+        "Use existing Global Feed from a previous migration?",
+        value=st.session_state.use_existing_global
+    )
+    st.session_state.use_existing_global = use_existing
+    
+    # --- Space ID field if checkbox is selected ---
     if use_existing:
         st.session_state.existing_global_id = st.text_input(
             "Enter the Global Feed Space ID",
