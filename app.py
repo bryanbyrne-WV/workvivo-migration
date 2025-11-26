@@ -1574,7 +1574,7 @@ if st.session_state.page == "main":
         st.text_input(
             "Enter the organisation name for the Global Feed",
             value=st.session_state.phase1_company,
-            placeholder="Disabled when using an existing Global Feed",
+            placeholder="Disabled when using an existing Global Feed Space",
             disabled=True
         )
     else:
