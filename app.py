@@ -2426,8 +2426,8 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
     
-    if is_cancelled:
-        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
+if is_cancelled:
+    st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
     
 
 
