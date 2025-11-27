@@ -2121,7 +2121,7 @@ if st.session_state.page == "main":
     st.toggle(
         "Enable Global Pages Migration",
         key="migrate_globalPages",
-        value=False
+        value=True
     )
     
     if st.session_state.get("migrate_globalPages"):
@@ -2140,7 +2140,7 @@ if st.session_state.page == "main":
     st.toggle(
         "Enable Space Pages Migration",
         key="migrate_spacePages",
-        value=False
+        value=True
     )
 
     
