@@ -889,7 +889,7 @@ target_scim_headers = {
     "Accept": "application/json"
 }
 
-target_headers = {
+target_headers_form = {
     "Authorization": f"Bearer {TARGET_API_TOKEN}",
     "Workvivo-Id": TARGET_WORKVIVO_ID,
     "Accept": "application/json"
@@ -1044,7 +1044,7 @@ def load_target_user_maps():
     - email → externalId
     - externalId → email
     """
-    users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
+    users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers_form)
 
     email_map = {}
     ext_map = {}
@@ -1146,7 +1146,7 @@ def upload_user_avatar(external_id, file_path):
 
             resp = requests.put(
                 f"{TARGET_API_URL}/users/by-external-id/{external_id}/profile-photo",
-                headers=target_headers,
+                headers=target_headers_form,
                 files=files
             )
 
@@ -1195,7 +1195,7 @@ def migrate_spaces():
     ui_log("=== SPACE MIGRATION START ===")
 
     source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
-    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
+    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers_form)
 
     target_names = {s["name"].strip().lower(): s["id"] for s in target_spaces}
 
@@ -1236,7 +1236,7 @@ def migrate_spaces():
 
         resp = requests.post(
             f"{TARGET_API_URL}/spaces",
-            headers=target_headers,
+            headers=target_headers_form,
             json=payload
         )
 
@@ -1269,7 +1269,7 @@ def migrate_memberships():
     # 2) Fetch target spaces
     target_spaces = paginated_fetch(
         f"{TARGET_API_URL}/spaces",
-        target_headers
+        target_headers_form
     )
 
     name_to_target_id = {
@@ -1280,7 +1280,7 @@ def migrate_memberships():
     # 3) Fetch target users → ext → numeric ID
     target_users = paginated_fetch(
         f"{TARGET_API_URL}/users",
-        target_headers
+        target_headers_form
     )
 
     ext_to_numeric = {
@@ -1343,7 +1343,7 @@ def migrate_memberships():
         for chunk in [numeric_ids[i:i+100] for i in range(0, len(numeric_ids), 100)]:
             resp = requests.patch(
                 f"{TARGET_API_URL}/spaces/{target_space_id}/users",
-                headers=target_headers,
+                headers=target_headers_form,
                 json={"ids_to_add": chunk}
             )
 
@@ -1376,7 +1376,7 @@ def create_global_space_and_enroll(company_name):
     global_name = f"{company_name} Global Feed"
 
     # Check for existing space by name
-    spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
+    spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers_form)
     existing = next((s for s in spaces if s["name"] == global_name), None)
 
     if existing:
@@ -1393,7 +1393,7 @@ def create_global_space_and_enroll(company_name):
 
         resp = requests.post(
             f"{TARGET_API_URL}/spaces",
-            headers=target_headers,
+            headers=target_headers_form,
             json=payload
         )
 
@@ -1410,7 +1410,7 @@ def create_global_space_and_enroll(company_name):
 
     new_user_ext_ids = st.session_state.new_users  # set of ext IDs
 
-    all_target_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
+    all_target_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers_form)
 
     # Map external → numeric
     ext_to_numeric = {
@@ -1434,7 +1434,7 @@ def create_global_space_and_enroll(company_name):
     for chunk in chunks:
         resp = requests.patch(
             f"{TARGET_API_URL}/spaces/{space_id}/users",
-            headers=target_headers,
+            headers=target_headers_form,
             json={"ids_to_add": chunk}
         )
 
@@ -1579,7 +1579,7 @@ def run_phase2(start_date):
     # Load spaces (match by name)
     ui_log("Fetching spaces…")
     source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
-    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers)
+    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers_form)
 
     space_map = {
         s["id"]: t["id"] for s in source_spaces for t in target_spaces
@@ -1589,7 +1589,7 @@ def run_phase2(start_date):
 
     # Load target users for validation
     ui_log("Fetching target users…")
-    tgt_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers)
+    tgt_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers_form)
     tgt_user_ids = {u.get("external_id") for u in tgt_users if u.get("external_id")}
 
     # Iterate spaces
@@ -1729,7 +1729,7 @@ def run_phase2(start_date):
                 # Gateway upload
                 r = requests.post(
                     f"{gateway_url}/updates",
-                    headers=target_headers,
+                    headers=target_headers_form,
                     data=base_payload,
                     files={"video": video_field},
                     timeout=GATEWAY_TIMEOUT
@@ -1743,7 +1743,7 @@ def run_phase2(start_date):
                     # Retry without video
                     r = requests.post(
                         f"{TARGET_API_URL}/updates",
-                        headers=target_headers,
+                        headers=target_headers_form,
                         data=base_payload,
                         files=None
                     )
@@ -1765,7 +1765,7 @@ def run_phase2(start_date):
 
                 r = requests.post(
                     f"{TARGET_API_URL}/updates",
-                    headers=target_headers,
+                    headers=target_headers_form,
                     data=base_payload,
                     files=file_payload or None
                 )
@@ -1805,7 +1805,7 @@ def run_phase2(start_date):
                 }
                 cr = requests.post(
                     f"{TARGET_API_URL}/updates/{new_update_id}/comments",
-                    headers=target_headers,
+                    headers=target_headers_form,
                     data=cp
                 )
 
@@ -1818,7 +1818,7 @@ def run_phase2(start_date):
 
                 requests.post(
                     f"{TARGET_API_URL}/updates/{new_update_id}/likes",
-                    headers=target_headers,
+                    headers=target_headers_form,
                     data={"user_external_id": luser}
                 )
 
@@ -2033,13 +2033,85 @@ if st.session_state.page == "main":
     st.markdown("### User activity on Workvivo")
     st.markdown("Migrate content & user interactions.")
 
-    migrate_updates = st.toggle("Updates", value=True, key="migrate_updates")
-    migrate_kudos = st.toggle("Kudos", value=True, key="migrate_kudos")
-    migrate_articles = st.toggle("Articles", value=True, key="migrate_articles")
-    migrate_events = st.toggle("Events (not currently supported)", value=False, key="migrate_events")
-    migrate_globalPages = st.toggle("Global Pages", value=True, key="migrate_globalPages")
-    migrate_spacePages = st.toggle("Space Pages (not currently supported)", value=False, key="migrate_spacePages")
+    st.markdown("### Phase 2 – Content Migration Options")
     
+    # ---- UPDATES ----
+    st.markdown("**Updates**")
+    st.session_state.migrate_updates = st.toggle(
+        "Enable Updates Migration",
+        key="migrate_updates",
+        value=True
+    )
+    st.markdown("""
+    - Includes **space posts**, plus all **likes** and **comments** on those posts.  
+    - All Activity Feed posts will be migrated into the **chosen Global Space feed**.
+    """)
+    
+    st.markdown("---")
+    
+    # ---- KUDOS ----
+    st.markdown("**Kudos**")
+    st.session_state.migrate_kudos = st.toggle(
+        "Enable Kudos Migration",
+        key="migrate_kudos",
+        value=True
+    )
+    st.markdown("""
+    - Includes **Kudos posts**, plus all **likes** and **comments** on those posts.  
+    """)
+    
+    st.markdown("---")
+    
+    # ---- ARTICLES ----
+    st.markdown("**Articles**")
+    st.session_state.migrate_articles = st.toggle(
+        "Enable Articles Migration",
+        key="migrate_articles",
+        value=True
+    )
+    st.markdown("""
+    - Includes **articles**, plus all **likes** and **comments** on articles.  
+    - Historic articles will be migrated as a **default system user**, which will appear **deactivated** post-migration.  
+      This ensures legacy articles migrate correctly.
+    """)
+    
+    st.markdown("---")
+    
+    # ---- GLOBAL PAGES ----
+    st.markdown("**Global Pages**")
+    st.session_state.migrate_globalPages = st.toggle(
+        "Enable Global Pages Migration",
+        key="migrate_globalPages",
+        value=True
+    )
+    st.markdown("""
+    - Migrates your organisation-wide **Global Pages**.  
+    - ⚠️ **This is a one-time migration.**  
+      Only select this during the **first** tenant migration.  
+      Do **NOT** run again unless the previously migrated Global Pages have been removed.
+    """)
+    
+    # Ask for organisation name when enabled
+    if st.session_state.migrate_globalPages:
+        st.session_state.global_pages_org_name = st.text_input(
+            "Organisation / Company Name (for Global Page creation)",
+            key="global_pages_org_name",
+            placeholder="e.g. Acme Corporation"
+        )
+    
+    st.markdown("---")
+    
+    # ---- SPACE PAGES ----
+    st.markdown("**Space Pages** (coming soon)")
+    st.session_state.migrate_spacePages = st.toggle(
+        "Enable Space Pages Migration",
+        key="migrate_spacePages",
+        value=False
+    )
+    st.markdown("""
+    - Currently not supported.  
+      Feature will be enabled in a future migration tool release.
+    """)
 
     
     if st.button("▶ Run Migration"):
