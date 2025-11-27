@@ -1901,7 +1901,7 @@ if st.session_state.page == "main":
     # -----------------------------------------------------------
     # Selective User Migration
     # -----------------------------------------------------------
-    st.markdown("### Selective User Migration (not currently supported)")
+    st.markdown("##### Selective User Migration (not currently supported)")
     
     if "use_selected_users" not in st.session_state:
         st.session_state.use_selected_users = False
@@ -1937,7 +1937,7 @@ if st.session_state.page == "main":
         cleaned = [p.strip().strip('"').strip("'") for p in parts]
         return {c for c in cleaned if c}
 
-    st.markdown("#### Selective Space Migration (not currently supported)")
+    st.markdown("##### Selective Space Migration (not currently supported)")
     
     # Ensure session keys exist
     if "use_selected_spaces" not in st.session_state:
