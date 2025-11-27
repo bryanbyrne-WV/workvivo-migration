@@ -2433,7 +2433,7 @@ elif st.session_state.page == "summary":
 
 
     # -------- USERS & SPACES --------
-    st.markdown("<div class='section-header'>Users & Spaces</div>", unsafe_allow_html=True)
+    st.markdown('<div class="purple-section-title">User & Space Summary</div>', unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-item"><strong>Users Migrated:</strong> {s['users_migrated']}</div>
@@ -2443,7 +2443,7 @@ elif st.session_state.page == "summary":
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
     # -------- CONTENT MIGRATED --------
-    st.markdown("<div class='section-header'>Content Migrated</div>", unsafe_allow_html=True)
+    st.markdown('<div class="purple-section-title">Content Summary</div>', unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-item"><strong>Updates Migrated:</strong> {s.get('updates_migrated', 0)}</div>
@@ -2457,7 +2457,8 @@ elif st.session_state.page == "summary":
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
     
     # -------- TIMELINE --------
-    st.markdown("<div class='section-header'>Migration Timeline</div>", unsafe_allow_html=True)
+    st.markdown('<div class="purple-section-title">Migration Timeline</div>', unsafe_allow_html=True)
+
     
     start_pretty = pretty_time(s['start_time'])
     end_pretty = pretty_time(s['end_time'])
@@ -2471,7 +2472,8 @@ elif st.session_state.page == "summary":
 
 
     # -------- FULL LOG --------
-    st.markdown("<div class='section-header'>Full Console Log</div>", unsafe_allow_html=True)
+    st.markdown('<div class="purple-section-title">Full Console Log</div>', unsafe_allow_html=True)
+
 
     st.text_area(
         "Console Output",
