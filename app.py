@@ -1028,13 +1028,13 @@ def selectable_card(key, title, icon, subtitle):
 
     return st.session_state[key]
 
-     def parse_space_list(raw_text: str):
-        if not raw_text:
-            return set()
-    
-        parts = raw_text.split(",")
-        cleaned = [p.strip().strip('"').strip("'") for p in parts]
-        return {c for c in cleaned if c}
+def parse_space_list(raw_text: str):
+    if not raw_text:
+        return set()
+
+    parts = raw_text.split(",")
+    cleaned = [p.strip().strip('"').strip("'") for p in parts]
+    return {c for c in cleaned if c}
 
 # =========================================================
 # PHASE 1 — USERS
