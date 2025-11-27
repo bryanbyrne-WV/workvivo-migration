@@ -2033,24 +2033,22 @@ if st.session_state.page == "main":
     st.markdown("### User activity on Workvivo")
     st.markdown("Migrate content & user interactions.")
 
-    # ------------------------------------------------------------
-    # SELECT / DESELECT ALL BUTTON (SMART VERSION)
+      # ------------------------------------------------------------
+    # SELECT / DESELECT ALL BUTTON (PRIMARY TOGGLES ONLY)
     # ------------------------------------------------------------
     
-    # Determine if *all* toggles are currently ON
-    all_on = all([
+    # Only consider the main Phase 2 content items
+    primary_on = all([
         st.session_state.get("migrate_updates", True),
         st.session_state.get("migrate_kudos", True),
         st.session_state.get("migrate_articles", True),
-        st.session_state.get("migrate_events", False),
-        st.session_state.get("migrate_globalPages", False),
-        st.session_state.get("migrate_spacePages", False),
     ])
     
-    btn_label = "Deselect All Content Toggles" if all_on else "Select All Content Toggles"
+    btn_label = "🔄 Deselect All Content Toggles" if primary_on else "🔄 Select All Content Toggles"
     
     if st.button(btn_label):
-        if all_on:
+    
+        if primary_on:
             # --- DESELECT ALL ---
             st.session_state["migrate_updates"] = False
             st.session_state["migrate_kudos"] = False
@@ -2058,6 +2056,7 @@ if st.session_state.page == "main":
             st.session_state["migrate_events"] = False
             st.session_state["migrate_globalPages"] = False
             st.session_state["migrate_spacePages"] = False
+    
         else:
             # --- SELECT ALL ---
             st.session_state["migrate_updates"] = True
