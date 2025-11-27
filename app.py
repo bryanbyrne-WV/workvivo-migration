@@ -2033,17 +2033,35 @@ if st.session_state.page == "main":
     st.markdown("### User activity on Workvivo")
     st.markdown("Migrate content & user interactions.")
 
-# ------------------------------------------------------------
-# DESELECT ALL PHASE 2 TOGGLES BUTTON
-# ------------------------------------------------------------
-    if st.button("Deselect All Content Toggles"):
-        st.session_state["migrate_updates"] = False
-        st.session_state["migrate_kudos"] = False
-        st.session_state["migrate_articles"] = False
-        st.session_state["migrate_events"] = False
-        st.session_state["migrate_globalPages"] = False
-        st.session_state["migrate_spacePages"] = False
+    # ------------------------------------------------------------
+    # SELECT / DESELECT ALL CONTENT TOGGLES BUTTON
+    # ------------------------------------------------------------
+    btn_label = "🔄 Select All Content Toggles" if not st.session_state.toggle_all_state else "🔄 Deselect All Content Toggles"
+    
+    if st.button(btn_label):
+        if not st.session_state.toggle_all_state:
+            # --- SELECT ALL ---
+            st.session_state["migrate_updates"] = True
+            st.session_state["migrate_kudos"] = True
+            st.session_state["migrate_articles"] = True
+            st.session_state["migrate_events"] = True
+            st.session_state["migrate_globalPages"] = True
+            st.session_state["migrate_spacePages"] = True
+    
+            st.session_state.toggle_all_state = True  # next click will deselect
+        else:
+            # --- DESELECT ALL ---
+            st.session_state["migrate_updates"] = False
+            st.session_state["migrate_kudos"] = False
+            st.session_state["migrate_articles"] = False
+            st.session_state["migrate_events"] = False
+            st.session_state["migrate_globalPages"] = False
+            st.session_state["migrate_spacePages"] = False
+    
+            st.session_state.toggle_all_state = False  # next click will select
+    
         st.rerun()
+
         
     # ---- UPDATES ----
     st.markdown("##### Updates")
