@@ -2409,16 +2409,16 @@ elif st.session_state.page == "summary":
         margin-bottom: 20px;
     }}
     
-    /* 🔮 Purple sub-headers
-    .purple-section-title {{
+    /* 🔮 Purple section headers (LEFT-ALIGNED now) */
+    .purple-section-title {
         font-size: 24px;
         font-weight: 700;
         color: #6A4FCB;
-        text-align: left;     
+        text-align: left;      /* CHANGED FROM CENTER TO LEFT */
         margin-top: 35px;
         margin-bottom: 10px;
-    }}
-    
+    }
+        
     </style>
     
     <div class="summary-title">{title_text}</div>
