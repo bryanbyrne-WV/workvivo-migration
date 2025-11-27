@@ -2036,7 +2036,7 @@ if st.session_state.page == "main":
 # ------------------------------------------------------------
 # DESELECT ALL PHASE 2 TOGGLES BUTTON
 # ------------------------------------------------------------
-    if st.button("🔄 Deselect All Content Toggles"):
+    if st.button("Deselect All Content Toggles"):
         st.session_state["migrate_updates"] = False
         st.session_state["migrate_kudos"] = False
         st.session_state["migrate_articles"] = False
