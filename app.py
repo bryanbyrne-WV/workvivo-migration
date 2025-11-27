@@ -2170,7 +2170,8 @@ if st.session_state.page == "main":
     st.markdown("""
     <style>
     
-    div.green-run-btn .stButton button {
+    /* Unique override for the RUN MIGRATION button only */
+    #run-mig-btn button {
         background-color: #28a745 !important;   /* Green */
         color: white !important;
         border: none !important;
@@ -2179,23 +2180,24 @@ if st.session_state.page == "main":
         font-weight: 700 !important;
         border-radius: 8px !important;
         box-shadow: 0px 2px 6px rgba(0,0,0,0.20);
-        transition: 0.2s !important;
+        transition: 0.2s;
     }
     
-    div.green-run-btn .stButton button:hover {
-        background-color: #218838 !important;
+    #run-mig-btn button:hover {
+        background-color: #218838 !important;  /* darker green */
+        transform: translateY(-1px);
     }
     
-    div.green-run-btn .stButton button:active {
+    #run-mig-btn button:active {
         transform: scale(0.97);
     }
     
     </style>
     """, unsafe_allow_html=True)
 
+
     
-    # --- WRAP THE BUTTON ---
-    st.markdown('<div class="green-run-btn">', unsafe_allow_html=True)
+    st.markdown('<div id="run-mig-btn">', unsafe_allow_html=True)
     
     if st.button("▶ Run Migration"):
         # Smooth scroll
@@ -2213,15 +2215,14 @@ if st.session_state.page == "main":
         st.session_state.cancel_requested = False
         st.session_state.progress = 0
     
-        # Switch page
         st.session_state.page = "running"
-    
         st.rerun()
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-
-
+        
+    
+    
 
     # ============================================================
     # LIVE LOG OUTPUT (optional)
