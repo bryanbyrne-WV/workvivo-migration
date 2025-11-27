@@ -2414,7 +2414,7 @@ elif st.session_state.page == "summary":
     
     
     if is_cancelled:
-    st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
+        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
     
 
 
