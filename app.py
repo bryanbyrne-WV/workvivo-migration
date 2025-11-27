@@ -929,13 +929,7 @@ def ui_log(message):
 # =========================================================
 # HELPER: Fetch users
 # =========================================================
- def parse_space_list(raw_text: str):
-        if not raw_text:
-            return set()
-    
-        parts = raw_text.split(",")
-        cleaned = [p.strip().strip('"').strip("'") for p in parts]
-        return {c for c in cleaned if c}
+
 
 def paginated_fetch(url, headers, take=100):
     """Fetch paginated results from Workvivo API."""
@@ -1033,6 +1027,14 @@ def selectable_card(key, title, icon, subtitle):
     st.checkbox("hidden", key=key, value=selected, label_visibility="collapsed")
 
     return st.session_state[key]
+
+     def parse_space_list(raw_text: str):
+        if not raw_text:
+            return set()
+    
+        parts = raw_text.split(",")
+        cleaned = [p.strip().strip('"').strip("'") for p in parts]
+        return {c for c in cleaned if c}
 
 # =========================================================
 # PHASE 1 — USERS
