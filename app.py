@@ -2036,7 +2036,11 @@ if st.session_state.page == "main":
     # ------------------------------------------------------------
     # SELECT / DESELECT ALL CONTENT TOGGLES BUTTON
     # ------------------------------------------------------------
-    btn_label = "🔄 Select All Content Toggles" if not st.session_state.toggle_all_state else "🔄 Deselect All Content Toggles"
+    btn_label = (
+        "Select All Content Toggles"
+        if not st.session_state.get("toggle_all_state", False)
+        else "Deselect All Content Toggles"
+    )
     
     if st.button(btn_label):
         if not st.session_state.toggle_all_state:
