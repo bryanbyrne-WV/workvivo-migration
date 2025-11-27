@@ -2383,7 +2383,7 @@ elif st.session_state.page == "summary":
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
 
     title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully!!"
-    title_color = "#d9534f" if is_cancelled else "#000000"   # red for cancelled
+    title_color = "#d9534f" if is_cancelled else "#000000"
     title_sub = (
         "The migration was stopped before completion. Partial progress is shown below."
         if is_cancelled
@@ -2392,25 +2392,39 @@ elif st.session_state.page == "summary":
     
     st.markdown(f"""
     <style>
+    
     .summary-title {{
         font-size: 32px;
         font-weight: 800;
-        text-align: left;     /* ← NOT centering */
+        text-align: left;      /* MAIN HEADER LEFT ALIGNED */
         margin-top: 10px;
         margin-bottom: 4px;
         color: {title_color};
     }}
+    
     .summary-sub {{
         font-size: 16px;
-        text-align: left;     /* ← NOT centering */
+        text-align: left;      /* SUB TEXT LEFT ALIGNED */
         color: #555;
         margin-bottom: 20px;
     }}
+    
+    /* 🔮 Purple sub-headers (keep centred as before) */
+    .purple-section-title {{
+        font-size: 24px;
+        font-weight: 700;
+        color: #6A4FCB;
+        text-align: center;     /* KEEP CENTRED */
+        margin-top: 35px;
+        margin-bottom: 10px;
+    }}
+    
     </style>
     
     <div class="summary-title">{title_text}</div>
     <div class="summary-sub">{title_sub}</div>
     """, unsafe_allow_html=True)
+
     
     
     if is_cancelled:
