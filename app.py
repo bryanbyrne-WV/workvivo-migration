@@ -1192,7 +1192,15 @@ def migrate_spaces():
 
     created = skipped = 0
 
+selected_spaces = parse_space_list(st.session_state.get("selected_space_names", ""))
+
     for s in source_spaces:
+        name = s.get("name", "").strip()
+    
+        # If selective migration ON → skip unselected spaces
+        if st.session_state.use_selected_spaces and name not in selected_spaces:
+            ui_log(f"⏭ Skipping space (not selected): {name}")
+            continue
         name = s.get("name", "").strip()
         norm = name.lower()
 
@@ -1263,8 +1271,14 @@ def migrate_memberships():
         if u.get("external_id")
     }
 
+selected_spaces = parse_space_list(st.session_state.get("selected_space_names", ""))
+
     for space in source_spaces:
-        space_name = space["name"].strip()
+        space_name = space.get("name", "").strip()
+    
+        if st.session_state.use_selected_spaces and space_name not in selected_spaces:
+            continue
+            space_name = space["name"].strip()
         norm_name = space_name.lower()
 
         target_space_id = name_to_target_id.get(norm_name)
@@ -1554,7 +1568,12 @@ def run_phase2(start_date):
     tgt_user_ids = {u.get("external_id") for u in tgt_users if u.get("external_id")}
 
     # Iterate spaces
+    selected_spaces = parse_space_list(st.session_state.get("selected_space_names", ""))
+    
     for sp in source_spaces:
+        if st.session_state.use_selected_spaces and sp["name"] not in selected_spaces:
+            ui_log(f"⏭ Skipping space content (not selected): {sp['name']}")
+            continue
         if st.session_state.cancel_requested:
             break
 
@@ -1894,7 +1913,15 @@ if st.session_state.page == "main":
         st.session_state.selected_user_ids = ""
 
 
-    st.markdown("#### Selective Space Migration (Optional)")
+    def parse_space_list(raw_text: str):
+        if not raw_text:
+            return set()
+    
+        parts = raw_text.split(",")
+        cleaned = [p.strip().strip('"').strip("'") for p in parts]
+        return {c for c in cleaned if c}
+
+    st.markdown("#### Selective Space Migration (not currently supported)")
     
     # Ensure session keys exist
     if "use_selected_spaces" not in st.session_state:
