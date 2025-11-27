@@ -75,18 +75,43 @@ def test_workvivo_connection(scim_url, scim_token, api_url, api_token, wv_id):
 
     return True, "✅ All tests passed! API & SCIM are valid."
 
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "Workvivo2025!"
 
+# -----------------------------
+# 24-hour session persistence
+# -----------------------------
+
+import time
+
+SESSION_DURATION = 24 * 60 * 60  # 24 hours
+
+# Initialise session keys once
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
+if "login_time" not in st.session_state:
+    st.session_state.login_time = None
+
+# Auto-expire login after 24 hours
+if st.session_state.authenticated and st.session_state.login_time:
+    if time.time() - st.session_state.login_time > SESSION_DURATION:
+        st.session_state.authenticated = False
+        st.session_state.login_time = None
+        st.info("Your session has expired. Please log in again.")
+        st.rerun()
+
+# Hardcoded admin credentials
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "Workvivo2025!"
+
+# -----------------------------
+# LOGIN SCREEN (if not authenticated)
+# -----------------------------
 if not st.session_state.authenticated:
 
+    # Inline CSS for styling
     st.markdown("""
         <style>
 
-            /* Soft gradient background */
             body {
                 background: linear-gradient(
                     180deg,
@@ -102,14 +127,13 @@ if not st.session_state.authenticated:
                 margin: 1.5rem auto 2rem auto;
             }
 
-
-            /* Title (no logo above it) */
             .login-title {
                 font-size: 2rem;
                 color: #5A3EA6;
                 font-weight: 700;
                 margin-bottom: 0.4rem;
                 margin-top: 1rem;
+                text-align: center;
             }
 
             .login-note {
@@ -117,9 +141,9 @@ if not st.session_state.authenticated:
                 color: #6B56B0;
                 opacity: 0.8;
                 margin-bottom: 2.2rem;
+                text-align: center;
             }
 
-            /* Underline input style */
             .underline-input input {
                 background: transparent !important;
                 border: none !important;
@@ -135,7 +159,6 @@ if not st.session_state.authenticated:
                 opacity: 0.6;
             }
 
-            /* Login button */
             .blue-btn button {
                 width: 100%;
                 background-color: #3C4FA8 !important;
@@ -148,7 +171,6 @@ if not st.session_state.authenticated:
                 margin-top: 1.8rem;
             }
 
-            /* Request access link */
             .request-button {
                 display: inline-block;
                 margin-top: 1.6rem;
@@ -161,19 +183,18 @@ if not st.session_state.authenticated:
         </style>
     """, unsafe_allow_html=True)
 
-    # Centered layout
+    # Wrapper start
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
-    # Centered Workvivo logo above login form
+    # Logo
     st.markdown("""
     <div style="text-align:center; margin-bottom:10px;">
-            <img src="https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png"
-             style="height:170px;">
+        <img src="https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png"
+        style="height:170px;">
     </div>
     """, unsafe_allow_html=True)
-        
 
-    # Header text (no logo)
+    # UI text
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
     st.markdown('<div class="login-note">Please sign in to access the Migration Tool</div>',
                 unsafe_allow_html=True)
@@ -191,15 +212,17 @@ if not st.session_state.authenticated:
     login_button = st.button("LOGIN")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Login logic
+    # Logic
     if login_button:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             st.session_state.authenticated = True
+            st.session_state.login_time = time.time()  # store login timestamp
             st.success("Logged in!")
             st.rerun()
         else:
             st.error("❌ Invalid username or password.")
 
+    # Request Access link
     st.markdown(
         """
         <a class="request-button"
@@ -211,9 +234,8 @@ if not st.session_state.authenticated:
         unsafe_allow_html=True
     )
 
-
     st.markdown('</div>', unsafe_allow_html=True)
-    st.stop()
+    st.stop()   # Prevents app from rendering further when not logged in
 
 
 
