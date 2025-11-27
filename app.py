@@ -1901,7 +1901,7 @@ if st.session_state.page == "main":
     # -----------------------------------------------------------
     # Selective User Migration
     # -----------------------------------------------------------
-    st.markdown("#### Selective User Migration (not currently supported)")
+    st.markdown("### Selective User Migration (not currently supported)")
     
     if "use_selected_users" not in st.session_state:
         st.session_state.use_selected_users = False
