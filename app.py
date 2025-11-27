@@ -2167,29 +2167,26 @@ if st.session_state.page == "main":
         value=True
     )
 
-    # --- GREEN RUN MIGRATION BUTTON STYLE (OVERRIDES PURPLE GLOBAL) ---
     st.markdown("""
     <style>
-
-    /* Make ONLY the Run Migration button green */
-    .stButton.green-run-btn > button {
+    
+    div.green-run-btn .stButton button {
         background-color: #28a745 !important;   /* Green */
         color: white !important;
         border: none !important;
-        padding: 10px 26px !important;
+        padding: 12px 28px !important;
         font-size: 18px !important;
-        font-weight: 600 !important;
-        border-radius: 6px !important;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-        transition: 0.15s !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.20);
+        transition: 0.2s !important;
     }
     
-    .stButton.green-run-btn > button:hover {
-        background-color: #218838 !important;   /* Darker green */
-        transform: translateY(-1px);
+    div.green-run-btn .stButton button:hover {
+        background-color: #218838 !important;
     }
     
-    .stButton.green-run-btn > button:active {
+    div.green-run-btn .stButton button:active {
         transform: scale(0.97);
     }
     
