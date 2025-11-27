@@ -1964,11 +1964,9 @@ if st.session_state.page == "main":
     migrate_updates = st.toggle("Updates", value=True)
     migrate_kudos = st.toggle("Kudos", value=True)
     migrate_articles = st.toggle("Articles", value=True)
-    migrate_events = st.toggle("Events", value=True)
-    migrate_comments = st.toggle("Comments", value=True)
-    migrate_likes = st.toggle("Likes", value=True)
+    migrate_events = st.toggle("Events (Not Currently Supported)", value=False)
     migrate_globalPages = st.toggle("Global Pages", value=True)
-    migrate_spacePages = st.toggle("Space Pages", value=True)
+    migrate_spacePages = st.toggle("Space Pages (Not Currently Supported)", value=False)
 
     
     if st.button("▶ Run Migration"):
