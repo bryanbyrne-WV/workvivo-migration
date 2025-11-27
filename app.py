@@ -2143,54 +2143,56 @@ if st.session_state.page == "main":
         value=True
     )
 
-    # --- GREEN RUN MIGRATION BUTTON STYLE ---
-    st.markdown("""
-    <style>
-    .green-run-btn > button {
-        background-color: #28a745 !important;   /* Green */
-        color: white !important;
-        border: none !important;
-        padding: 10px 26px !important;
-        font-size: 18px !important;
-        font-weight: 600 !important;
-        border-radius: 6px !important;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-        transition: 0.15s;
-    }
-    .green-run-btn > button:hover {
-        background-color: #218838 !important;   /* Darker green */
-        transform: translateY(-1px);
-    }
-    .green-run-btn > button:active {
-        transform: scale(0.97);
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# --- GREEN RUN MIGRATION BUTTON STYLE ---
+st.markdown("""
+<style>
+.green-run-btn > button {
+    background-color: #28a745 !important;   /* Green */
+    color: white !important;
+    border: none !important;
+    padding: 10px 26px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+    transition: 0.15s;
+}
+.green-run-btn > button:hover {
+    background-color: #218838 !important;   /* Darker green */
+    transform: translateY(-1px);
+}
+.green-run-btn > button:active {
+    transform: scale(0.97);
+}
+</style>
+""", unsafe_allow_html=True)
 
-    st.markdown('<div class="green-run-btn">', unsafe_allow_html=True)
-    if st.button("▶ Run Migration"):
-    
-        # Smooth scroll (optional)
-        st.components.v1.html(
-            """
-            <script>
-                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-            """,
-            height=0,
-        )
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-        st.session_state.start_migration = True
-        st.session_state.migration_finished = False
-        st.session_state.cancel_requested = False
-        st.session_state.progress = 0
-    
-        # Switch page
-        st.session_state.page = "running"
-    
-        # ⭐ REQUIRED or user must click twice
-        st.rerun()
+# --- WRAP THE BUTTON ---
+st.markdown('<div class="green-run-btn">', unsafe_allow_html=True)
+
+if st.button("▶ Run Migration"):
+    # Smooth scroll
+    st.components.v1.html(
+        """
+        <script>
+            window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+        </script>
+        """,
+        height=0,
+    )
+
+    st.session_state.start_migration = True
+    st.session_state.migration_finished = False
+    st.session_state.cancel_requested = False
+    st.session_state.progress = 0
+
+    # Switch page
+    st.session_state.page = "running"
+
+    st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 
