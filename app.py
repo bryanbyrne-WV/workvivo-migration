@@ -2033,12 +2033,13 @@ if st.session_state.page == "main":
     st.markdown("### User activity on Workvivo")
     st.markdown("Migrate content & user interactions.")
 
-    migrate_updates = st.toggle("Updates", value=True)
-    migrate_kudos = st.toggle("Kudos", value=True)
-    migrate_articles = st.toggle("Articles", value=True)
-    migrate_events = st.toggle("Events (not currently supported)", value=False)
-    migrate_globalPages = st.toggle("Global Pages", value=True)
-    migrate_spacePages = st.toggle("Space Pages (not currently supported)", value=False)
+    migrate_updates = st.toggle("Updates", value=True, key="migrate_updates")
+    migrate_kudos = st.toggle("Kudos", value=True, key="migrate_kudos")
+    migrate_articles = st.toggle("Articles", value=True, key="migrate_articles")
+    migrate_events = st.toggle("Events (not currently supported)", value=False, key="migrate_events")
+    migrate_globalPages = st.toggle("Global Pages", value=True, key="migrate_globalPages")
+    migrate_spacePages = st.toggle("Space Pages (not currently supported)", value=False, key="migrate_spacePages")
+    
 
     
     if st.button("▶ Run Migration"):
@@ -2201,7 +2202,6 @@ elif st.session_state.page == "running":
         
         # ------------------------------------------------------------
         # Only run PHASE 2 if ANY Phase 2 toggle is enabled
-        # ------------------------------------------------------------
         phase2_enabled = any([
             st.session_state.get("migrate_updates", False),
             st.session_state.get("migrate_kudos", False),
@@ -2213,6 +2213,7 @@ elif st.session_state.page == "running":
             st.session_state.get("migrate_spacePages", False),
         ])
         
+                
         if phase2_enabled:
             steps.append(
                 ("Migrating updates, comments & likes…",
