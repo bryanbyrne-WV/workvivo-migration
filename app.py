@@ -2035,69 +2035,53 @@ if st.session_state.page == "main":
 
     st.markdown("### Phase 2 – Content Migration Options")
     
-    # ---- UPDATES ----
-    st.markdown("**Updates**")
-    st.session_state.migrate_updates = st.toggle(
-        "Enable Updates Migration",
-        key="migrate_updates",
-        value=True
+    st.markdown("#### Updates")
+st.toggle(
+    "Enable Updates Migration",
+    key="migrate_updates",
+    value=True
+)
+st.markdown("""
+*Includes space posts, comments and likes.  
+Activity Feed posts will be migrated into the chosen Global Feed space.*
+""")
+
+st.markdown("#### Kudos")
+st.toggle(
+    "Enable Kudos Migration",
+    key="migrate_kudos",
+    value=True
+)
+st.markdown("""
+*Kudos posts, likes and comments will be migrated.*
+""")
+
+st.markdown("#### Articles")
+st.toggle(
+    "Enable Articles Migration",
+    key="migrate_articles",
+    value=True
+)
+st.markdown("""
+*Historic articles are migrated under a default 'Migration User', which is deactivated after migration.*
+""")
+
+st.markdown("#### Global Pages")
+st.toggle(
+    "Enable Global Pages Migration",
+    key="migrate_globalPages",
+    value=True
+)
+
+# Organisation name input for global pages
+if st.session_state.get("migrate_globalPages"):
+    st.text_input(
+        "Organisation Name (required for global pages)",
+        key="global_pages_org_name",
+        placeholder="Example: Workvivo"
     )
-    st.markdown("""
-    - Includes **space posts**, plus all **likes** and **comments** on those posts.  
-    - All Activity Feed posts will be migrated into the **chosen Global Space feed**.
-    """)
-    
-    st.markdown("---")
-    
-    # ---- KUDOS ----
-    st.markdown("**Kudos**")
-    st.session_state.migrate_kudos = st.toggle(
-        "Enable Kudos Migration",
-        key="migrate_kudos",
-        value=True
-    )
-    st.markdown("""
-    - Includes **Kudos posts**, plus all **likes** and **comments** on those posts.  
-    """)
-    
-    st.markdown("---")
-    
-    # ---- ARTICLES ----
-    st.markdown("**Articles**")
-    st.session_state.migrate_articles = st.toggle(
-        "Enable Articles Migration",
-        key="migrate_articles",
-        value=True
-    )
-    st.markdown("""
-    - Includes **articles**, plus all **likes** and **comments** on articles.  
-    - Historic articles will be migrated as a **default system user**, which will appear **deactivated** post-migration.  
-      This ensures legacy articles migrate correctly.
-    """)
-    
-    st.markdown("---")
-    
-    # ---- GLOBAL PAGES ----
-    st.markdown("**Global Pages**")
-    st.session_state.migrate_globalPages = st.toggle(
-        "Enable Global Pages Migration",
-        key="migrate_globalPages",
-        value=True
-    )
-    st.markdown("""
-    - Migrates your organisation-wide **Global Pages**.  
-    - ⚠️ **This is a one-time migration.**  
-      Only select this during the **first** tenant migration.  
-      Do **NOT** run again unless the previously migrated Global Pages have been removed.
-    """)
-    
-    # Ask for organisation name when enabled
-    if st.session_state.migrate_globalPages:
-        st.session_state.global_pages_org_name = st.text_input(
-            "Organisation / Company Name (for Global Page creation)",
-            key="global_pages_org_name",
-            placeholder="e.g. Acme Corporation"
-        )
+    st.warning("⚠️ This should only be run once. If global pages were migrated previously, delete them first.")
+
     
     st.markdown("---")
     
