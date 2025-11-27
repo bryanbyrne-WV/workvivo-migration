@@ -2166,35 +2166,36 @@ if st.session_state.page == "main":
         value=True
     )
 
+   # ============================================================
+    # RUN MIGRATION BUTTON — GREEN OVERRIDE
+    # ============================================================
     st.markdown("""
     <style>
     
-    /* Unique override for the RUN MIGRATION button only */
-    #run-mig-btn button {
-        background-color: #28a745 !important;   /* Green */
+    /* Force the Run Migration button green (Streamlit v1.30+) */
+    div#run-mig-btn button {
+        background-color: #28a745 !important;
         color: white !important;
         border: none !important;
         padding: 12px 28px !important;
         font-size: 18px !important;
         font-weight: 700 !important;
         border-radius: 8px !important;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.20);
-        transition: 0.2s;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.20) !important;
+        transition: 0.2s !important;
     }
     
-    #run-mig-btn button:hover {
-        background-color: #218838 !important;  /* darker green */
+    div#run-mig-btn button:hover {
+        background-color: #218838 !important;
         transform: translateY(-1px);
     }
     
-    #run-mig-btn button:active {
+    div#run-mig-btn button:active {
         transform: scale(0.97);
     }
     
     </style>
     """, unsafe_allow_html=True)
-
-
     
     st.markdown('<div id="run-mig-btn">', unsafe_allow_html=True)
     
