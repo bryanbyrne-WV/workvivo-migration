@@ -2047,7 +2047,7 @@ if st.session_state.page == "main":
         st.session_state.get("migrate_spacePages", False),
     ])
     
-    btn_label = "🔄 Deselect All Content Toggles" if all_on else "🔄 Select All Content Toggles"
+    btn_label = "Deselect All Content Toggles" if all_on else "Select All Content Toggles"
     
     if st.button(btn_label):
         if all_on:
