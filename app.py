@@ -929,6 +929,13 @@ def ui_log(message):
 # =========================================================
 # HELPER: Fetch users
 # =========================================================
+ def parse_space_list(raw_text: str):
+        if not raw_text:
+            return set()
+    
+        parts = raw_text.split(",")
+        cleaned = [p.strip().strip('"').strip("'") for p in parts]
+        return {c for c in cleaned if c}
 
 def paginated_fetch(url, headers, take=100):
     """Fetch paginated results from Workvivo API."""
@@ -1929,13 +1936,6 @@ if st.session_state.page == "main":
         st.session_state.selected_user_ids = ""
 
 
-    def parse_space_list(raw_text: str):
-        if not raw_text:
-            return set()
-    
-        parts = raw_text.split(",")
-        cleaned = [p.strip().strip('"').strip("'") for p in parts]
-        return {c for c in cleaned if c}
 
     st.markdown("##### Selective Space Migration (not currently supported)")
     
