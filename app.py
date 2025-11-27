@@ -2238,8 +2238,16 @@ elif st.session_state.page == "running":
         # Migration is still running
         if st.button("CANCEL"):
             st.session_state.cancel_requested = True
+            st.session_state.summary_type = "cancelled"
             ui_log("🛑 Cancel requested by user…")
+        
+            # Store end time
+            st.session_state.summary["end_time"] = datetime.utcnow()
+        
+            # Redirect to summary page
+            st.session_state.page = "summary"
             st.rerun()
+
     else:
         # Migration complete or cancelled → show FINISH
         if st.button("✔ FINISH"):
