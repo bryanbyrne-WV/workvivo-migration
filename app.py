@@ -1194,9 +1194,9 @@ def migrate_spaces():
 
 selected_spaces = parse_space_list(st.session_state.get("selected_space_names", ""))
 
-    for s in source_spaces:
-        name = s.get("name", "").strip()
-    
+        for s in source_spaces:
+            name = s.get("name", "").strip()
+        
         # If selective migration ON → skip unselected spaces
         if st.session_state.use_selected_spaces and name not in selected_spaces:
             ui_log(f"⏭ Skipping space (not selected): {name}")
