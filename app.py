@@ -491,13 +491,13 @@ st.markdown("""
     font-size: 14px;
     color: #666;
 }
-</style>
-""", unsafe_allow_html=True)
+
 
 st.markdown("""
 <style>
 
-div.run-mig-btn button[kind="secondary"] {
+/* OVERRIDE the purple theme for THIS one button only */
+#run-mig-btn button[kind="primary"] {
     background-color: #28a745 !important;
     color: white !important;
     border: none !important;
@@ -505,16 +505,16 @@ div.run-mig-btn button[kind="secondary"] {
     font-size: 18px !important;
     font-weight: 700 !important;
     border-radius: 8px !important;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.20);
-    transition: 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
 }
 
-div.run-mig-btn button[kind="secondary"]:hover {
+#run-mig-btn button[kind="primary"]:hover {
     background-color: #218838 !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
+
 
 
 
