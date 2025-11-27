@@ -717,10 +717,8 @@ if "config_saved" not in st.session_state:
         clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
         st.session_state["TARGET_SCIM_URL"] = f"https://{clean_target}/scim/v2/scim/Users/"
 
-        clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-        st.session_state["SOURCE_API_URL"] = f"https://{clean_source}/api/v1"
-        clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-        st.session_state["TARGET_API_URL"] = f"https://{clean_target}/api/v1"
+        st.session_state["SOURCE_API_URL"] = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
+        st.session_state["TARGET_API_URL"] = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
 
         st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
         st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
