@@ -2393,41 +2393,41 @@ elif st.session_state.page == "summary":
    st.markdown(f"""
     <style>
 
-    /* MAIN RESULT TITLE (Success / Cancelled) */
+    st.markdown(f"""
+    <style>
+    
     .summary-title {{
         font-size: 32px;
         font-weight: 800;
-        text-align: left;      /* LEFT ALIGNED */
+        text-align: left;
         margin-top: 10px;
         margin-bottom: 4px;
         color: {title_color};
     }}
-
-    /* Subtitle beneath main result */
+    
     .summary-sub {{
         font-size: 16px;
-        text-align: left;      /* LEFT ALIGNED */
+        text-align: left;
         color: #555;
         margin-bottom: 20px;
     }}
-
-    /* 🔮 Purple section headers (LEFT-ALIGNED) */
+    
+    /* 🔮 Purple left-aligned section headers */
     .purple-section-title {{
         font-size: 24px;
         font-weight: 700;
-        color: #6A4FCB;        /* Purple */
-        text-align: left;      /* KEY FIX */
+        color: #6A4FCB;
+        text-align: left;
         margin-top: 35px;
         margin-bottom: 10px;
     }}
-
+    
     </style>
-
+    
     <div class="summary-title">{title_text}</div>
     <div class="summary-sub">{title_sub}</div>
     """, unsafe_allow_html=True)
 
-    
     
     if is_cancelled:
         st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
