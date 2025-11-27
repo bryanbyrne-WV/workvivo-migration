@@ -79,53 +79,29 @@ def test_workvivo_connection(scim_url, scim_token, api_url, api_token, wv_id):
 # -----------------------------
 # 24-hour session persistence
 # -----------------------------
+
 import time
 
 SESSION_DURATION = 24 * 60 * 60  # 24 hours
 
-# Create login state keys
+# Initialise session keys once
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if "login_time" not in st.session_state:
     st.session_state.login_time = None
 
-# Expire session after 24 hours
-if st.session_state.authenticated:
-    if st.session_state.login_time:
-        if time.time() - st.session_state.login_time > SESSION_DURATION:
-            st.session_state.authenticated = False
-            st.session_state.login_time = None
-            st.info("Your session has expired. Please log in again.")
-            st.rerun()
+# Auto-expire session ONLY if login_time is set
+if st.session_state.authenticated and st.session_state.login_time:
+    if time.time() - st.session_state.login_time > SESSION_DURATION:
+        st.session_state.authenticated = False
+        st.session_state.login_time = None
+        st.info("Your session has expired. Please log in again.")
+        st.rerun()
 
-# -----------------------------
-# LOGIN SCREEN
-# -----------------------------
+# Hardcoded admin credentials
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
-
-def show_login():
-    # ---- your full login UI exactly as it already is ----
-    # (do NOT modify it — paste your existing login block here)
-    # IMPORTANT: After successful login, set login_time:
-    # st.session_state.login_time = time.time()
-    # st.rerun()
-    pass
-
-# -----------------------------
-# AUTH GUARD
-# -----------------------------
-if not st.session_state.authenticated:
-    show_login()
-    st.stop()
-
-# -----------------------------
-# PAGE ROUTING INITIALISATION
-# -----------------------------
-if "page" not in st.session_state:
-    # User is authenticated, so send them to main workflow
-    st.session_state.page = "config"
 
 # -----------------------------
 # LOGIN SCREEN (if not logged in)
@@ -2553,4 +2529,3 @@ elif st.session_state.page == "summary":
                 file_name="MigrationContentLog.csv",
                 mime="text/csv"
             )
-
