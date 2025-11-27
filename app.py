@@ -1541,7 +1541,7 @@ from io import StringIO
 MAX_VIDEO_MB = 128  # max supported
 GATEWAY_TIMEOUT = 180
 
-def get_gateway_url_from_workvivo_id(wv_id: str):
+def get_gateway_url_from_id(wv_id: str):
     """Return correct Gateway base URL based on Workvivo ID prefix."""
     if not wv_id or len(wv_id) < 3:
         return "https://gateway.workvivo.com/v1"
