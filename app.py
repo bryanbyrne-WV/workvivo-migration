@@ -1192,23 +1192,31 @@ def migrate_spaces():
 
     created = skipped = 0
 
-selected_spaces = parse_space_list(st.session_state.get("selected_space_names", ""))
+    # ------------------------------------------------------------
+    # OPTIONAL: Selective Space Migration
+    # ------------------------------------------------------------
+    selected_spaces = parse_space_list(
+        st.session_state.get("selected_space_names", "")
+    )
 
-        for s in source_spaces:
-            name = s.get("name", "").strip()
-        
+    for s in source_spaces:
+        name = s.get("name", "").strip()
+
         # If selective migration ON → skip unselected spaces
         if st.session_state.use_selected_spaces and name not in selected_spaces:
             ui_log(f"⏭ Skipping space (not selected): {name}")
             continue
-        name = s.get("name", "").strip()
+
         norm = name.lower()
 
+        # Skip if this space already exists on target
         if norm in target_names:
             skipped += 1
+            st.session_state.summary["spaces_skipped"] += 1
             ui_log(f"⚠️ Space already exists: {name}")
             continue
 
+        # Create space payload
         payload = {
             "user_external_id": SPACE_CREATOR_EXTERNAL_ID,
             "name": name,
@@ -1226,15 +1234,16 @@ selected_spaces = parse_space_list(st.session_state.get("selected_space_names", 
         if resp.status_code in (200, 201):
             created += 1
             st.session_state.summary["spaces_created"] += 1
-            new_space_id = resp.json()["data"]["id"]     # ⭐ NEW
-            st.session_state.new_spaces.add(new_space_id) # ⭐ NEW
+
+            new_space_id = resp.json()["data"]["id"]
+            st.session_state.new_spaces.add(new_space_id)
+
             ui_log(f"✅ Created space '{name}'")
         else:
+            skipped += 1
             ui_log(f"❌ Failed creating '{name}': {resp.text}")
-        
 
     ui_log(f"=== SPACE MIGRATION END — created={created}, skipped={skipped} ===")
-
 
 # =========================================================
 # PHASE 1C — MEMBERSHIPS
