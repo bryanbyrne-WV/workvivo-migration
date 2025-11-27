@@ -491,13 +491,13 @@ st.markdown("""
     font-size: 14px;
     color: #666;
 }
-
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
 
-/* OVERRIDE the purple theme for THIS one button only */
-#run-mig-btn button[kind="primary"] {
+div.green-run-btn button[kind="secondary"] {
     background-color: #28a745 !important;
     color: white !important;
     border: none !important;
@@ -505,10 +505,11 @@ st.markdown("""
     font-size: 18px !important;
     font-weight: 700 !important;
     border-radius: 8px !important;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.20);
+    transition: 0.2s;
 }
 
-#run-mig-btn button[kind="primary"]:hover {
+div.green-run-btn button[kind="secondary"]:hover {
     background-color: #218838 !important;
 }
 
@@ -2166,36 +2167,35 @@ if st.session_state.page == "main":
         value=True
     )
 
-   # ============================================================
-    # RUN MIGRATION BUTTON — GREEN OVERRIDE
-    # ============================================================
     st.markdown("""
     <style>
     
-    /* Force the Run Migration button green (Streamlit v1.30+) */
-    div#run-mig-btn button {
-        background-color: #28a745 !important;
+    /* Unique override for the RUN MIGRATION button only */
+    #run-mig-btn button {
+        background-color: #28a745 !important;   /* Green */
         color: white !important;
         border: none !important;
         padding: 12px 28px !important;
         font-size: 18px !important;
         font-weight: 700 !important;
         border-radius: 8px !important;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.20) !important;
-        transition: 0.2s !important;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.20);
+        transition: 0.2s;
     }
     
-    div#run-mig-btn button:hover {
-        background-color: #218838 !important;
+    #run-mig-btn button:hover {
+        background-color: #218838 !important;  /* darker green */
         transform: translateY(-1px);
     }
     
-    div#run-mig-btn button:active {
+    #run-mig-btn button:active {
         transform: scale(0.97);
     }
     
     </style>
     """, unsafe_allow_html=True)
+
+
     
     st.markdown('<div id="run-mig-btn">', unsafe_allow_html=True)
     
