@@ -2304,6 +2304,8 @@ elif st.session_state.page == "running":
             st.session_state.get("migrate_spacePages", False),
         ])
         
+        btn_label = "🔄 Deselect All Content Toggles" if all_on else "Select All Content Toggles"
+
                 
         if phase2_enabled:
             steps.append(
