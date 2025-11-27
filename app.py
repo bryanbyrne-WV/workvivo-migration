@@ -2409,12 +2409,12 @@ elif st.session_state.page == "summary":
         margin-bottom: 20px;
     }}
     
-    /* 🔮 Purple sub-headers (keep centred as before) */
+    /* 🔮 Purple sub-headers
     .purple-section-title {{
         font-size: 24px;
         font-weight: 700;
         color: #6A4FCB;
-        text-align: center;     /* KEEP CENTRED */
+        text-align: left;     
         margin-top: 35px;
         margin-bottom: 10px;
     }}
