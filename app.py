@@ -2034,21 +2034,31 @@ if st.session_state.page == "main":
     st.markdown("Migrate content & user interactions.")
 
     # ------------------------------------------------------------
-    # SELECT / DESELECT ALL CONTENT TOGGLES BUTTON
+    # SELECT / DESELECT ALL BUTTON (SMART VERSION)
     # ------------------------------------------------------------
-    # ------------------------------------------------------------
-    # INITIALISE SELECT/DESELECT TOGGLE STATE
-    # ------------------------------------------------------------
-    if "toggle_all_state" not in st.session_state:
-        st.session_state.toggle_all_state = False   # False = next click selects all
-        btn_label = (
-            "Select All Content Toggles"
-            if not st.session_state.get("toggle_all_state", False)
-            else "Deselect All Content Toggles"
-        )
+    
+    # Determine if *all* toggles are currently ON
+    all_on = all([
+        st.session_state.get("migrate_updates", True),
+        st.session_state.get("migrate_kudos", True),
+        st.session_state.get("migrate_articles", True),
+        st.session_state.get("migrate_events", False),
+        st.session_state.get("migrate_globalPages", False),
+        st.session_state.get("migrate_spacePages", False),
+    ])
+    
+    btn_label = "🔄 Deselect All Content Toggles" if all_on else "🔄 Select All Content Toggles"
     
     if st.button(btn_label):
-        if not st.session_state.toggle_all_state:
+        if all_on:
+            # --- DESELECT ALL ---
+            st.session_state["migrate_updates"] = False
+            st.session_state["migrate_kudos"] = False
+            st.session_state["migrate_articles"] = False
+            st.session_state["migrate_events"] = False
+            st.session_state["migrate_globalPages"] = False
+            st.session_state["migrate_spacePages"] = False
+        else:
             # --- SELECT ALL ---
             st.session_state["migrate_updates"] = True
             st.session_state["migrate_kudos"] = True
@@ -2057,19 +2067,8 @@ if st.session_state.page == "main":
             st.session_state["migrate_globalPages"] = True
             st.session_state["migrate_spacePages"] = True
     
-            st.session_state.toggle_all_state = True  # next click will deselect
-        else:
-            # --- DESELECT ALL ---
-            st.session_state["migrate_updates"] = False
-            st.session_state["migrate_kudos"] = False
-            st.session_state["migrate_articles"] = False
-            st.session_state["migrate_events"] = False
-            st.session_state["migrate_globalPages"] = False
-            st.session_state["migrate_spacePages"] = False
-    
-            st.session_state.toggle_all_state = False  # next click will select
-    
         st.rerun()
+
 
         
     # ---- UPDATES ----
@@ -2303,9 +2302,7 @@ elif st.session_state.page == "running":
             st.session_state.get("migrate_globalPages", False),
             st.session_state.get("migrate_spacePages", False),
         ])
-        
-        btn_label = "🔄 Deselect All Content Toggles" if all_on else "Select All Content Toggles"
-
+    
                 
         if phase2_enabled:
             steps.append(
