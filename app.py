@@ -496,25 +496,26 @@ st.markdown("""
 
 st.markdown("""
 <style>
-div.green-run-btn > button.stButton {
-    all: unset !important;
-}
 
-div.green-run-btn > button {
+div.green-run-btn button[kind="secondary"] {
     background-color: #28a745 !important;
     color: white !important;
+    border: none !important;
     padding: 12px 28px !important;
     font-size: 18px !important;
     font-weight: 700 !important;
     border-radius: 8px !important;
-    border: none !important;
-    cursor: pointer !important;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.20);
+    transition: 0.2s;
 }
-div.green-run-btn > button:hover {
+
+div.green-run-btn button[kind="secondary"]:hover {
     background-color: #218838 !important;
 }
+
 </style>
 """, unsafe_allow_html=True)
+
 
 
         # ============================================================
