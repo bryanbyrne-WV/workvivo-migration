@@ -1268,7 +1268,7 @@ def migrate_memberships():
         for s in target_spaces
     }
 
-    # 3) Fetch target users → map ext → numeric
+    # 3) Fetch target users → ext → numeric ID
     target_users = paginated_fetch(
         f"{TARGET_API_URL}/users",
         target_headers
@@ -1280,14 +1280,21 @@ def migrate_memberships():
         if u.get("external_id")
     }
 
-selected_spaces = parse_space_list(st.session_state.get("selected_space_names", ""))
+    # ------------------------------------------------------------
+    # OPTIONAL: Selective Space Migration
+    # ------------------------------------------------------------
+    selected_spaces = parse_space_list(
+        st.session_state.get("selected_space_names", "")
+    )
 
     for space in source_spaces:
         space_name = space.get("name", "").strip()
-    
+
+        # Skip spaces not selected
         if st.session_state.use_selected_spaces and space_name not in selected_spaces:
+            ui_log(f"⏭ Skipping memberships for unselected space '{space_name}'")
             continue
-            space_name = space["name"].strip()
+
         norm_name = space_name.lower()
 
         target_space_id = name_to_target_id.get(norm_name)
@@ -1320,7 +1327,7 @@ selected_spaces = parse_space_list(st.session_state.get("selected_space_names", 
 
         # Skip membership unless space was newly created
         if target_space_id not in st.session_state.new_spaces:
-            ui_log(f"⏭ Skipping memberships for existing space '{space_name}'")
+            ui_log(f"⏭ Skipping memberships: existing target space '{space_name}'")
             continue
 
         # 5) PATCH memberships to target
@@ -1332,9 +1339,9 @@ selected_spaces = parse_space_list(st.session_state.get("selected_space_names", 
             )
 
             if resp.status_code in (200, 201):
-                ui_log(f"   ✅ Added {len(chunk)} members")
+                ui_log(f"   ✅ Added {len(chunk)} members to '{space_name}'")
             else:
-                ui_log(f"   ❌ Failed patch: {resp.text[:150]}")
+                ui_log(f"   ❌ Failed adding members: {resp.text[:150]}")
 
     ui_log("=== MEMBERSHIP MIGRATION END ===")
 
