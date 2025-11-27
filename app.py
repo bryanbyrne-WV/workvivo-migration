@@ -1550,7 +1550,7 @@ def get_gateway_url_from_id(wv_id: str):
 
     if prefix == "100":
         # US cluster
-        return "https:/api-gateway.workvivo.us/v1"
+        return "https://api-gateway.workvivo.us/v1"
 
     if prefix == "300":
         # EU2 cluster
