@@ -2132,7 +2132,7 @@ if st.session_state.page == "main":
         )
         st.warning(
             "⚠️ Global Pages should only be migrated **once**. "
-            "If they were already migrated previously, delete old pages first."
+            "If they were already migrated previously, delete old Global Pages first."
         )
     
     # ---- SPACE PAGES ----
