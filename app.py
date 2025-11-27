@@ -2028,74 +2028,70 @@ if st.session_state.page == "main":
 
 
     # ============================================================
-    # 👥 User activity on Workvivo
-    # ============================================================
-    st.markdown("### User activity on Workvivo")
-    st.markdown("Migrate content & user interactions.")
+# 👥 User activity on Workvivo
+# ============================================================
+st.markdown("### User activity on Workvivo")
+st.markdown("Migrate content & user interactions.")
 
-    st.markdown("### Phase 2 – Content Migration Options")
-    
-    st.markdown("#### Updates")
+# ---- UPDATES ----
+st.markdown("#### 📝 Updates")
 st.toggle(
     "Enable Updates Migration",
     key="migrate_updates",
     value=True
 )
 st.markdown("""
-*Includes space posts, comments and likes.  
-Activity Feed posts will be migrated into the chosen Global Feed space.*
+*Includes space posts, comments, and likes.*  
+*All Activity Feed posts will be migrated into the chosen Global Feed space.*
 """)
 
-st.markdown("#### Kudos")
+# ---- KUDOS ----
+st.markdown("#### ⭐ Kudos")
 st.toggle(
     "Enable Kudos Migration",
     key="migrate_kudos",
     value=True
 )
-st.markdown("""
-*Kudos posts, likes and comments will be migrated.*
-""")
+st.markdown("*Includes kudos posts, comments, and likes.*")
 
-st.markdown("#### Articles")
+# ---- ARTICLES ----
+st.markdown("#### 📄 Articles")
 st.toggle(
     "Enable Articles Migration",
     key="migrate_articles",
     value=True
 )
 st.markdown("""
-*Historic articles are migrated under a default 'Migration User', which is deactivated after migration.*
+*Historic articles are migrated under a temporary 'Migration User'.  
+This user will be deactivated after migration.*
 """)
 
-st.markdown("#### Global Pages")
+# ---- GLOBAL PAGES ----
+st.markdown("#### 🌐 Global Pages")
 st.toggle(
     "Enable Global Pages Migration",
     key="migrate_globalPages",
-    value=True
+    value=False
 )
 
-# Organisation name input for global pages
 if st.session_state.get("migrate_globalPages"):
     st.text_input(
-        "Organisation Name (required for global pages)",
+        "Organisation Name for Global Pages",
         key="global_pages_org_name",
         placeholder="Example: Workvivo"
     )
-    st.warning("⚠️ This should only be run once. If global pages were migrated previously, delete them first.")
-
-    
-    st.markdown("---")
-    
-    # ---- SPACE PAGES ----
-    st.markdown("**Space Pages** (coming soon)")
-    st.session_state.migrate_spacePages = st.toggle(
-        "Enable Space Pages Migration",
-        key="migrate_spacePages",
-        value=False
+    st.warning(
+        "⚠️ Global Pages should only be migrated **once**. "
+        "If they were already migrated previously, delete old pages first."
     )
-    st.markdown("""
-    - Currently not supported.  
-      Feature will be enabled in a future migration tool release.
-    """)
+
+# ---- SPACE PAGES ----
+st.markdown("#### 📘 Space Pages (not supported)")
+st.toggle(
+    "Enable Space Pages Migration",
+    key="migrate_spacePages",
+    value=False
+)
 
     
     if st.button("▶ Run Migration"):
