@@ -497,7 +497,7 @@ st.markdown("""
 st.markdown("""
 <style>
 
-div.green-run-btn button[kind="secondary"] {
+div.run-mig-btn button[kind="secondary"] {
     background-color: #28a745 !important;
     color: white !important;
     border: none !important;
@@ -509,7 +509,7 @@ div.green-run-btn button[kind="secondary"] {
     transition: 0.2s;
 }
 
-div.green-run-btn button[kind="secondary"]:hover {
+div.run-mig-btn button[kind="secondary"]:hover {
     background-color: #218838 !important;
 }
 
