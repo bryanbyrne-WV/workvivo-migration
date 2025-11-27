@@ -19,14 +19,21 @@ def get_api_url_from_workvivo_id(wv_id: str):
 
     prefix = str(wv_id).strip()[:3]
 
-    if prefix == "300":
-        return "https://api.eu2.workvivo.com/v1"
     if prefix == "100":
+        # US cluster
         return "https://api.workvivo.us/v1"
+
+    if prefix == "300":
+        # EU2 cluster
+        return "https://api.eu2.workvivo.com/v1"
+
     if prefix == "400":
+        # US2 cluster
         return "https://api.us2.workvivo.us/v1"
 
+    # Default EU cluster
     return "https://api.workvivo.com/v1"
+
 
 def test_workvivo_connection(scim_url, scim_token, api_url, api_token, wv_id):
     """Return (ok, message) with safe, non-detailed error responses."""
