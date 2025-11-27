@@ -1541,21 +1541,27 @@ from io import StringIO
 MAX_VIDEO_MB = 128  # max supported
 GATEWAY_TIMEOUT = 180
 
-def get_gateway_url_from_id(wv_id: str):
-    """Return the correct Gateway URL."""
-    if not wv_id:
-        return "https://api.gateway.workvivo.com/v1"
+def get_gateway_url_from_workvivo_id(wv_id: str):
+    """Return correct Gateway base URL based on Workvivo ID prefix."""
+    if not wv_id or len(wv_id) < 3:
+        return "https://gateway.workvivo.com/v1"
 
     prefix = str(wv_id).strip()[:3]
 
     if prefix == "100":
-        return "https://api.gateway.workvivo.us/v1"
-    if prefix == "400":
-        return "https://api.gateway.us2.workvivo.us/v1"
-    if prefix == "300":
-        return "https://api.gateway.eu2.workvivo.com/v1"
+        # US cluster
+        return "https:/api-gateway.workvivo.us/v1"
 
-    return "https://api.gateway.workvivo.com/v1"
+    if prefix == "300":
+        # EU2 cluster
+        return "https://api-gateway.eu2.workvivo.com/v1"
+
+    if prefix == "400":
+        # US2 cluster
+        return "https://api-gateway.us2.workvivo.us/v1"
+
+    # Default EU cluster
+    return "https://api-gateway.workvivo.com/v1"
 
 
 # ------------------------------------------------------------
