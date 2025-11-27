@@ -2379,20 +2379,31 @@ elif st.session_state.page == "summary":
 
     s = st.session_state.summary
 
-    # ======= PAGE TITLE =======
-    is_cancelled = st.session_state.get("summary_type") == "cancelled"
+# -------------------------------------------------------
+# SUMMARY PAGE HEADER LOGIC
+# -------------------------------------------------------
+is_cancelled = st.session_state.get("summary_type") == "cancelled"
 
-    title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully!!"
-    title_color = "#d9534f" if is_cancelled else "#000000"
-    title_sub = (
-        "The migration was stopped before completion. Partial progress is shown below."
-        if is_cancelled
-        else "All migration steps completed successfully."
-    )
-    
+title_text = (
+    "Migration Cancelled"
+    if is_cancelled
+    else "Migration Completed Successfully"
+)
+
+title_sub = (
+    "The migration was cancelled early. Review logs and warnings below."
+    if is_cancelled
+    else "All migration tasks completed successfully."
+)
+
+# Green for success, red for cancelled
+title_color = "#CC0000" if is_cancelled else "#4CAF50"
+
+# -------------------------------------------------------
+# SUMMARY PAGE CSS + HEADER
+# -------------------------------------------------------
 st.markdown(f"""
 <style>
-
 .summary-title {{
     font-size: 32px;
     font-weight: 800;
@@ -2406,10 +2417,9 @@ st.markdown(f"""
     font-size: 16px;
     text-align: left;
     color: #555;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }}
 
-/* 🔮 Purple left-aligned section headers */
 .purple-section-title {{
     font-size: 24px;
     font-weight: 700;
@@ -2418,7 +2428,6 @@ st.markdown(f"""
     margin-top: 35px;
     margin-bottom: 10px;
 }}
-
 </style>
 
 <div class="summary-title">{title_text}</div>
