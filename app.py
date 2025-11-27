@@ -2129,14 +2129,27 @@ elif st.session_state.page == "running":
             ("Creating Global Feed…", lambda: create_global_space_and_enroll(st.session_state.phase1_company)),
         ]
         
-        # Only run PHASE 2 if Updates toggle is enabled
-        if st.session_state.get("migrate_updates", True):
+        # ------------------------------------------------------------
+        # Only run PHASE 2 if ANY Phase 2 toggle is enabled
+        # ------------------------------------------------------------
+        phase2_enabled = any([
+            st.session_state.get("migrate_updates", False),
+            st.session_state.get("migrate_kudos", False),
+            st.session_state.get("migrate_articles", False),
+            st.session_state.get("migrate_events", False),
+            st.session_state.get("migrate_comments", False),
+            st.session_state.get("migrate_likes", False),
+            st.session_state.get("migrate_globalPages", False),
+            st.session_state.get("migrate_spacePages", False),
+        ])
+        
+        if phase2_enabled:
             steps.append(
                 ("Migrating updates, comments & likes…",
                  lambda: run_phase2(st.session_state.migration_start_date))
             )
         else:
-            ui_log("⏭ Skipping Phase 2 (Updates toggle is OFF)")
+            ui_log("⏭ Skipping Phase 2 (all Phase 2 toggles are OFF)")
 
 
         total_steps = len(steps)
