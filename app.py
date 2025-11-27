@@ -494,6 +494,29 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+div.green-run-btn > button.stButton {
+    all: unset !important;
+}
+
+div.green-run-btn > button {
+    background-color: #28a745 !important;
+    color: white !important;
+    padding: 12px 28px !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+div.green-run-btn > button:hover {
+    background-color: #218838 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
         # ============================================================
 # CLEAN CONFIG FORM — FINAL WORKING VERSION
 # ============================================================
