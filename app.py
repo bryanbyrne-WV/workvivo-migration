@@ -2379,66 +2379,65 @@ elif st.session_state.page == "summary":
 
     s = st.session_state.summary
 
-# -------------------------------------------------------
-# SUMMARY PAGE HEADER LOGIC
-# -------------------------------------------------------
-is_cancelled = st.session_state.get("summary_type") == "cancelled"
+    # -------------------------------------------------------
+    # SUMMARY PAGE HEADER LOGIC
+    # -------------------------------------------------------
+    is_cancelled = st.session_state.get("summary_type") == "cancelled"
 
-title_text = (
-    "Migration Cancelled"
-    if is_cancelled
-    else "Migration Completed Successfully"
-)
+    title_text = (
+        "Migration Cancelled"
+        if is_cancelled
+        else "Migration Completed Successfully"
+    )
 
-title_sub = (
-    "The migration was cancelled early. Review logs and warnings below."
-    if is_cancelled
-    else "All migration tasks completed successfully."
-)
+    title_sub = (
+        "The migration was cancelled early. Review logs and warnings below."
+        if is_cancelled
+        else "All migration tasks completed successfully."
+    )
 
-# Green for success, red for cancelled
-title_color = "#CC0000" if is_cancelled else "#4CAF50"
+    # Green for success, red for cancelled
+    title_color = "#CC0000" if is_cancelled else "#4CAF50"
 
-# -------------------------------------------------------
-# SUMMARY PAGE CSS + HEADER
-# -------------------------------------------------------
-st.markdown(f"""
-<style>
-.summary-title {{
-    font-size: 32px;
-    font-weight: 800;
-    text-align: left;
-    margin-top: 10px;
-    margin-bottom: 4px;
-    color: {title_color};
-}}
 
-.summary-sub {{
-    font-size: 16px;
-    text-align: left;
-    color: #555;
-    margin-bottom: 25px;
-}}
+    # -------------------------------------------------------
+    # SUMMARY PAGE CSS + HEADER
+    # -------------------------------------------------------
+    st.markdown(f"""
+    <style>
+    .summary-title {{
+        font-size: 32px;
+        font-weight: 800;
+        text-align: left;
+        margin-top: 10px;
+        margin-bottom: 4px;
+        color: {title_color};
+    }}
 
-.purple-section-title {{
-    font-size: 24px;
-    font-weight: 700;
-    color: #6A4FCB;
-    text-align: left;
-    margin-top: 35px;
-    margin-bottom: 10px;
-}}
-</style>
+    .summary-sub {{
+        font-size: 16px;
+        text-align: left;
+        color: #555;
+        margin-bottom: 25px;
+    }}
 
-<div class="summary-title">{title_text}</div>
-<div class="summary-sub">{title_sub}</div>
-""", unsafe_allow_html=True)
+    .purple-section-title {{
+        font-size: 24px;
+        font-weight: 700;
+        color: #6A4FCB;
+        text-align: left;
+        margin-top: 35px;
+        margin-bottom: 10px;
+    }}
+    </style>
 
-    
-if is_cancelled:
-    st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
-    
+    <div class="summary-title">{title_text}</div>
+    <div class="summary-sub">{title_sub}</div>
+    """, unsafe_allow_html=True)
 
+
+    if is_cancelled:
+        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
 
     # -------- USERS & SPACES --------
     st.markdown('<div class="purple-section-title">Users & Spaces</div>', unsafe_allow_html=True)
