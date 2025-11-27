@@ -2380,45 +2380,43 @@ elif st.session_state.page == "summary":
     s = st.session_state.summary
 
     # ======= PAGE TITLE =======
-    title_text = (
-        "Migration Completed Successfully!!"
-        if st.session_state.get("summary_type") != "cancelled"
-        else "Migration Cancelled"
-    )
+    is_cancelled = st.session_state.get("summary_type") == "cancelled"
 
+    title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully!!"
+    title_color = "#d9534f" if is_cancelled else "#000000"   # red for cancelled
+    title_sub = (
+        "The migration was stopped before completion. Partial progress is shown below."
+        if is_cancelled
+        else "All migration steps completed successfully."
+    )
+    
     st.markdown(f"""
     <style>
-        .summary-title {{
-            font-size: 40px;
-            font-weight: 800;
-            color: #000000;
-            text-align: center;
-            margin-bottom: 10px;
-            margin-top: 5px;
-        }}
-
-        .section-header {{
-            font-size: 22px;
-            font-weight: 700;
-            color: #6203ed;            /* purple */
-            margin-top: 25px;
-            margin-bottom: 6px;
-        }}
-
-        .summary-item {{
-            font-size: 16px;
-            color: #000;
-            padding: 2px 0;
-        }}
-
-        .divider {{
-            border-top: 1px solid #ddd;
-            margin: 18px 0;
-        }}
+    .summary-title {{
+        font-size: 32px;
+        font-weight: 800;
+        text-align: left;     /* ← NOT centering */
+        margin-top: 10px;
+        margin-bottom: 4px;
+        color: {title_color};
+    }}
+    .summary-sub {{
+        font-size: 16px;
+        text-align: left;     /* ← NOT centering */
+        color: #555;
+        margin-bottom: 20px;
+    }}
     </style>
-
+    
     <div class="summary-title">{title_text}</div>
+    <div class="summary-sub">{title_sub}</div>
     """, unsafe_allow_html=True)
+    
+    
+    if is_cancelled:
+    st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
+    
+
 
     # -------- USERS & SPACES --------
     st.markdown("<div class='section-header'>Users & Spaces</div>", unsafe_allow_html=True)
