@@ -91,7 +91,7 @@ if "authenticated" not in st.session_state:
 if "login_time" not in st.session_state:
     st.session_state.login_time = None
 
-# Auto-expire login after 24 hours
+# Auto-expire session ONLY if login_time is set
 if st.session_state.authenticated and st.session_state.login_time:
     if time.time() - st.session_state.login_time > SESSION_DURATION:
         st.session_state.authenticated = False
@@ -104,14 +104,13 @@ ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
 
 # -----------------------------
-# LOGIN SCREEN (if not authenticated)
+# LOGIN SCREEN (if not logged in)
 # -----------------------------
 if not st.session_state.authenticated:
 
-    # Inline CSS for styling
+    # Inline CSS
     st.markdown("""
         <style>
-
             body {
                 background: linear-gradient(
                     180deg,
@@ -179,7 +178,6 @@ if not st.session_state.authenticated:
                 text-decoration: underline;
                 opacity: 0.85;
             }
-
         </style>
     """, unsafe_allow_html=True)
 
@@ -194,10 +192,9 @@ if not st.session_state.authenticated:
     </div>
     """, unsafe_allow_html=True)
 
-    # UI text
+    # Title
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-note">Please sign in to access the Migration Tool</div>',
-                unsafe_allow_html=True)
+    st.markdown('<div class="login-note">Please sign in to access the Migration Tool</div>', unsafe_allow_html=True)
 
     # Inputs
     st.markdown('<div class="underline-input">', unsafe_allow_html=True)
@@ -212,31 +209,29 @@ if not st.session_state.authenticated:
     login_button = st.button("LOGIN")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Logic
+    # Login logic
     if login_button:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             st.session_state.authenticated = True
-            st.session_state.login_time = time.time()  # store login timestamp
+            st.session_state.login_time = time.time()     # ← REQUIRED FIX
             st.success("Logged in!")
             st.rerun()
         else:
             st.error("❌ Invalid username or password.")
 
     # Request Access link
-    st.markdown(
-        """
+    st.markdown('''
         <a class="request-button"
            href="https://support.workvivo.com/hc/en-gb/requests/new"
            target="_blank">
             Request Access
         </a>
-        """,
-        unsafe_allow_html=True
-    )
+    ''', unsafe_allow_html=True)
 
+    # Close wrapper
     st.markdown('</div>', unsafe_allow_html=True)
-    st.stop()   # Prevents app from rendering further when not logged in
 
+    st.stop()  # Stop app until user logs in
 
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
