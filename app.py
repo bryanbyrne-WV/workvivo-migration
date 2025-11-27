@@ -2027,14 +2027,26 @@ if st.session_state.page == "main":
     st.markdown("---")
 
 
-        # ============================================================
+    # ============================================================
     # 👥 User activity on Workvivo
     # ============================================================
     st.markdown("### User activity on Workvivo")
     st.markdown("Migrate content & user interactions.")
-    
+
+# ------------------------------------------------------------
+# DESELECT ALL PHASE 2 TOGGLES BUTTON
+# ------------------------------------------------------------
+    if st.button("🔄 Deselect All Content Toggles"):
+        st.session_state["migrate_updates"] = False
+        st.session_state["migrate_kudos"] = False
+        st.session_state["migrate_articles"] = False
+        st.session_state["migrate_events"] = False
+        st.session_state["migrate_globalPages"] = False
+        st.session_state["migrate_spacePages"] = False
+        st.rerun()
+        
     # ---- UPDATES ----
-    st.markdown("#### 📝 Updates")
+    st.markdown("##### Updates")
     st.toggle(
         "Enable Updates Migration",
         key="migrate_updates",
@@ -2046,7 +2058,7 @@ if st.session_state.page == "main":
     """)
     
     # ---- KUDOS ----
-    st.markdown("#### ⭐ Kudos")
+    st.markdown("##### Kudos")
     st.toggle(
         "Enable Kudos Migration",
         key="migrate_kudos",
@@ -2055,7 +2067,7 @@ if st.session_state.page == "main":
     st.markdown("*Includes kudos posts, comments, and likes.*")
     
     # ---- ARTICLES ----
-    st.markdown("#### 📄 Articles")
+    st.markdown("##### Articles")
     st.toggle(
         "Enable Articles Migration",
         key="migrate_articles",
@@ -2067,7 +2079,7 @@ if st.session_state.page == "main":
     """)
     
     # ---- GLOBAL PAGES ----
-    st.markdown("#### 🌐 Global Pages")
+    st.markdown("##### Global Pages")
     st.toggle(
         "Enable Global Pages Migration",
         key="migrate_globalPages",
@@ -2086,7 +2098,7 @@ if st.session_state.page == "main":
         )
     
     # ---- SPACE PAGES ----
-    st.markdown("#### 📘 Space Pages (not supported)")
+    st.markdown("##### Space Pages (not supported)")
     st.toggle(
         "Enable Space Pages Migration",
         key="migrate_spacePages",
