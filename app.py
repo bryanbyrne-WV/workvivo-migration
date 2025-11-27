@@ -1864,7 +1864,7 @@ if st.session_state.page == "main":
     migrate_spaces_flag = st.toggle("Spaces", value=True, disabled=True)
     
     # -----------------------------------------------------------
-    # ALPHA: Selective User Migration
+    # Selective User Migration
     # -----------------------------------------------------------
     st.markdown("#### Selective User Migration (not currently supported)")
     
@@ -1893,7 +1893,34 @@ if st.session_state.page == "main":
     else:
         st.session_state.selected_user_ids = ""
 
-    st.markdown("---")
+
+    st.markdown("#### Selective Space Migration (Optional)")
+    
+    # Ensure session keys exist
+    if "use_selected_spaces" not in st.session_state:
+        st.session_state.use_selected_spaces = False
+    if "selected_space_names" not in st.session_state:
+        st.session_state.selected_space_names = ""
+    
+    # Toggle
+    st.session_state.use_selected_spaces = st.checkbox(
+        "Migrate only selected spaces",
+        value=st.session_state.use_selected_spaces,
+        help='Enter space names separated by commas. Example: Marketing, "HR Team", Sales'
+    )
+    
+    # Text input (only visible when enabled)
+    if st.session_state.use_selected_spaces:
+        names_text = st.text_area(
+            "Enter space names",
+            value=st.session_state.selected_space_names,
+            placeholder='e.g. Marketing, "HR Team", Sales'
+        )
+        st.session_state.selected_space_names = names_text
+    else:
+        st.session_state.selected_space_names = ""
+
+        st.markdown("---")
 
 
       # -----------------------------------------------------------
