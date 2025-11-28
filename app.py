@@ -474,11 +474,15 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
 # ============================================
-# TRUE STREAMLIT SIDEBAR NAVIGATION (FINAL)
+# CLEAN SIDEBAR NAVIGATION (FINAL VERSION)
 # ============================================
 
+# Ensure page state exists
+if "page" not in st.session_state:
+    st.session_state.page = "config"
+
+# ---- Sidebar Styling ----
 st.sidebar.markdown("""
 <style>
 [data-testid="stSidebar"] {
@@ -486,6 +490,7 @@ st.sidebar.markdown("""
     padding: 30px 20px;
 }
 
+/* Section Title */
 .sidebar-title {
     font-size: 26px;
     font-weight: 800;
@@ -493,6 +498,7 @@ st.sidebar.markdown("""
     margin-bottom: 20px;
 }
 
+/* Inactive Link */
 .sidebar-link {
     font-size: 19px;
     font-weight: 600;
@@ -503,10 +509,12 @@ st.sidebar.markdown("""
     color: #6203ed;
 }
 
+/* Hover effect */
 .sidebar-link:hover {
     background-color: #f1e8ff;
 }
 
+/* Active Page Highlight */
 .sidebar-link-active {
     font-size: 19px;
     font-weight: 700;
@@ -516,37 +524,44 @@ st.sidebar.markdown("""
     background-color: #e5d4ff;
     color: #4b00d1;
 }
+
+/* Hide the internal buttons completely */
+.hidden-nav-btn button {
+    display: none !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
-current = st.session_state.get("page", "config")
+# ---- Navigation Logic ----
+current = st.session_state.page
+
+def set_page(pg):
+    st.session_state.page = pg  # NO rerun here
 
 def nav_item(label, page_key):
     css_class = "sidebar-link-active" if current == page_key else "sidebar-link"
 
-    clicked = st.sidebar.markdown(
+    # Clickable text
+    st.sidebar.markdown(
         f"""
-        <div class="{css_class}" style="cursor:pointer;"
-             onclick="document.getElementById('nav_{page_key}').click()">
-             {label}
+        <div class="{css_class}" onclick="document.getElementById('btn_{page_key}').click()">
+            {label}
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    # Hidden Streamlit button that performs navigation
-    st.sidebar.button(label, key=f"nav_{page_key}", on_click=lambda: set_page(page_key), help="", use_container_width=True)
-
-def set_page(pg):
-    st.session_state.page = pg
-
-
-
-nav_item("Configuration", "config")
-nav_item("Dashboard", "main")
-nav_item("History", "history")
-
-
+    # Fully hidden internal navigation button
+    st.sidebar.button(
+        "ignored",
+        key=f"btn_{page_key}",
+        on_click=lambda pg=page_key: set_page(pg),
+        help="",
+        use_container_width=True,
+        args=(),
+        kwargs={},
+    )
+    st.sidebar.markdown('<div cl
 
 # ============================
 # CARD SELECTION UI STYLES
