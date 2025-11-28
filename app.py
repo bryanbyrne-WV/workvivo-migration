@@ -477,17 +477,8 @@ st.markdown("""
 
 
 # ================================
-# BEAUTIFUL CLICKABLE TOP NAV BAR
+# PERFECT TOP NAV BAR (NO URL CHANGE)
 # ================================
-
-# --- Hidden buttons to trigger state changes ---
-# (These do NOT show in the UI)
-with st.container():
-    st.button("cfg", key="nav_cfg", help="", on_click=lambda: st.session_state.update(page="config"))
-    st.button("dash", key="nav_dash", help="", on_click=lambda: st.session_state.update(page="main"))
-    st.button("hist", key="nav_hist", help="", on_click=lambda: st.session_state.update(page="history"))
-
-# --- Styling ---
 st.markdown("""
 <style>
 .top-nav {
@@ -502,53 +493,60 @@ st.markdown("""
     box-shadow: 0 3px 15px rgba(0,0,0,0.12);
 }
 
-.top-nav-item, .top-nav-item-active {
-    font-size: 22px;
-    font-weight: 700;
-    color: #6203ed;
+/* Make Streamlit buttons LOOK like text links */
+.top-nav button {
+    background: transparent !important;
+    color: #6203ed !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    border: none !important;
+    padding: 0 !important;
     cursor: pointer;
-    padding-bottom: 4px;
-    transition: 0.2s;
-    border-bottom: 3px solid transparent;
+    border-bottom: 3px solid transparent !important;
 }
 
-.top-nav-item:hover {
-    border-bottom: 3px solid #b387ff;
+.top-nav button:hover {
+    border-bottom: 3px solid #b387ff !important;
 }
 
-.top-nav-item-active {
-    border-bottom: 3px solid #6203ed;
+.top-nav .active {
+    border-bottom: 3px solid #6203ed !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Determine active tab
+# CURRENT PAGE
 current_page = st.session_state.get("page", "config")
 
-cfg_class = "top-nav-item-active" if current_page == "config" else "top-nav-item"
-dash_class = "top-nav-item-active" if current_page == "main" else "top-nav-item"
-hist_class = "top-nav-item-active" if current_page == "history" else "top-nav-item"
+# ACTIVE TAB CLASSES
+cfg_class   = "active" if current_page == "config" else ""
+dash_class  = "active" if current_page == "main" else ""
+hist_class  = "active" if current_page == "history" else ""
 
-# --- Render the clickable nav bar ---
-nav_html = f"""
-<div class="top-nav">
+# Render NAV BAR container
+st.markdown('<div class="top-nav">', unsafe_allow_html=True)
 
-    <div class="{cfg_class}" onclick="document.getElementById('nav_cfg').click()">
-        Environment Configuration
-    </div>
+col1, col2, col3 = st.columns([1,1,1])
 
-    <div class="{dash_class}" onclick="document.getElementById('nav_dash').click()">
-        Migration Dashboard
-    </div>
+with col1:
+    if st.button("Environment Configuration"):
+        st.session_state.page = "config"
+        st.rerun()
+    st.markdown(f"<div class='{cfg_class}'></div>", unsafe_allow_html=True)
 
-    <div class="{hist_class}" onclick="document.getElementById('nav_hist').click()">
-        Migration History
-    </div>
+with col2:
+    if st.button("Migration Dashboard"):
+        st.session_state.page = "main"
+        st.rerun()
+    st.markdown(f"<div class='{dash_class}'></div>", unsafe_allow_html=True)
 
-</div>
-"""
+with col3:
+    if st.button("Migration History"):
+        st.session_state.page = "history"
+        st.rerun()
+    st.markdown(f"<div class='{hist_class}'></div>", unsafe_allow_html=True)
 
-st.markdown(nav_html, unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ============================
