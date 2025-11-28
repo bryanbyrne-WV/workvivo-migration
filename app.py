@@ -746,47 +746,47 @@ if "config_saved" not in st.session_state:
     # ----------------------------------------------------
     # OUTSIDE THE FORM — PROCESS SAVE
     # ----------------------------------------------------
-if submitted:
-
-    clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-    st.session_state["SOURCE_SCIM_URL"] = f"https://{clean_source}/scim/v2/scim/Users/"
-
-    clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-    st.session_state["TARGET_SCIM_URL"] = f"https://{clean_target}/scim/v2/scim/Users/"
-
-    st.session_state["SOURCE_API_URL"] = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
-    st.session_state["TARGET_API_URL"] = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
-
-    st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
-    st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
-    st.session_state["SOURCE_WORKVIVO_ID"] = SOURCE_WORKVIVO_ID
-
-    st.session_state["TARGET_SCIM_TOKEN"] = TARGET_SCIM_TOKEN
-    st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
-    st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
-
-    st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = "workvivo-migration-user"
-    st.session_state["config_saved"] = True
-
-    # ----------------------------------------------------
-    # SAVE CONFIG HISTORY ENTRY
-    # ----------------------------------------------------
-    history_entry = {
-        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "migration_code": st.session_state.get("migration_code", ""),
-        "source_url": SOURCE_BASE_URL,
-        "target_url": TARGET_BASE_URL,
-        "source_wv_id": SOURCE_WORKVIVO_ID,
-        "target_wv_id": TARGET_WORKVIVO_ID,
-        "note": "Configuration saved"
-    }
-
-    # Ensure history exists
-    if "config_history" not in st.session_state:
-        st.session_state.config_history = []
-
-    # Save entry
-    st.session_state.config_history.append(history_entry)
+    if submitted:
+    
+        clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+        st.session_state["SOURCE_SCIM_URL"] = f"https://{clean_source}/scim/v2/scim/Users/"
+    
+        clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+        st.session_state["TARGET_SCIM_URL"] = f"https://{clean_target}/scim/v2/scim/Users/"
+    
+        st.session_state["SOURCE_API_URL"] = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
+        st.session_state["TARGET_API_URL"] = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
+    
+        st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
+        st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
+        st.session_state["SOURCE_WORKVIVO_ID"] = SOURCE_WORKVIVO_ID
+    
+        st.session_state["TARGET_SCIM_TOKEN"] = TARGET_SCIM_TOKEN
+        st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
+        st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
+    
+        st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = "workvivo-migration-user"
+        st.session_state["config_saved"] = True
+    
+        # ----------------------------------------------------
+        # SAVE CONFIG HISTORY ENTRY
+        # ----------------------------------------------------
+        history_entry = {
+            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "migration_code": st.session_state.get("migration_code", ""),
+            "source_url": SOURCE_BASE_URL,
+            "target_url": TARGET_BASE_URL,
+            "source_wv_id": SOURCE_WORKVIVO_ID,
+            "target_wv_id": TARGET_WORKVIVO_ID,
+            "note": "Configuration saved"
+        }
+    
+        # Ensure history exists
+        if "config_history" not in st.session_state:
+            st.session_state.config_history = []
+    
+        # Save entry
+        st.session_state.config_history.append(history_entry)
 
     # ----------------------------------------------------
     # SUCCESS + CONTINUE BUTTON
