@@ -9,6 +9,35 @@ import random
 import os
 import mimetypes
 
+# ------------------------------------------------------------
+# SIDEBAR NAVIGATION BAR
+# ------------------------------------------------------------
+
+# Allowed pages
+PAGES = {
+    "Login": "login",
+    "Configuration": "config",
+    "Run Migration": "running",
+    "Summary": "summary",
+    "Migration History": "history",
+}
+
+with st.sidebar:
+    st.title("Migration Tool")
+
+    # Pick current page
+    selected_page_label = st.radio(
+        "Navigation",
+        list(PAGES.keys()),
+        index=list(PAGES.values()).index(st.session_state.get("page", "login"))
+        if st.session_state.get("page") in PAGES.values()
+        else 0,
+    )
+
+# Convert label → internal page key
+st.session_state.page = PAGES[selected_page_label]
+
+
 if "config_test_passed" not in st.session_state:
     st.session_state.config_test_passed = False
 
@@ -2455,6 +2484,20 @@ elif st.session_state.page == "summary":
     # Green for success, red for cancelled
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
 
+    # ------------------------------------------------------------
+    # Save migration history
+    # ------------------------------------------------------------
+    if "migration_history" not in st.session_state:
+        st.session_state.migration_history = []
+    
+    st.session_state.migration_history.append({
+        "start_time": s["start_time"],
+        "end_time": s["end_time"],
+        "users_migrated": s["users_migrated"],
+        "spaces_created": s["spaces_created"],
+        "status": "Cancelled" if st.session_state.get("summary_type") == "cancelled" else "Completed"
+    })
+    
 
 
     # -------------------------------------------------------
@@ -2599,3 +2642,18 @@ elif st.session_state.page == "summary":
                 file_name="MigrationContentLog.csv",
                 mime="text/csv"
             )
+
+
+    # ============================================================
+    # MIGRATION HISTORY PAGE
+    # ============================================================
+    elif st.session_state.page == "history":
+    
+        st.header("📜 Migration History")
+    
+        history = st.session_state.get("migration_history", [])
+    
+        if not history:
+            st.info("No previous migrations recorded yet.")
+        else:
+            st.table(history)
