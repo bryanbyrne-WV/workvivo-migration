@@ -476,14 +476,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# CLEAN SIDEBAR (NO STREAMLIT BUTTONS)
+# RELIABLE SIDEBAR NAVIGATION (NO JS)
 # ============================================
 
-# Ensure page state exists
+# Ensure page exists
 if "page" not in st.session_state:
     st.session_state.page = "config"
 
-# ---- Sidebar Styling ----
+# ---- Styling ----
 st.sidebar.markdown("""
 <style>
 [data-testid="stSidebar"] {
@@ -491,7 +491,7 @@ st.sidebar.markdown("""
     padding: 30px 20px;
 }
 
-/* Section Title */
+/* Title */
 .sidebar-title {
     font-size: 26px;
     font-weight: 800;
@@ -499,67 +499,76 @@ st.sidebar.markdown("""
     margin-bottom: 20px;
 }
 
-/* Inactive link */
-.sidebar-link {
+/* Inactive Item */
+.sidebar-item {
     font-size: 19px;
     font-weight: 600;
     padding: 10px 6px;
-    color: #6203ed;
-    cursor: pointer;
     border-radius: 6px;
-    margin-bottom: 8px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    color: #6203ed;
 }
 
-.sidebar-link:hover {
+.sidebar-item:hover {
     background-color: #f1e8ff;
 }
 
-/* Active item */
-.sidebar-link-active {
+/* Active Item */
+.sidebar-item-active {
+    font-size: 19px;
+    font-weight: 700;
+    padding: 10px 6px;
+    border-radius: 6px;
+    margin-bottom: 6px;
     background-color: #e5d4ff;
     color: #4b00d1;
-    font-weight: 700;
+}
+
+/* Completely hide Streamlit button */
+.hidden-btn > button {
+    display: none !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
 
-# ---- JS + Hidden Form Handler ----
-st.sidebar.markdown("""
-<script>
-function switchPage(targetPage) {
-    const form = document.getElementById("navForm");
-    document.getElementById("navTarget").value = targetPage;
-    form.submit();
-}
-</script>
-
-<form id="navForm" method="get">
-    <input type="hidden" id="navTarget" name="page" value="">
-</form>
-""", unsafe_allow_html=True)
+# ---- Navigation Helper ----
+def switch_page(target):
+    st.session_state.page = target
 
 
-# ---- Sidebar Items ----
 current = st.session_state.page
 
-def nav_item(label, key):
-    css = "sidebar-link-active" if current == key else "sidebar-link"
+# ---- Render Nav Item ----
+def nav_item(label, page_key):
+    css_class = "sidebar-item-active" if current == page_key else "sidebar-item"
+
+    # clickable text linked to hidden button
     st.sidebar.markdown(
-        f"""<div class="{css}" onclick="switchPage('{key}')">{label}</div>""",
+        f'<div class="{css_class}" onclick="document.getElementById(\'btn_{page_key}\').click()">'
+        f'{label}'
+        f'</div>',
         unsafe_allow_html=True
     )
 
+    # invisible button to trigger python callback
+    st.sidebar.container().markdown("<div class='hidden-btn'>", unsafe_allow_html=True)
+    st.sidebar.button(
+        label="",
+        key=f"btn_{page_key}",
+        on_click=lambda pg=page_key: switch_page(pg)
+    )
+    st.sidebar.container().markdown("</div>", unsafe_allow_html=True)
+
+
+# ---- Sidebar Menu ----
 st.sidebar.markdown('<div class="sidebar-title">Menu</div>', unsafe_allow_html=True)
 
 nav_item("Configuration", "config")
 nav_item("Dashboard", "main")
 nav_item("History", "history")
 
-# Apply query param navigation → update Streamlit page state
-params = st.query_params
-if "page" in params:
-    st.session_state.page = params["page"]
 
 
 # ----------------------------------------------------
