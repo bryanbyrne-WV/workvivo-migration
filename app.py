@@ -476,7 +476,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# PERFECT CLEAN SIDEBAR NAVIGATION (NO BUTTONS SHOWN)
+# CLEAN SIDEBAR (NO STREAMLIT BUTTONS)
 # ============================================
 
 # Ensure page state exists
@@ -499,82 +499,67 @@ st.sidebar.markdown("""
     margin-bottom: 20px;
 }
 
-/* Inactive Link */
+/* Inactive link */
 .sidebar-link {
     font-size: 19px;
     font-weight: 600;
-    padding: 12px 6px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-bottom: 6px;
+    padding: 10px 6px;
     color: #6203ed;
+    cursor: pointer;
+    border-radius: 6px;
+    margin-bottom: 8px;
 }
 
-/* Hover effect */
 .sidebar-link:hover {
     background-color: #f1e8ff;
 }
 
-/* Active Page Highlight */
+/* Active item */
 .sidebar-link-active {
-    font-size: 19px;
-    font-weight: 700;
-    padding: 12px 6px;
-    border-radius: 6px;
-    margin-bottom: 6px;
     background-color: #e5d4ff;
     color: #4b00d1;
-}
-
-/* Totally hide HTML buttons */
-.hidden-html-btn {
-    display: none;
+    font-weight: 700;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ---- Hidden HTML Buttons That Trigger Navigation ----
-st.sidebar.markdown("""
-<button id="go_config" class="hidden-html-btn"></button>
-<button id="go_main" class="hidden-html-btn"></button>
-<button id="go_history" class="hidden-html-btn"></button>
-""", unsafe_allow_html=True)
 
-# ---- JS to map clicks to Python ----
+# ---- JS + Hidden Form Handler ----
 st.sidebar.markdown("""
 <script>
-function navTo(page) {
-    let btn = document.getElementById(page);
-    if (btn) { btn.click(); }
+function switchPage(targetPage) {
+    const form = document.getElementById("navForm");
+    document.getElementById("navTarget").value = targetPage;
+    form.submit();
 }
 </script>
+
+<form id="navForm" method="get">
+    <input type="hidden" id="navTarget" name="page" value="">
+</form>
 """, unsafe_allow_html=True)
 
-# ---- Python handlers for hidden actions ----
-config_clicked = st.sidebar.button("go_config", key="navcfg", on_click=lambda: st.session_state.update(page="config"))
-main_clicked = st.sidebar.button("go_main", key="navmain", on_click=lambda: st.session_state.update(page="main"))
-hist_clicked = st.sidebar.button("go_history", key="navhist", on_click=lambda: st.session_state.update(page="history"))
 
-# ---- Display Sidebar Items ----
+# ---- Sidebar Items ----
 current = st.session_state.page
 
-def nav_item(label, page_key, button_id):
-    css_class = "sidebar-link-active" if current == page_key else "sidebar-link"
-
+def nav_item(label, key):
+    css = "sidebar-link-active" if current == key else "sidebar-link"
     st.sidebar.markdown(
-        f"""
-        <div class="{css_class}" onclick="navTo('{button_id}')">
-            {label}
-        </div>
-        """,
+        f"""<div class="{css}" onclick="switchPage('{key}')">{label}</div>""",
         unsafe_allow_html=True
     )
 
 st.sidebar.markdown('<div class="sidebar-title">Menu</div>', unsafe_allow_html=True)
 
-nav_item("Configuration", "config", "go_config")
-nav_item("Dashboard", "main", "go_main")
-nav_item("History", "history", "go_history")
+nav_item("Configuration", "config")
+nav_item("Dashboard", "main")
+nav_item("History", "history")
+
+# Apply query param navigation → update Streamlit page state
+params = st.query_params
+if "page" in params:
+    st.session_state.page = params["page"]
 
 
 # ----------------------------------------------------
