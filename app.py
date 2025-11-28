@@ -559,32 +559,26 @@ if "config_saved" not in st.session_state:
         """, unsafe_allow_html=True)
 
 
-# ----------------------------------------------------
-# MIGRATION CODE GENERATOR
-# ----------------------------------------------------
-
-st.markdown("### Migration Code")
-
-# Ensure key exists
-if "migration_code" not in st.session_state:
-    st.session_state.migration_code = ""
-
-# Show generated code if it exists
-if st.session_state.migration_code:
-    st.success(f"Migration Code: **{st.session_state.migration_code}**")
-
-# Generate button
-if st.button("Generate Migration Code"):
-    st.session_state.migration_code = generate_migration_code(10)
-    st.rerun()
-
-st.markdown("---")
-
-
-# ----------------------------------------------------
-# SOURCE ENVIRONMENT
-# ----------------------------------------------------
-st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+    # ----------------------------------------------------
+    # MIGRATION CODE GENERATOR
+    # ----------------------------------------------------
+    
+    st.markdown("### Migration Code")
+    
+    # Ensure key exists
+    if "migration_code" not in st.session_state:
+        st.session_state.migration_code = ""
+    
+    # Show generated code if it exists
+    if st.session_state.migration_code:
+        st.success(f"Migration Code: **{st.session_state.migration_code}**")
+    
+    # Generate button
+    if st.button("Generate Migration Code"):
+        st.session_state.migration_code = generate_migration_code(10)
+        st.rerun()
+    
+    st.markdown("---")
 
 
         # ----------------------------------------------------
