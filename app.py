@@ -881,8 +881,14 @@ if "config_saved" not in st.session_state:
 
     st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
     if st.button("➡ CONTINUE"):
+        # Update Streamlit session page
         st.session_state.page = "main"
+    
+        # Update URL so router stays in sync
+        st.query_params.update({"page": "main"})
+    
         st.rerun()
+
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.stop()
