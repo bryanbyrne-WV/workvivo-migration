@@ -477,62 +477,70 @@ st.markdown("""
 
 
 # ================================
-# 🔝 TOP NAVIGATION BAR (PURPLE)
+# 🔝 TOP NAVIGATION BAR (WHITE + PURPLE)
 # ================================
 st.markdown("""
 <style>
 .top-nav {
-    background: linear-gradient(90deg, #6203ed, #8a3dfc);
-    padding: 14px 30px;
+    background: #ffffff !important;
+    padding: 16px 30px;
     border-radius: 12px;
     display: flex;
+    justify-content: center;      /* CENTERED */
     align-items: center;
-    gap: 40px;
-    color: white;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+    gap: 50px;                    /* spacing between buttons */
+    margin-bottom: 30px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
 }
 
-.top-nav a {
-    color: white !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
-    padding-bottom: 4px;
-    border-bottom: 3px solid transparent;
+/* Button Base Style */
+.top-nav button {
+    background: transparent !important;
+    color: #6203ed !important;    /* Purple text */
+    border: none !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    padding: 8px 10px !important;
+    border-bottom: 3px solid transparent !important;
+    border-radius: 0 !important;
+    cursor: pointer;
 }
 
-.top-nav a:hover {
-    border-bottom: 3px solid white;
+/* Hover state */
+.top-nav button:hover {
+    border-bottom: 3px solid #b98cff !important;  /* Light purple underline */
 }
 
+/* Active state */
 .top-nav .active {
-    border-bottom: 3px solid #ffd966 !important;
+    border-bottom: 3px solid #6203ed !important;  /* Strong purple underline */
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Determine current tab
+# Determine active page
 current_page = st.session_state.get("page", "config")
 
-# Active highlight logic
 config_class = "active" if current_page == "config" else ""
 dashboard_class = "active" if current_page == "main" else ""
 history_class = "active" if current_page == "history" else ""
 
+# Render nav bar
 st.markdown(f"""
 <div class="top-nav">
-    <a href="?page=config" class="{config_class}">Environment Configuration</a>
-    <a href="?page=main" class="{dashboard_class}">Migration Dashboard</a>
-    <a href="?page=history" class="{history_class}">Migration History</a>
+    <button onclick="window.location.href='?page=config'" class="{config_class}">
+        Environment Configuration
+    </button>
+
+    <button onclick="window.location.href='?page=main'" class="{dashboard_class}">
+        Migration Dashboard
+    </button>
+
+    <button onclick="window.location.href='?page=history'" class="{history_class}">
+        Migration History
+    </button>
 </div>
 """, unsafe_allow_html=True)
-
-# Sync router with URL query param
-params = st.experimental_get_query_params()
-if "page" in params:
-    st.session_state.page = params["page"][0]
-
 
 
 # ============================
