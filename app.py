@@ -477,7 +477,7 @@ st.markdown("""
 
 
 # ================================
-# BEAUTIFUL WORKING TOP NAV BAR
+# CLEAN TOP NAV BAR (WHITE + PURPLE)
 # ================================
 st.markdown("""
 <style>
@@ -493,69 +493,47 @@ st.markdown("""
     box-shadow: 0 3px 15px rgba(0,0,0,0.12);
 }
 
-.top-nav-item {
+.top-nav a {
     font-size: 22px;
     font-weight: 700;
-    color: #6203ed;
-    cursor: pointer;
+    color: #6203ed !important;
+    text-decoration: none !important;
     padding-bottom: 4px;
     border-bottom: 3px solid transparent;
     transition: 0.2s;
 }
 
-.top-nav-item:hover {
+.top-nav a:hover {
     border-bottom: 3px solid #b387ff;
 }
 
-.top-nav-item-active {
-    font-size: 22px;
-    font-weight: 700;
-    color: #6203ed;
-    cursor: pointer;
-    padding-bottom: 4px;
-    border-bottom: 3px solid #6203ed;
+.top-nav .active {
+    border-bottom: 3px solid #6203ed !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
+# read ?page=... query param
+params = st.experimental_get_query_params()
+if "page" in params:
+    st.session_state.page = params["page"][0]
 
-# Build nav bar (HTML only)
-st.markdown('<div class="top-nav">', unsafe_allow_html=True)
-
-# clickable items (using hidden buttons)
-col1, col2, col3 = st.columns([1,1,1])
-
-with col1:
-    if st.button("Environment Configuration", key="nav_cfg"):
-        st.session_state.page = "config"
-        st.rerun()
-
-with col2:
-    if st.button("Migration Dashboard", key="nav_dash"):
-        st.session_state.page = "main"
-        st.rerun()
-
-with col3:
-    if st.button("Migration History", key="nav_hist"):
-        st.session_state.page = "history"
-        st.rerun()
-
-# Now draw the NICE nav bar (visually)
 current = st.session_state.get("page", "config")
 
-ui = """
-<div class="top-nav">
-    <div class="{cfg}" onclick="document.querySelector('button[kind=secondary][key=nav_cfg]').click()">Environment Configuration</div>
-    <div class="{dash}" onclick="document.querySelector('button[kind=secondary][key=nav_dash]').click()">Migration Dashboard</div>
-    <div class="{hist}" onclick="document.querySelector('button[kind=secondary][key=nav_hist]').click()">Migration History</div>
-</div>
-""".format(
-    cfg="top-nav-item-active" if current=="config" else "top-nav-item",
-    dash="top-nav-item-active" if current=="main" else "top-nav-item",
-    hist="top-nav-item-active" if current=="history" else "top-nav-item"
-)
+# active class logic
+cfgcls   = "active" if current == "config" else ""
+dashcls  = "active" if current == "main"   else ""
+histcls  = "active" if current == "history" else ""
 
-st.markdown(ui, unsafe_allow_html=True)
+# render nav bar
+st.markdown(f"""
+<div class="top-nav">
+    <a href="?page=config"  class="{cfgcls}">Environment Configuration</a>
+    <a href="?page=main"    class="{dashcls}">Migration Dashboard</a>
+    <a href="?page=history" class="{histcls}">Migration History</a>
+</div>
+""", unsafe_allow_html=True)
+
 
 
 
