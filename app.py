@@ -476,11 +476,18 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ============================================
-# BEAUTIFUL TOP NAV BAR (FINAL WORKING VERSION)
-# ============================================
+# ================================
+# BEAUTIFUL CLICKABLE TOP NAV BAR
+# ================================
 
-# --- NAV BAR CSS ---
+# --- Hidden buttons to trigger state changes ---
+# (These do NOT show in the UI)
+with st.container():
+    st.button("cfg", key="nav_cfg", help="", on_click=lambda: st.session_state.update(page="config"))
+    st.button("dash", key="nav_dash", help="", on_click=lambda: st.session_state.update(page="main"))
+    st.button("hist", key="nav_hist", help="", on_click=lambda: st.session_state.update(page="history"))
+
+# --- Styling ---
 st.markdown("""
 <style>
 .top-nav {
@@ -495,14 +502,14 @@ st.markdown("""
     box-shadow: 0 3px 15px rgba(0,0,0,0.12);
 }
 
-.top-nav-item {
+.top-nav-item, .top-nav-item-active {
     font-size: 22px;
     font-weight: 700;
     color: #6203ed;
     cursor: pointer;
     padding-bottom: 4px;
+    transition: 0.2s;
     border-bottom: 3px solid transparent;
-    transition: 0.15s;
 }
 
 .top-nav-item:hover {
@@ -510,68 +517,31 @@ st.markdown("""
 }
 
 .top-nav-item-active {
-    font-size: 22px;
-    font-weight: 700;
-    color: #6203ed;
-    cursor: pointer;
-    padding-bottom: 4px;
     border-bottom: 3px solid #6203ed;
 }
 </style>
 """, unsafe_allow_html=True)
 
+# Determine active tab
+current_page = st.session_state.get("page", "config")
 
-# --- HIDDEN STREAMLIT BUTTONS (nav logic) ---
-btn_cfg = st.button("cfg_internal", key="cfg_internal")
-btn_dash = st.button("dash_internal", key="dash_internal")
-btn_hist = st.button("hist_internal", key="hist_internal")
+cfg_class = "top-nav-item-active" if current_page == "config" else "top-nav-item"
+dash_class = "top-nav-item-active" if current_page == "main" else "top-nav-item"
+hist_class = "top-nav-item-active" if current_page == "history" else "top-nav-item"
 
-# Hide the invisible trigger buttons
-st.markdown("""
-<style>
-button[key="cfg_internal"],
-button[key="dash_internal"],
-button[key="hist_internal"] {
-    opacity: 0 !important;
-    width: 0 !important;
-    height: 0 !important;
-    pointer-events: none !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# Handle button → page switches
-if btn_cfg:
-    st.session_state.page = "config"
-    st.rerun()
-
-if btn_dash:
-    st.session_state.page = "main"
-    st.rerun()
-
-if btn_hist:
-    st.session_state.page = "history"
-    st.rerun()
-
-
-# --- BUILD THE PUBLIC NAV BAR ---
-current = st.session_state.get("page", "config")
-
+# --- Render the clickable nav bar ---
 nav_html = f"""
 <div class="top-nav">
 
-    <div class="{ 'top-nav-item-active' if current=='config' else 'top-nav-item' }"
-         onclick="document.querySelector('button[key=\\'cfg_internal\\']').click()">
+    <div class="{cfg_class}" onclick="document.getElementById('nav_cfg').click()">
         Environment Configuration
     </div>
 
-    <div class="{ 'top-nav-item-active' if current=='main' else 'top-nav-item' }"
-         onclick="document.querySelector('button[key=\\'dash_internal\\']').click()">
+    <div class="{dash_class}" onclick="document.getElementById('nav_dash').click()">
         Migration Dashboard
     </div>
 
-    <div class="{ 'top-nav-item-active' if current=='history' else 'top-nav-item' }"
-         onclick="document.querySelector('button[key=\\'hist_internal\\']').click()">
+    <div class="{hist_class}" onclick="document.getElementById('nav_hist').click()">
         Migration History
     </div>
 
@@ -579,6 +549,7 @@ nav_html = f"""
 """
 
 st.markdown(nav_html, unsafe_allow_html=True)
+
 
 # ============================
 # CARD SELECTION UI STYLES
