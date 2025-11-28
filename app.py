@@ -493,20 +493,17 @@ st.markdown("""
     box-shadow: 0 4px 18px rgba(0,0,0,0.15);
 }
 
-.top-nav button {
-    background: transparent !important;
+.top-nav a {
     color: white !important;
-    border: none !important;
     font-size: 18px !important;
     font-weight: 600 !important;
-    padding: 8px 12px !important;
-    border-bottom: 2px solid transparent !important;
-    border-radius: 0 !important;
+    text-decoration: none !important;
+    padding-bottom: 4px;
+    border-bottom: 3px solid transparent;
 }
 
-.top-nav button:hover {
-    border-bottom: 2px solid white !important;
-    transform: translateY(-1px);
+.top-nav a:hover {
+    border-bottom: 3px solid white;
 }
 
 .top-nav .active {
@@ -518,37 +515,23 @@ st.markdown("""
 # Determine current tab
 current_page = st.session_state.get("page", "config")
 
-# Render navigation bar
-nav = st.container()
-with nav:
-    st.markdown('<div class="top-nav">', unsafe_allow_html=True)
+# Active highlight logic
+config_class = "active" if current_page == "config" else ""
+dashboard_class = "active" if current_page == "main" else ""
+history_class = "active" if current_page == "history" else ""
 
-    # Environment config
-        config_class = "active" if current_page == "config" else ""
-        dashboard_class = "active" if current_page == "main" else ""
-        history_class = "active" if current_page == "history" else ""
-        
-        st.markdown(f"""
-        <div class="top-nav">
-            <button onclick="window.location.href='?page=config'" class="{config_class}">Environment Configuration</button>
-            <button onclick="window.location.href='?page=main'" class="{dashboard_class}">Migration Dashboard</button>
-            <button onclick="window.location.href='?page=history'" class="{history_class}">Migration History</button>
-        </div>
-        """, unsafe_allow_html=True)
-        st.session_state.page = "config"
-        st.rerun()
+st.markdown(f"""
+<div class="top-nav">
+    <a href="?page=config" class="{config_class}">Environment Configuration</a>
+    <a href="?page=main" class="{dashboard_class}">Migration Dashboard</a>
+    <a href="?page=history" class="{history_class}">Migration History</a>
+</div>
+""", unsafe_allow_html=True)
 
-    # Migration Dashboard
-    if st.button("Migration Dashboard", key="nav_dashboard"):
-        st.session_state.page = "main"
-        st.rerun()
-
-    # Migration History
-    if st.button("Migration History", key="nav_history"):
-        st.session_state.page = "history"
-        st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
+# Sync router with URL query param
+params = st.experimental_get_query_params()
+if "page" in params:
+    st.session_state.page = params["page"][0]
 
 
 
