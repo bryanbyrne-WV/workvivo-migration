@@ -477,74 +477,86 @@ st.markdown("""
 
 
 # ================================
-# STREAMLIT WORKING TOP NAV BAR
+# BEAUTIFUL WORKING TOP NAV BAR
 # ================================
 st.markdown("""
 <style>
 .top-nav {
     background: white;
-    padding: 16px 0;
+    padding: 18px 0;
     border-radius: 12px;
     display: flex;
     justify-content: center;
-    gap: 40px;
-    color: #6203ed;
+    gap: 60px;
+    align-items: center;
     margin-bottom: 25px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+    box-shadow: 0 3px 15px rgba(0,0,0,0.12);
 }
 
-.top-nav button {
-    background: transparent !important;
-    color: #6203ed !important;
-    border: none !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    padding: 10px 14px !important;
-    border-bottom: 3px solid transparent !important;
-    border-radius: 0 !important;
+.top-nav-item {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6203ed;
+    cursor: pointer;
+    padding-bottom: 4px;
+    border-bottom: 3px solid transparent;
+    transition: 0.2s;
 }
 
-.top-nav button:hover {
-    border-bottom: 3px solid #b387ff !important;
-    transform: translateY(-1px);
+.top-nav-item:hover {
+    border-bottom: 3px solid #b387ff;
 }
 
-.top-nav .active {
-    border-bottom: 3px solid #6203ed !important;
+.top-nav-item-active {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6203ed;
+    cursor: pointer;
+    padding-bottom: 4px;
+    border-bottom: 3px solid #6203ed;
 }
 </style>
 """, unsafe_allow_html=True)
 
-current = st.session_state.get("page", "config")
 
-# Start bar
+# Build nav bar (HTML only)
 st.markdown('<div class="top-nav">', unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns(3)
+# clickable items (using hidden buttons)
+col1, col2, col3 = st.columns([1,1,1])
 
 with col1:
-    if st.button("Environment Configuration"):
+    if st.button("Environment Configuration", key="nav_cfg"):
         st.session_state.page = "config"
         st.rerun()
-    if current == "config":
-        st.markdown("<style>.top-nav button:first-child{border-bottom:3px solid #6203ed !important;}</style>", unsafe_allow_html=True)
 
 with col2:
-    if st.button("Migration Dashboard"):
+    if st.button("Migration Dashboard", key="nav_dash"):
         st.session_state.page = "main"
         st.rerun()
-    if current == "main":
-        st.markdown("<style>.top-nav button:nth-child(2){border-bottom:3px solid #6203ed !important;}</style>", unsafe_allow_html=True)
 
 with col3:
-    if st.button("Migration History"):
+    if st.button("Migration History", key="nav_hist"):
         st.session_state.page = "history"
         st.rerun()
-    if current == "history":
-        st.markdown("<style>.top-nav button:nth-child(3){border-bottom:3px solid #6203ed !important;}</style>", unsafe_allow_html=True)
 
-# End bar
-st.markdown('</div>', unsafe_allow_html=True)
+# Now draw the NICE nav bar (visually)
+current = st.session_state.get("page", "config")
+
+ui = """
+<div class="top-nav">
+    <div class="{cfg}" onclick="document.querySelector('button[kind=secondary][key=nav_cfg]').click()">Environment Configuration</div>
+    <div class="{dash}" onclick="document.querySelector('button[kind=secondary][key=nav_dash]').click()">Migration Dashboard</div>
+    <div class="{hist}" onclick="document.querySelector('button[kind=secondary][key=nav_hist]').click()">Migration History</div>
+</div>
+""".format(
+    cfg="top-nav-item-active" if current=="config" else "top-nav-item",
+    dash="top-nav-item-active" if current=="main" else "top-nav-item",
+    hist="top-nav-item-active" if current=="history" else "top-nav-item"
+)
+
+st.markdown(ui, unsafe_allow_html=True)
+
 
 
 # ============================
