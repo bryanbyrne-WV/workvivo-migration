@@ -222,7 +222,8 @@ if not st.session_state.authenticated:
     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
-
+    if "config_history" not in st.session_state:
+        st.session_state.config_history = []
 
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
@@ -774,6 +775,23 @@ if "config_saved" not in st.session_state:
             st.session_state.page = "main"
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
+
+        # ----------------------------------------------------
+        # SAVE CONFIG HISTORY ENTRY
+        # ----------------------------------------------------
+        
+        history_entry = {
+            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "migration_code": st.session_state.get("migration_code", ""),
+            "source_url": SOURCE_BASE_URL,
+            "target_url": TARGET_BASE_URL,
+            "source_wv_id": SOURCE_WORKVIVO_ID,
+            "target_wv_id": TARGET_WORKVIVO_ID,
+            "note": "Configuration saved"
+    }
+
+st.session_state.config_history.append(history_entry)
+
 
         st.stop()
 
