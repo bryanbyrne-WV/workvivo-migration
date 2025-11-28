@@ -13,29 +13,25 @@ import mimetypes
 # SIDEBAR NAVIGATION BAR
 # ------------------------------------------------------------
 
-# Allowed pages
 PAGES = {
-    "Login": "login",
-    "Configuration": "config",
-    "Run Migration": "running",
-    "Summary": "summary",
+    "Environment Configuration": "config",
+    "Migration Dashboard": "main",
     "Migration History": "history",
 }
 
 with st.sidebar:
     st.title("Migration Tool")
 
-    # Pick current page
     selected_page_label = st.radio(
         "Navigation",
         list(PAGES.keys()),
-        index=list(PAGES.values()).index(st.session_state.get("page", "login"))
+        index=list(PAGES.values()).index(st.session_state.get("page", "config"))
         if st.session_state.get("page") in PAGES.values()
         else 0,
     )
 
-# Convert label → internal page key
 st.session_state.page = PAGES[selected_page_label]
+
 
 
 if "config_test_passed" not in st.session_state:
