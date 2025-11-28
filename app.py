@@ -8,6 +8,9 @@ from datetime import datetime
 import random
 import os
 import mimetypes
+import string
+
+
 
 if "config_test_passed" not in st.session_state:
     st.session_state.config_test_passed = False
@@ -74,6 +77,10 @@ def test_workvivo_connection(scim_url, scim_token, api_url, api_token, wv_id):
         return False, "❌ API connection failed"
 
     return True, "✅ All connectivity tests passed! API & SCIM tokens are valid."
+
+def generate_migration_code(length=10):
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
@@ -837,6 +844,22 @@ SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
 if st.session_state.page != "summary":
     st.success("🔐 Configuration active — ready to run migrations.")
+
+st.markdown("### Migration Code")
+
+# Ensure key exists
+if "migration_code" not in st.session_state:
+    st.session_state.migration_code = ""
+
+# Display existing code
+if st.session_state.migration_code:
+    st.success(f"Generated Code: **{st.session_state.migration_code}**")
+
+# Generate button
+if st.button("Generate Migration Code"):
+    st.session_state.migration_code = generate_migration_code(10)
+    st.rerun()
+
 
 # ============================================================
 # Ensure SUMMARY dictionary exists before any migration starts
