@@ -477,20 +477,20 @@ st.markdown("""
 
 
 # ================================
-# 🔝 TOP NAVIGATION BAR (WHITE + PURPLE)
+# 🔝 TOP NAVIGATION BAR (PURPLE TEXT, WHITE BAR)
 # ================================
 st.markdown("""
 <style>
 .top-nav {
-    background: #ffffff !important;
-    padding: 16px 30px;
+    background: white;
+    padding: 16px 0;
     border-radius: 12px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 50px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    gap: 40px;
+    color: #6203ed;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
 }
 
 .top-nav button {
@@ -499,14 +499,14 @@ st.markdown("""
     border: none !important;
     font-size: 20px !important;
     font-weight: 700 !important;
-    padding: 8px 10px !important;
+    padding: 10px 14px !important;
     border-bottom: 3px solid transparent !important;
     border-radius: 0 !important;
-    cursor: pointer;
 }
 
 .top-nav button:hover {
-    border-bottom: 3px solid #b98cff !important;
+    border-bottom: 3px solid #b387ff !important;
+    transform: translateY(-1px);
 }
 
 .top-nav .active {
@@ -515,14 +515,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Determine active page
+# Determine active tabs
 current_page = st.session_state.get("page", "config")
-
 config_class = "active" if current_page == "config" else ""
 dashboard_class = "active" if current_page == "main" else ""
 history_class = "active" if current_page == "history" else ""
 
-# Render nav
+# Render navigation bar
 st.markdown(f"""
 <div class="top-nav">
 
