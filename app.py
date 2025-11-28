@@ -477,7 +477,7 @@ st.markdown("""
 
 
 # ================================
-# 🔝 TOP NAVIGATION BAR (PURPLE TEXT, WHITE BAR)
+# STREAMLIT WORKING TOP NAV BAR
 # ================================
 st.markdown("""
 <style>
@@ -515,30 +515,36 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Determine active tabs
-current_page = st.session_state.get("page", "config")
-config_class = "active" if current_page == "config" else ""
-dashboard_class = "active" if current_page == "main" else ""
-history_class = "active" if current_page == "history" else ""
+current = st.session_state.get("page", "config")
 
-# Render navigation bar
-st.markdown(f"""
-<div class="top-nav">
+# Start bar
+st.markdown('<div class="top-nav">', unsafe_allow_html=True)
 
-    <button onclick="window.location.href='?page=config'" class="{config_class}">
-        Environment Configuration
-    </button>
+col1, col2, col3 = st.columns(3)
 
-    <button onclick="window.location.href='?page=main'" class="{dashboard_class}">
-        Migration Dashboard
-    </button>
+with col1:
+    if st.button("Environment Configuration"):
+        st.session_state.page = "config"
+        st.rerun()
+    if current == "config":
+        st.markdown("<style>.top-nav button:first-child{border-bottom:3px solid #6203ed !important;}</style>", unsafe_allow_html=True)
 
-    <button onclick="window.location.href='?page=history'" class="{history_class}">
-        Migration History
-    </button>
+with col2:
+    if st.button("Migration Dashboard"):
+        st.session_state.page = "main"
+        st.rerun()
+    if current == "main":
+        st.markdown("<style>.top-nav button:nth-child(2){border-bottom:3px solid #6203ed !important;}</style>", unsafe_allow_html=True)
 
-</div>
-""", unsafe_allow_html=True)
+with col3:
+    if st.button("Migration History"):
+        st.session_state.page = "history"
+        st.rerun()
+    if current == "history":
+        st.markdown("<style>.top-nav button:nth-child(3){border-bottom:3px solid #6203ed !important;}</style>", unsafe_allow_html=True)
+
+# End bar
+st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ============================
