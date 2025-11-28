@@ -954,21 +954,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-if st.session_state.page != "summary":
+if st.session_state.page not in ["summary", "history"]:
     st.markdown('<div class="back-btn">', unsafe_allow_html=True)
     if st.button("← Edit Environment Settings"):
         st.session_state.page = "config"
         st.rerun()
-
-        # ============================================================
-        # MAKE SIDEBAR CONFIG TAB ACT LIKE "EDIT SETTINGS"
-        # ============================================================
-        if st.session_state.page == "config":
-            if "config_saved" in st.session_state:
-                del st.session_state["config_saved"]
-
-        st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 
@@ -987,8 +979,10 @@ TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
 SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
 # Show configuration active message ONLY after config is saved
-if st.session_state.get("config_saved") and st.session_state.page not in ["config", "summary"]:
-
+if (
+    st.session_state.get("config_saved")
+    and st.session_state.page not in ["config", "summary", "history"]
+):
     migration_code = st.session_state.get("migration_code", "")
 
     if migration_code:
