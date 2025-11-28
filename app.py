@@ -486,17 +486,16 @@ st.markdown("""
     padding: 16px 30px;
     border-radius: 12px;
     display: flex;
-    justify-content: center;      /* CENTERED */
+    justify-content: center;
     align-items: center;
-    gap: 50px;                    /* spacing between buttons */
+    gap: 50px;
     margin-bottom: 30px;
     box-shadow: 0 4px 18px rgba(0,0,0,0.08);
 }
 
-/* Button Base Style */
 .top-nav button {
     background: transparent !important;
-    color: #6203ed !important;    /* Purple text */
+    color: #6203ed !important;
     border: none !important;
     font-size: 20px !important;
     font-weight: 700 !important;
@@ -506,14 +505,12 @@ st.markdown("""
     cursor: pointer;
 }
 
-/* Hover state */
 .top-nav button:hover {
-    border-bottom: 3px solid #b98cff !important;  /* Light purple underline */
+    border-bottom: 3px solid #b98cff !important;
 }
 
-/* Active state */
 .top-nav .active {
-    border-bottom: 3px solid #6203ed !important;  /* Strong purple underline */
+    border-bottom: 3px solid #6203ed !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -525,9 +522,10 @@ config_class = "active" if current_page == "config" else ""
 dashboard_class = "active" if current_page == "main" else ""
 history_class = "active" if current_page == "history" else ""
 
-# Render nav bar
+# Render nav
 st.markdown(f"""
 <div class="top-nav">
+
     <button onclick="window.location.href='?page=config'" class="{config_class}">
         Environment Configuration
     </button>
@@ -539,6 +537,7 @@ st.markdown(f"""
     <button onclick="window.location.href='?page=history'" class="{history_class}">
         Migration History
     </button>
+
 </div>
 """, unsafe_allow_html=True)
 
