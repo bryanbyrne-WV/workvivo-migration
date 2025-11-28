@@ -14,7 +14,6 @@ import mimetypes
 # ------------------------------------------------------------
 
 PAGES = {
-    "Environment Configuration": "config",
     "Migration Dashboard": "main",
     "Migration History": "history",
 }
@@ -32,11 +31,6 @@ with st.sidebar:
 
 st.session_state.page = PAGES[selected_page_label]
 
-# If user manually selects Environment Configuration in sidebar,
-# force them back to the configuration form (same as Edit button)
-if st.session_state.page == "config":
-    if "config_saved" in st.session_state:
-        del st.session_state["config_saved"]
 
 
 
