@@ -957,8 +957,9 @@ st.markdown("""
 if st.session_state.page != "summary":
     st.markdown('<div class="back-btn">', unsafe_allow_html=True)
     if st.button("← Edit Environment Settings"):
-        if "config_saved" in st.session_state:
-            del st.session_state["config_saved"]
+        st.session_state.page = "config"
+        st.rerun()
+
         # ============================================================
         # MAKE SIDEBAR CONFIG TAB ACT LIKE "EDIT SETTINGS"
         # ============================================================
