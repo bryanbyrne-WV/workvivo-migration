@@ -519,8 +519,6 @@ st.sidebar.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.sidebar.markdown("<div class='sidebar-title'>📌 Navigation</div>", unsafe_allow_html=True)
-
 current = st.session_state.get("page", "config")
 
 def nav_item(label, page_key):
@@ -530,9 +528,9 @@ def nav_item(label, page_key):
         unsafe_allow_html=True
     )
 
-nav_item("Environment Configuration", "config")
-nav_item("Migration Dashboard", "main")
-nav_item("Migration History", "history")
+nav_item("Configuration", "config")
+nav_item("Dashboard", "main")
+nav_item("History", "history")
 
 # ============================================================
 # PAGE ROUTER — READS URL PARAMETERS & SWITCHES PAGES
