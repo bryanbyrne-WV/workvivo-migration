@@ -475,9 +475,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
 # ============================================
-# CLEAN SIDEBAR NAVIGATION (FINAL VERSION)
+# PERFECT CLEAN SIDEBAR NAVIGATION (NO BUTTONS SHOWN)
 # ============================================
 
 # Ensure page state exists
@@ -521,54 +520,61 @@ st.sidebar.markdown("""
     font-size: 19px;
     font-weight: 700;
     padding: 12px 6px;
-    margin-bottom: 6px;
     border-radius: 6px;
+    margin-bottom: 6px;
     background-color: #e5d4ff;
     color: #4b00d1;
 }
 
-/* Hide internal Streamlit buttons */
-.hidden-btn {
-    display: none !important;
+/* Totally hide HTML buttons */
+.hidden-html-btn {
+    display: none;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ---- Navigation Logic ----
+# ---- Hidden HTML Buttons That Trigger Navigation ----
+st.sidebar.markdown("""
+<button id="go_config" class="hidden-html-btn"></button>
+<button id="go_main" class="hidden-html-btn"></button>
+<button id="go_history" class="hidden-html-btn"></button>
+""", unsafe_allow_html=True)
+
+# ---- JS to map clicks to Python ----
+st.sidebar.markdown("""
+<script>
+function navTo(page) {
+    let btn = document.getElementById(page);
+    if (btn) { btn.click(); }
+}
+</script>
+""", unsafe_allow_html=True)
+
+# ---- Python handlers for hidden actions ----
+config_clicked = st.sidebar.button("go_config", key="navcfg", on_click=lambda: st.session_state.update(page="config"))
+main_clicked = st.sidebar.button("go_main", key="navmain", on_click=lambda: st.session_state.update(page="main"))
+hist_clicked = st.sidebar.button("go_history", key="navhist", on_click=lambda: st.session_state.update(page="history"))
+
+# ---- Display Sidebar Items ----
 current = st.session_state.page
 
-def set_page(pg):
-    st.session_state.page = pg
-
-def nav_item(label, page_key):
+def nav_item(label, page_key, button_id):
     css_class = "sidebar-link-active" if current == page_key else "sidebar-link"
 
-    # Visible clickable label
     st.sidebar.markdown(
         f"""
-        <div class="{css_class}" onclick="document.getElementById('nav_{page_key}').click()">
+        <div class="{css_class}" onclick="navTo('{button_id}')">
             {label}
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    # Hidden button (fully invisible)
-    st.sidebar.button(
-        label,
-        key=f"nav_{page_key}",
-        on_click=lambda pg=page_key: set_page(pg)
-    )
-    st.sidebar.markdown("<div class='hidden-btn'></div>", unsafe_allow_html=True)
-
-
-# ---- Sidebar Navigation Items ----
 st.sidebar.markdown('<div class="sidebar-title">Menu</div>', unsafe_allow_html=True)
 
-nav_item("Configuration", "config")
-nav_item("Dashboard", "main")
-nav_item("History", "history")
-
+nav_item("Configuration", "config", "go_config")
+nav_item("Dashboard", "main", "go_main")
+nav_item("History", "history", "go_history")
 
 
 # ----------------------------------------------------
