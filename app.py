@@ -476,100 +476,60 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# RELIABLE SIDEBAR NAVIGATION (NO JS)
+# SIMPLE + RELIABLE SIDEBAR NAVIGATION (BUTTONS)
 # ============================================
 
-# Ensure page exists
+# Ensure page key
 if "page" not in st.session_state:
     st.session_state.page = "config"
 
-# ---- Styling ----
-st.sidebar.markdown("""
-<style>
-[data-testid="stSidebar"] {
-    background-color: white !important;
-    padding: 30px 20px;
-}
+# Sidebar title
+st.sidebar.markdown(
+    "<div style='font-size:26px; font-weight:800; color:#6203ed; margin-bottom:20px;'>Menu</div>",
+    unsafe_allow_html=True
+)
 
-/* Title */
-.sidebar-title {
-    font-size: 26px;
-    font-weight: 800;
-    color: #6203ed;
-    margin-bottom: 20px;
-}
+def sidebar_button(label, page_key):
+    is_active = (st.session_state.page == page_key)
 
-/* Inactive Item */
-.sidebar-item {
-    font-size: 19px;
-    font-weight: 600;
-    padding: 10px 6px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-bottom: 6px;
-    color: #6203ed;
-}
+    # Active = purple background
+    if is_active:
+        style = """
+            background-color:#e5d4ff;
+            color:#4b00d1;
+            font-weight:700;
+            border-radius:6px;
+            border:1px solid #d1b8ff;
+            width:100%;
+            text-align:left;
+            padding:10px;
+        """
+    else:
+        style = """
+            background-color:#ffffff;
+            color:#6203ed;
+            font-weight:600;
+            border-radius:6px;
+            border:1px solid #ccc;
+            width:100%;
+            text-align:left;
+            padding:10px;
+        """
 
-.sidebar-item:hover {
-    background-color: #f1e8ff;
-}
+    if st.sidebar.button(label, key=f"nav_{page_key}"):
+        st.session_state.page = page_key
 
-/* Active Item */
-.sidebar-item-active {
-    font-size: 19px;
-    font-weight: 700;
-    padding: 10px 6px;
-    border-radius: 6px;
-    margin-bottom: 6px;
-    background-color: #e5d4ff;
-    color: #4b00d1;
-}
-
-/* Completely hide Streamlit button */
-.hidden-btn > button {
-    display: none !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-
-# ---- Navigation Helper ----
-def switch_page(target):
-    st.session_state.page = target
-
-
-current = st.session_state.page
-
-# ---- Render Nav Item ----
-def nav_item(label, page_key):
-    css_class = "sidebar-item-active" if current == page_key else "sidebar-item"
-
-    # clickable text linked to hidden button
+    # Apply style using HTML wrapper
     st.sidebar.markdown(
-        f'<div class="{css_class}" onclick="document.getElementById(\'btn_{page_key}\').click()">'
-        f'{label}'
-        f'</div>',
+        f"<style>#{'nav_'+page_key} {{ {style} }}</style>",
         unsafe_allow_html=True
     )
 
-    # invisible button to trigger python callback
-    st.sidebar.container().markdown("<div class='hidden-btn'>", unsafe_allow_html=True)
-    st.sidebar.button(
-        label="",
-        key=f"btn_{page_key}",
-        on_click=lambda pg=page_key: switch_page(pg)
-    )
-    st.sidebar.container().markdown("</div>", unsafe_allow_html=True)
 
-
-# ---- Sidebar Menu ----
-st.sidebar.markdown('<div class="sidebar-title">Menu</div>', unsafe_allow_html=True)
-
-nav_item("Configuration", "config")
-nav_item("Dashboard", "main")
-nav_item("History", "history")
-
-
+# Sidebar items
+sidebar_button("Configuration", "config")
+sidebar_button("Dashboard", "main")
+sidebar_button("History", "history")
 
 # ----------------------------------------------------
 # SHOW MIGRATION CODE GENERATOR ONLY ON CONFIG PAGE
