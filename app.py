@@ -477,7 +477,7 @@ st.markdown("""
 
 
 # ================================
-# CLEAN TOP NAV BAR (WHITE + PURPLE)
+# PERFECT TOP NAV BAR (NO URL CHANGE)
 # ================================
 st.markdown("""
 <style>
@@ -493,18 +493,20 @@ st.markdown("""
     box-shadow: 0 3px 15px rgba(0,0,0,0.12);
 }
 
-.top-nav a {
-    font-size: 22px;
-    font-weight: 700;
+/* Make Streamlit buttons LOOK like text links */
+.top-nav button {
+    background: transparent !important;
     color: #6203ed !important;
-    text-decoration: none !important;
-    padding-bottom: 4px;
-    border-bottom: 3px solid transparent;
-    transition: 0.2s;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    border: none !important;
+    padding: 0 !important;
+    cursor: pointer;
+    border-bottom: 3px solid transparent !important;
 }
 
-.top-nav a:hover {
-    border-bottom: 3px solid #b387ff;
+.top-nav button:hover {
+    border-bottom: 3px solid #b387ff !important;
 }
 
 .top-nav .active {
@@ -513,28 +515,38 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# read ?page=... query param
-params = st.experimental_get_query_params()
-if "page" in params:
-    st.session_state.page = params["page"][0]
+# CURRENT PAGE
+current_page = st.session_state.get("page", "config")
 
-current = st.session_state.get("page", "config")
+# ACTIVE TAB CLASSES
+cfg_class   = "active" if current_page == "config" else ""
+dash_class  = "active" if current_page == "main" else ""
+hist_class  = "active" if current_page == "history" else ""
 
-# active class logic
-cfgcls   = "active" if current == "config" else ""
-dashcls  = "active" if current == "main"   else ""
-histcls  = "active" if current == "history" else ""
+# Render NAV BAR container
+st.markdown('<div class="top-nav">', unsafe_allow_html=True)
 
-# render nav bar
-st.markdown(f"""
-<div class="top-nav">
-    <a href="?page=config"  class="{cfgcls}">Environment Configuration</a>
-    <a href="?page=main"    class="{dashcls}">Migration Dashboard</a>
-    <a href="?page=history" class="{histcls}">Migration History</a>
-</div>
-""", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1,1,1])
 
+with col1:
+    if st.button("Environment Configuration"):
+        st.session_state.page = "config"
+        st.rerun()
+    st.markdown(f"<div class='{cfg_class}'></div>", unsafe_allow_html=True)
 
+with col2:
+    if st.button("Migration Dashboard"):
+        st.session_state.page = "main"
+        st.rerun()
+    st.markdown(f"<div class='{dash_class}'></div>", unsafe_allow_html=True)
+
+with col3:
+    if st.button("Migration History"):
+        st.session_state.page = "history"
+        st.rerun()
+    st.markdown(f"<div class='{hist_class}'></div>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ============================
