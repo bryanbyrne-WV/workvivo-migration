@@ -895,11 +895,10 @@ if "config_saved" not in st.session_state:
 # =========================================================
 # If config not saved, stay on config page
 # =========================================================
-# Only restrict navigation if no config is saved yet
-if "config_saved" not in st.session_state:
-    # Force page = config ONLY if the user tries to go elsewhere
-    if st.session_state.page != "config":
-        st.session_state.page = "config"
+if "config_saved" not in st.session_state and st.session_state.page != "config":
+    st.warning("⚠️ Please complete configuration first.")
+    st.session_state.page = "config"
+
 
 
 # =========================================================
