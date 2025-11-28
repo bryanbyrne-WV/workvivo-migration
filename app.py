@@ -9,38 +9,6 @@ import random
 import os
 import mimetypes
 
-# ------------------------------------------------------------
-# SIDEBAR NAVIGATION BAR
-# ------------------------------------------------------------
-
-PAGES = {
-    "Environment Configuration": "config",
-    "Migration Dashboard": "main",
-    "Migration History": "history",
-}
-
-with st.sidebar:
-    st.title("Migration Tool")
-
-    # Displayed selection defaults to current page *if it's one of the sidebar pages*
-    current = st.session_state.get("page", "config")
-    current_label_index = list(PAGES.values()).index(current) if current in PAGES.values() else 0
-
-    selected_page_label = st.radio(
-        "Navigation",
-        list(PAGES.keys()),
-        index=current_label_index,
-    )
-
-selected_page = PAGES[selected_page_label]
-
-# ONLY change session_state.page IF user clicked a different sidebar option
-if selected_page != st.session_state.get("page"):
-    st.session_state.page = selected_page
-    st.rerun()
-
-
-
 if "config_test_passed" not in st.session_state:
     st.session_state.config_test_passed = False
 
@@ -2487,20 +2455,6 @@ elif st.session_state.page == "summary":
     # Green for success, red for cancelled
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
 
-    # ------------------------------------------------------------
-    # Save migration history
-    # ------------------------------------------------------------
-    if "migration_history" not in st.session_state:
-        st.session_state.migration_history = []
-    
-    st.session_state.migration_history.append({
-        "start_time": s["start_time"],
-        "end_time": s["end_time"],
-        "users_migrated": s["users_migrated"],
-        "spaces_created": s["spaces_created"],
-        "status": "Cancelled" if st.session_state.get("summary_type") == "cancelled" else "Completed"
-    })
-    
 
 
     # -------------------------------------------------------
@@ -2645,18 +2599,3 @@ elif st.session_state.page == "summary":
                 file_name="MigrationContentLog.csv",
                 mime="text/csv"
             )
-
-
-        # ============================================================
-        # MIGRATION HISTORY PAGE
-        # ============================================================
-        elif st.session_state.page == "history":
-        
-            st.header("📜 Migration History")
-        
-            history = st.session_state.get("migration_history", [])
-        
-            if not history:
-                st.info("No previous migrations recorded yet.")
-            else:
-                st.table(history)
