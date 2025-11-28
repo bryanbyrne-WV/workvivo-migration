@@ -474,6 +474,8 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
+
 # ============================================
 # CLEAN SIDEBAR NAVIGATION (FINAL VERSION)
 # ============================================
@@ -525,8 +527,8 @@ st.sidebar.markdown("""
     color: #4b00d1;
 }
 
-/* Hide the internal buttons completely */
-.hidden-nav-btn button {
+/* Hide internal Streamlit buttons */
+.hidden-btn {
     display: none !important;
 }
 </style>
@@ -536,94 +538,37 @@ st.sidebar.markdown("""
 current = st.session_state.page
 
 def set_page(pg):
-    st.session_state.page = pg  # NO rerun here
+    st.session_state.page = pg
 
 def nav_item(label, page_key):
     css_class = "sidebar-link-active" if current == page_key else "sidebar-link"
 
-    # Clickable text
+    # Visible clickable label
     st.sidebar.markdown(
         f"""
-        <div class="{css_class}" onclick="document.getElementById('btn_{page_key}').click()">
+        <div class="{css_class}" onclick="document.getElementById('nav_{page_key}').click()">
             {label}
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    # Fully hidden internal navigation button
+    # Hidden button (fully invisible)
     st.sidebar.button(
-        "ignored",
-        key=f"btn_{page_key}",
-        on_click=lambda pg=page_key: set_page(pg),
-        help="",
-        use_container_width=True,
-        args=(),
-        kwargs={},
+        label,
+        key=f"nav_{page_key}",
+        on_click=lambda pg=page_key: set_page(pg)
     )
-    st.sidebar.markdown('<div cl
+    st.sidebar.markdown("<div class='hidden-btn'></div>", unsafe_allow_html=True)
 
-# ============================
-# CARD SELECTION UI STYLES
-# ============================
-st.markdown("""
-<style>
-.select-card {
-    border-radius: 12px;
-    padding: 18px;
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    border: 2px solid transparent;
-    text-align: center;
-    cursor: pointer;
-    transition: 0.2s;
-    min-height: 110px;
-}
-.select-card:hover {
-    transform: translateY(-3px);
-    border-color: #6203ed;
-}
-.select-card.selected {
-    border-color: #6203ed !important;
-    background: #f4ecff !important;
-}
-.select-card-icon {
-    font-size: 32px;
-    margin-bottom: 10px;
-    color: #6203ed;
-}
-.select-card-title {
-    font-size: 18px;
-    font-weight: 600;
-}
-.select-card-sub {
-    font-size: 14px;
-    color: #666;
-}
-</style>
-""", unsafe_allow_html=True)
 
-st.markdown("""
-<style>
+# ---- Sidebar Navigation Items ----
+st.sidebar.markdown('<div class="sidebar-title">Menu</div>', unsafe_allow_html=True)
 
-div.green-run-btn button[kind="secondary"] {
-    background-color: #28a745 !important;
-    color: white !important;
-    border: none !important;
-    padding: 12px 28px !important;
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    border-radius: 8px !important;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.20);
-    transition: 0.2s;
-}
+nav_item("Configuration", "config")
+nav_item("Dashboard", "main")
+nav_item("History", "history")
 
-div.green-run-btn button[kind="secondary"]:hover {
-    background-color: #218838 !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
 
 
 # ----------------------------------------------------
