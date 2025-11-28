@@ -2440,6 +2440,12 @@ elif st.session_state.page == "summary":
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
 
     title_text = (
+        "Migration Cancelled"
+        if is_cancelled
+        else "Migration Completed Successfully"
+    )
+
+    title_sub = (
         "The migration was cancelled early. Review logs and warnings below."
         if is_cancelled
         else "All migration tasks completed successfully."
