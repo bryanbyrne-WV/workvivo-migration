@@ -2644,16 +2644,16 @@ elif st.session_state.page == "summary":
             )
 
 
-    # ============================================================
-    # MIGRATION HISTORY PAGE
-    # ============================================================
-    elif st.session_state.page == "history":
-    
-        st.header("📜 Migration History")
-    
-        history = st.session_state.get("migration_history", [])
-    
-        if not history:
-            st.info("No previous migrations recorded yet.")
-        else:
-            st.table(history)
+        # ============================================================
+        # MIGRATION HISTORY PAGE
+        # ============================================================
+        elif st.session_state.page == "history":
+        
+            st.header("📜 Migration History")
+        
+            history = st.session_state.get("migration_history", [])
+        
+            if not history:
+                st.info("No previous migrations recorded yet.")
+            else:
+                st.table(history)
