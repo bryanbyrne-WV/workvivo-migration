@@ -475,19 +475,18 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
 # ============================================
-# BEAUTIFUL LEFT SIDEBAR NAVIGATION (FINAL)
+# FIXED BEAUTIFUL SIDEBAR NAVIGATION (FINAL)
 # ============================================
+from streamlit.components.v1 import html as st_html
 
 # --- SIDEBAR CSS ---
-st.markdown("""
+css = """
 <style>
-
 .custom-sidebar {
     background: white;
-    width: 250px;
-    padding: 30px 20px;
+    width: 240px;
+    padding: 25px 20px;
     border-radius: 12px;
     box-shadow: 0 3px 15px rgba(0,0,0,0.12);
     position: fixed;
@@ -496,14 +495,13 @@ st.markdown("""
     z-index: 999;
 }
 
-.sidebar-item,
-.sidebar-item-active {
+.sidebar-item, .sidebar-item-active {
     font-size: 20px;
     font-weight: 700;
     color: #6203ed;
     cursor: pointer;
     padding: 12px 10px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     border-left: 4px solid transparent;
     transition: 0.2s;
 }
@@ -515,59 +513,54 @@ st.markdown("""
 .sidebar-item-active {
     border-left: 4px solid #6203ed;
 }
-
 </style>
-""", unsafe_allow_html=True)
+"""
 
-# --- HIDDEN NAV BUTTONS FOR STREAMLIT LOGIC ---
-with st.container():
-    st.button("cfg_btn", key="cfg_btn", on_click=lambda: st.session_state.update(page="config"))
-    st.button("dash_btn", key="dash_btn", on_click=lambda: st.session_state.update(page="main"))
-    st.button("hist_btn", key="hist_btn", on_click=lambda: st.session_state.update(page="history"))
+st.markdown(css, unsafe_allow_html=True)
 
-# Hide the hidden buttons completely
+# --- HIDDEN BUTTONS FOR PAGE SWITCHING ---
+btn_cfg  = st.button("cfg_btn", key="cfg_btn", on_click=lambda: st.session_state.update(page="config"))
+btn_dash = st.button("dash_btn", key="dash_btn", on_click=lambda: st.session_state.update(page="main"))
+btn_hist = st.button("hist_btn", key="hist_btn", on_click=lambda: st.session_state.update(page="history"))
+
+# Hide buttons
 st.markdown("""
 <style>
 button[key="cfg_btn"],
 button[key="dash_btn"],
 button[key="hist_btn"] {
-    opacity: 0 !important;
-    height: 0 !important;
-    width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    pointer-events: none !important;
+    display: none;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# --- ACTIVE TAB DETECTION ---
+# Determine the active page
 current_page = st.session_state.get("page", "config")
-
 cfg_class  = "sidebar-item-active" if current_page == "config" else "sidebar-item"
 dash_class = "sidebar-item-active" if current_page == "main" else "sidebar-item"
 hist_class = "sidebar-item-active" if current_page == "history" else "sidebar-item"
 
-# --- RENDER SIDEBAR ---
+# --- HTML SIDEBAR (this is what prevents escaping) ---
 sidebar_html = f"""
 <div class="custom-sidebar">
 
-    <div class="{cfg_class}" onclick="document.getElementById('cfg_btn').click()">
+    <div class="{cfg_class}" onclick="document.querySelector('button[key=\\'cfg_btn\\']').click()">
         Environment Configuration
     </div>
 
-    <div class="{dash_class}" onclick="document.getElementById('dash_btn').click()">
+    <div class="{dash_class}" onclick="document.querySelector('button[key=\\'dash_btn\\']').click()">
         Migration Dashboard
     </div>
 
-    <div class="{hist_class}" onclick="document.getElementById('hist_btn').click()">
+    <div class="{hist_class}" onclick="document.querySelector('button[key=\\'hist_btn\\']').click()">
         Migration History
     </div>
 
 </div>
 """
 
-st.markdown(sidebar_html, unsafe_allow_html=True)
+# RENDER USING st_html — prevents raw text issues
+st_html(sidebar_html, height=300, width=300)
 
 # ============================
 # CARD SELECTION UI STYLES
