@@ -539,7 +539,7 @@ def nav_item(label, page_key):
 
 def set_page(pg):
     st.session_state.page = pg
-    st.rerun()
+
 
 
 nav_item("Configuration", "config")
