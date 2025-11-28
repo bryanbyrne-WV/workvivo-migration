@@ -476,91 +476,74 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# FIXED BEAUTIFUL SIDEBAR NAVIGATION (FINAL)
+# TRUE STREAMLIT SIDEBAR NAVIGATION (FINAL)
 # ============================================
-from streamlit.components.v1 import html as st_html
 
-# --- SIDEBAR CSS ---
-css = """
+st.sidebar.markdown("""
 <style>
-.custom-sidebar {
-    background: white;
-    width: 240px;
-    padding: 25px 20px;
-    border-radius: 12px;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.12);
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 999;
+/* Sidebar styling */
+[data-testid="stSidebar"] {
+    background-color: white !important;
+    padding: 30px 20px;
 }
 
-.sidebar-item, .sidebar-item-active {
-    font-size: 20px;
-    font-weight: 700;
+.sidebar-title {
+    font-size: 26px;
+    font-weight: 800;
     color: #6203ed;
+    margin-bottom: 20px;
+}
+
+.sidebar-link {
+    font-size: 19px;
+    font-weight: 600;
+    padding: 12px 6px;
+    border-radius: 6px;
     cursor: pointer;
-    padding: 12px 10px;
-    margin-bottom: 10px;
-    border-left: 4px solid transparent;
-    transition: 0.2s;
+    margin-bottom: 6px;
+    color: #6203ed;
 }
 
-.sidebar-item:hover {
-    border-left: 4px solid #b387ff;
+.sidebar-link:hover {
+    background-color: #f1e8ff;
 }
 
-.sidebar-item-active {
-    border-left: 4px solid #6203ed;
-}
-</style>
-"""
-
-st.markdown(css, unsafe_allow_html=True)
-
-# --- HIDDEN BUTTONS FOR PAGE SWITCHING ---
-btn_cfg  = st.button("cfg_btn", key="cfg_btn", on_click=lambda: st.session_state.update(page="config"))
-btn_dash = st.button("dash_btn", key="dash_btn", on_click=lambda: st.session_state.update(page="main"))
-btn_hist = st.button("hist_btn", key="hist_btn", on_click=lambda: st.session_state.update(page="history"))
-
-# Hide buttons
-st.markdown("""
-<style>
-button[key="cfg_btn"],
-button[key="dash_btn"],
-button[key="hist_btn"] {
-    display: none;
+.sidebar-link-active {
+    font-size: 19px;
+    font-weight: 700;
+    padding: 12px 6px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    background-color: #e5d4ff;
+    color: #4b00d1;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Determine the active page
-current_page = st.session_state.get("page", "config")
-cfg_class  = "sidebar-item-active" if current_page == "config" else "sidebar-item"
-dash_class = "sidebar-item-active" if current_page == "main" else "sidebar-item"
-hist_class = "sidebar-item-active" if current_page == "history" else "sidebar-item"
+# Sidebar title
+st.sidebar.markdown("<div class='sidebar-title'>📌 Navigation</div>", unsafe_allow_html=True)
 
-# --- HTML SIDEBAR (this is what prevents escaping) ---
-sidebar_html = f"""
-<div class="custom-sidebar">
+# Determine current page
+current = st.session_state.get("page", "config")
 
-    <div class="{cfg_class}" onclick="document.querySelector('button[key=\\'cfg_btn\\']').click()">
-        Environment Configuration
-    </div>
+def nav_item(label, page_key):
+    css_class = "sidebar-link-active" if current == page_key else "sidebar-link"
+    clicked = st.sidebar.markdown(
+        f"<div class='{css_class}' onclick=\"window.location.href='/?page={page_key}'\">{label}</div>",
+        unsafe_allow_html=True
+    )
 
-    <div class="{dash_class}" onclick="document.querySelector('button[key=\\'dash_btn\\']').click()">
-        Migration Dashboard
-    </div>
+# Fix Streamlit rerun behaviour using query params
+query_params = st.query_params
+if "page" in query_params:
+    st.session_state.page = query_params["page"]
+else:
+    st.session_state.page = "config"
 
-    <div class="{hist_class}" onclick="document.querySelector('button[key=\\'hist_btn\\']').click()">
-        Migration History
-    </div>
-
-</div>
-"""
-
-# RENDER USING st_html — prevents raw text issues
-st_html(sidebar_html, height=300, width=300)
+# Sidebar links
+nav_item("Environment Configuration", "config")
+nav_item("Migration Dashboard", "main")
+nav_item("Migration History", "history")
 
 # ============================
 # CARD SELECTION UI STYLES
