@@ -2695,3 +2695,29 @@ elif st.session_state.page == "summary":
                 file_name="MigrationContentLog.csv",
                 mime="text/csv"
             )
+
+    # ============================================================
+    # MIGRATION HISTORY PAGE
+    # ============================================================
+    elif st.session_state.page == "history":
+    
+        st.header("📜 Migration History")
+    
+        history = st.session_state.migration_history
+    
+        if not history:
+            st.info("No migration history available yet.")
+            st.stop()
+    
+        import pandas as pd
+        df = pd.DataFrame(history)
+    
+        st.dataframe(df, use_container_width=True)
+    
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            "⬇️ Download Migration History CSV",
+            csv,
+            "migration_history.csv",
+            "text/csv"
+        )
