@@ -888,7 +888,13 @@ TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
 SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
 if st.session_state.page != "summary":
-    st.success("🔐 Configuration active — ready to run migrations.")
+    migration_code = st.session_state.get("migration_code", "")
+    
+    if migration_code:
+        st.success(f"🔐 Configuration active (Migration Code: {migration_code}) — ready to run migrations.")
+    else:
+        st.success("🔐 Configuration active — ready to run migrations.")
+
 
 # ============================================================
 # Ensure SUMMARY dictionary exists before any migration starts
