@@ -225,6 +225,10 @@ if not st.session_state.authenticated:
     if "config_history" not in st.session_state:
         st.session_state.config_history = []
 
+    if "migration_history" not in st.session_state:
+        st.session_state.migration_history = []
+
+
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 # ==========================================
@@ -2509,6 +2513,57 @@ elif st.session_state.page == "summary":
     
     # Green for success, red for cancelled
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
+
+    # ------------------------------------------------------------
+    # SAVE MIGRATION HISTORY ENTRY
+    # ------------------------------------------------------------
+    
+    history_entry = {
+        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "migration_code": st.session_state.get("migration_code", ""),
+        "status": "Cancelled" if is_cancelled else "Completed",
+        "users_migrated": s.get("users_migrated", 0),
+        "spaces_created": s.get("spaces_created", 0),
+        "updates_migrated": s.get("updates_migrated", 0),
+        "kudos_migrated": s.get("kudos_migrated", 0),
+        "articles_migrated": s.get("articles_migrated", 0),
+        "events_migrated": s.get("events_migrated", 0),
+        "global_pages_migrated": s.get("global_pages_migrated", 0),
+        "space_pages_migrated": s.get("space_pages_migrated", 0),
+        "start_time": s.get("start_time"),
+        "end_time": s.get("end_time"),
+    }
+    
+    # Prevent duplicate entries on rerun
+    if "last_history_saved" not in st.session_state or st.session_state.last_history_saved != history_entry["timestamp"]:
+        st.session_state.migration_history.append(history_entry)
+        st.session_state.last_history_saved = history_entry["timestamp"]
+
+    # ============================================================
+    # MIGRATION HISTORY PAGE
+    # ============================================================
+    elif st.session_state.page == "history":
+    
+        st.header("📜 Migration History")
+    
+        history = st.session_state.migration_history
+    
+        if not history:
+            st.info("No migration history available yet.")
+            st.stop()
+    
+        import pandas as pd
+        df = pd.DataFrame(history)
+    
+        st.dataframe(df, use_container_width=True)
+    
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            "⬇️ Download Migration History CSV",
+            csv,
+            "migration_history.csv",
+            "text/csv"
+        )
 
 
 
