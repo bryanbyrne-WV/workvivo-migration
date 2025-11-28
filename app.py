@@ -73,7 +73,7 @@ def test_workvivo_connection(scim_url, scim_token, api_url, api_token, wv_id):
     except Exception:
         return False, "❌ API connection failed"
 
-    return True, "✅ All tests passed! API & SCIM are valid."
+    return True, "✅ All connectivity tests passed! API & SCIM tokens are valid."
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "Workvivo2025!"
