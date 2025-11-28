@@ -523,27 +523,29 @@ current = st.session_state.get("page", "config")
 
 def nav_item(label, page_key):
     css_class = "sidebar-link-active" if current == page_key else "sidebar-link"
-    st.sidebar.markdown(
-        f"<div class='{css_class}' onclick=\"window.location.href='/?page={page_key}'\">{label}</div>",
+
+    clicked = st.sidebar.markdown(
+        f"""
+        <div class="{css_class}" style="cursor:pointer;"
+             onclick="document.getElementById('nav_{page_key}').click()">
+             {label}
+        </div>
+        """,
         unsafe_allow_html=True
     )
+
+    # Hidden Streamlit button that performs navigation
+    st.sidebar.button(label, key=f"nav_{page_key}", on_click=lambda: set_page(page_key), help="", use_container_width=True)
+
+def set_page(pg):
+    st.session_state.page = pg
+    st.rerun()
+
 
 nav_item("Configuration", "config")
 nav_item("Dashboard", "main")
 nav_item("History", "history")
 
-# ============================================================
-# PAGE ROUTER — READS URL PARAMETERS & SWITCHES PAGES
-# ============================================================
-params = st.query_params
-
-# If sidebar updated URL → sync page state
-if "page" in params:
-    st.session_state.page = params["page"]
-else:
-    # First load fallback
-    if "page" not in st.session_state:
-        st.session_state.page = "config"
 
 
 # ============================
