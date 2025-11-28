@@ -22,19 +22,20 @@ PAGES = {
 with st.sidebar:
     st.title("Migration Tool")
 
+    # Displayed selection defaults to current page *if it's one of the sidebar pages*
+    current = st.session_state.get("page", "config")
+    current_label_index = list(PAGES.values()).index(current) if current in PAGES.values() else 0
+
     selected_page_label = st.radio(
         "Navigation",
         list(PAGES.keys()),
-        index=list(PAGES.values()).index(st.session_state.get("page", "config"))
-        if st.session_state.get("page") in PAGES.values()
-        else 0,
+        index=current_label_index,
     )
 
-# Only change page IF the user selected something different in the sidebar
 selected_page = PAGES[selected_page_label]
-current_page = st.session_state.get("page")
 
-if current_page != selected_page:
+# ONLY change session_state.page IF user clicked a different sidebar option
+if selected_page != st.session_state.get("page"):
     st.session_state.page = selected_page
     st.rerun()
 
