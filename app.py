@@ -481,7 +481,6 @@ st.markdown("""
 
 st.sidebar.markdown("""
 <style>
-/* Sidebar styling */
 [data-testid="stSidebar"] {
     background-color: white !important;
     padding: 30px 20px;
@@ -520,27 +519,17 @@ st.sidebar.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Sidebar title
 st.sidebar.markdown("<div class='sidebar-title'>📌 Navigation</div>", unsafe_allow_html=True)
 
-# Determine current page
 current = st.session_state.get("page", "config")
 
 def nav_item(label, page_key):
     css_class = "sidebar-link-active" if current == page_key else "sidebar-link"
-    clicked = st.sidebar.markdown(
+    st.sidebar.markdown(
         f"<div class='{css_class}' onclick=\"window.location.href='/?page={page_key}'\">{label}</div>",
         unsafe_allow_html=True
     )
 
-# Fix Streamlit rerun behaviour using query params
-query_params = st.query_params
-if "page" in query_params:
-    st.session_state.page = query_params["page"]
-else:
-    st.session_state.page = "config"
-
-# Sidebar links
 nav_item("Environment Configuration", "config")
 nav_item("Migration Dashboard", "main")
 nav_item("Migration History", "history")
