@@ -476,9 +476,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ================================
-# PERFECT TOP NAV BAR (NO URL CHANGE)
-# ================================
+# ============================================
+# BEAUTIFUL TOP NAV BAR (FINAL WORKING VERSION)
+# ============================================
+
+# --- NAV BAR CSS ---
 st.markdown("""
 <style>
 .top-nav {
@@ -493,61 +495,90 @@ st.markdown("""
     box-shadow: 0 3px 15px rgba(0,0,0,0.12);
 }
 
-/* Make Streamlit buttons LOOK like text links */
-.top-nav button {
-    background: transparent !important;
-    color: #6203ed !important;
-    font-size: 22px !important;
-    font-weight: 700 !important;
-    border: none !important;
-    padding: 0 !important;
+.top-nav-item {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6203ed;
     cursor: pointer;
-    border-bottom: 3px solid transparent !important;
+    padding-bottom: 4px;
+    border-bottom: 3px solid transparent;
+    transition: 0.15s;
 }
 
-.top-nav button:hover {
-    border-bottom: 3px solid #b387ff !important;
+.top-nav-item:hover {
+    border-bottom: 3px solid #b387ff;
 }
 
-.top-nav .active {
-    border-bottom: 3px solid #6203ed !important;
+.top-nav-item-active {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6203ed;
+    cursor: pointer;
+    padding-bottom: 4px;
+    border-bottom: 3px solid #6203ed;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# CURRENT PAGE
-current_page = st.session_state.get("page", "config")
 
-# ACTIVE TAB CLASSES
-cfg_class   = "active" if current_page == "config" else ""
-dash_class  = "active" if current_page == "main" else ""
-hist_class  = "active" if current_page == "history" else ""
+# --- HIDDEN STREAMLIT BUTTONS (nav logic) ---
+btn_cfg = st.button("cfg_internal", key="cfg_internal")
+btn_dash = st.button("dash_internal", key="dash_internal")
+btn_hist = st.button("hist_internal", key="hist_internal")
 
-# Render NAV BAR container
-st.markdown('<div class="top-nav">', unsafe_allow_html=True)
+# Hide the invisible trigger buttons
+st.markdown("""
+<style>
+button[key="cfg_internal"],
+button[key="dash_internal"],
+button[key="hist_internal"] {
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns([1,1,1])
+# Handle button → page switches
+if btn_cfg:
+    st.session_state.page = "config"
+    st.rerun()
 
-with col1:
-    if st.button("Environment Configuration"):
-        st.session_state.page = "config"
-        st.rerun()
-    st.markdown(f"<div class='{cfg_class}'></div>", unsafe_allow_html=True)
+if btn_dash:
+    st.session_state.page = "main"
+    st.rerun()
 
-with col2:
-    if st.button("Migration Dashboard"):
-        st.session_state.page = "main"
-        st.rerun()
-    st.markdown(f"<div class='{dash_class}'></div>", unsafe_allow_html=True)
+if btn_hist:
+    st.session_state.page = "history"
+    st.rerun()
 
-with col3:
-    if st.button("Migration History"):
-        st.session_state.page = "history"
-        st.rerun()
-    st.markdown(f"<div class='{hist_class}'></div>", unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
+# --- BUILD THE PUBLIC NAV BAR ---
+current = st.session_state.get("page", "config")
 
+nav_html = f"""
+<div class="top-nav">
+
+    <div class="{ 'top-nav-item-active' if current=='config' else 'top-nav-item' }"
+         onclick="document.querySelector('button[key=\\'cfg_internal\\']').click()">
+        Environment Configuration
+    </div>
+
+    <div class="{ 'top-nav-item-active' if current=='main' else 'top-nav-item' }"
+         onclick="document.querySelector('button[key=\\'dash_internal\\']').click()">
+        Migration Dashboard
+    </div>
+
+    <div class="{ 'top-nav-item-active' if current=='history' else 'top-nav-item' }"
+         onclick="document.querySelector('button[key=\\'hist_internal\\']').click()">
+        Migration History
+    </div>
+
+</div>
+"""
+
+st.markdown(nav_html, unsafe_allow_html=True)
 
 # ============================
 # CARD SELECTION UI STYLES
