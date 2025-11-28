@@ -476,6 +476,81 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+# ================================
+# 🔝 TOP NAVIGATION BAR (PURPLE)
+# ================================
+st.markdown("""
+<style>
+.top-nav {
+    background: linear-gradient(90deg, #6203ed, #8a3dfc);
+    padding: 14px 30px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    color: white;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+}
+
+.top-nav button {
+    background: transparent !important;
+    color: white !important;
+    border: none !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    padding: 8px 12px !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+}
+
+.top-nav button:hover {
+    border-bottom: 2px solid white !important;
+    transform: translateY(-1px);
+}
+
+.top-nav .active {
+    border-bottom: 3px solid #ffd966 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Determine current tab
+current_page = st.session_state.get("page", "config")
+
+# Render navigation bar
+nav = st.container()
+with nav:
+    st.markdown('<div class="top-nav">', unsafe_allow_html=True)
+
+    # Environment config
+        config_class = "active" if current_page == "config" else ""
+        dashboard_class = "active" if current_page == "main" else ""
+        history_class = "active" if current_page == "history" else ""
+        
+        st.markdown(f"""
+        <div class="top-nav">
+            <button onclick="window.location.href='?page=config'" class="{config_class}">Environment Configuration</button>
+            <button onclick="window.location.href='?page=main'" class="{dashboard_class}">Migration Dashboard</button>
+            <button onclick="window.location.href='?page=history'" class="{history_class}">Migration History</button>
+        </div>
+        """, unsafe_allow_html=True)
+        st.session_state.page = "config"
+        st.rerun()
+
+    # Migration Dashboard
+    if st.button("Migration Dashboard", key="nav_dashboard"):
+        st.session_state.page = "main"
+        st.rerun()
+
+    # Migration History
+    if st.button("Migration History", key="nav_history"):
+        st.session_state.page = "history"
+        st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
 
 # ============================
 # CARD SELECTION UI STYLES
