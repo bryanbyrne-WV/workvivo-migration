@@ -14,6 +14,7 @@ import mimetypes
 # ------------------------------------------------------------
 
 PAGES = {
+    "Environment Configuration": "config",
     "Migration Dashboard": "main",
     "Migration History": "history",
 }
@@ -29,9 +30,13 @@ with st.sidebar:
         else 0,
     )
 
-st.session_state.page = PAGES[selected_page_label]
+# Only change page IF the user selected something different in the sidebar
+selected_page = PAGES[selected_page_label]
+current_page = st.session_state.get("page")
 
-
+if current_page != selected_page:
+    st.session_state.page = selected_page
+    st.rerun()
 
 
 
