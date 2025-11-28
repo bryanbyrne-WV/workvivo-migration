@@ -2066,8 +2066,8 @@ if st.session_state.page == "main":
         st.markdown("---")
 
 
-      # -----------------------------------------------------------
-    # Company Name Prompt (for Global Feed creation)
+    # -----------------------------------------------------------
+    # Global Feed Options
     # -----------------------------------------------------------
     st.markdown("#### Global Feed Options")
     
@@ -2081,32 +2081,24 @@ if st.session_state.page == "main":
     if "existing_global_id" not in st.session_state:
         st.session_state.existing_global_id = ""
     
-    # --- LOCAL variable that drives UI immediately ---
+    # --- ORGANISATION NAME INPUT (ALWAYS SHOWN FIRST) ---
+    company = st.text_input(
+        "Enter the organisation name for the Global Feed",
+        value=st.session_state.phase1_company,
+        placeholder="Example: Workvivo, Zoom, etc..."
+    )
+    
+    st.session_state.phase1_company = company
+    
+    # If company name is empty AND you're not using existing → warn
+    if not company and not st.session_state.use_existing_global:
+        st.warning("Required on the first migration to create the Global Feed Space.")
+    
+    # --- CHECKBOX BELOW COMPANY NAME (YOUR REQUEST) ---
     use_existing = st.checkbox(
         "Use existing Global Feed Space from a previous migration?",
         value=st.session_state.use_existing_global
     )
-    
-    # --- ORGANISATION NAME INPUT ---
-    if use_existing:
-        # Greyed-out version
-        st.text_input(
-            "Enter the organisation name for the Global Feed",
-            value=st.session_state.phase1_company,
-            placeholder="Disabled when using an existing Global Feed Space",
-            disabled=True
-        )
-    else:
-        # Editable version
-        new_company = st.text_input(
-            "Enter the organisation name for the Global Feed",
-            value=st.session_state.phase1_company,
-            placeholder="Example: Workvivo, Zoom, etc..."
-        )
-        st.session_state.phase1_company = new_company
-    
-        if not new_company:
-            st.warning("Required on the first migration to create the Global Feed Space.")
     
     # --- GLOBAL FEED SPACE ID INPUT (ONLY WHEN REUSING) ---
     if use_existing:
@@ -2117,12 +2109,14 @@ if st.session_state.page == "main":
         )
         st.session_state.existing_global_id = new_id
     else:
+        # If not reusing, clear any old value
         st.session_state.existing_global_id = ""
     
-    # --- Update session state AFTER UI renders ---
+    # Update session state after UI renders
     st.session_state.use_existing_global = use_existing
     
     st.markdown("---")
+
 
 
     # ============================================================
