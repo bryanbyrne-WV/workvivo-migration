@@ -88,6 +88,17 @@ ADMIN_PASSWORD = "Workvivo2025!"
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
+# ===========================================
+# GLOBAL INITIALISATION OF SESSION STATE
+# ===========================================
+
+if "config_history" not in st.session_state:
+    st.session_state.config_history = []
+
+if "migration_history" not in st.session_state:
+    st.session_state.migration_history = []
+
+
 if not st.session_state.authenticated:
 
     st.markdown("""
@@ -2539,31 +2550,6 @@ elif st.session_state.page == "summary":
         st.session_state.migration_history.append(history_entry)
         st.session_state.last_history_saved = history_entry["timestamp"]
 
-    # ============================================================
-    # MIGRATION HISTORY PAGE
-    # ============================================================
-    elif st.session_state.page == "history":
-    
-        st.header("📜 Migration History")
-    
-        history = st.session_state.migration_history
-    
-        if not history:
-            st.info("No migration history available yet.")
-            st.stop()
-    
-        import pandas as pd
-        df = pd.DataFrame(history)
-    
-        st.dataframe(df, use_container_width=True)
-    
-        csv = df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            "⬇️ Download Migration History CSV",
-            csv,
-            "migration_history.csv",
-            "text/csv"
-        )
 
 
 
