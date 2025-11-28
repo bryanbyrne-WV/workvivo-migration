@@ -558,6 +558,35 @@ if "config_saved" not in st.session_state:
         </style>
         """, unsafe_allow_html=True)
 
+
+# ----------------------------------------------------
+# MIGRATION CODE GENERATOR
+# ----------------------------------------------------
+
+st.markdown("### Migration Code")
+
+# Ensure key exists
+if "migration_code" not in st.session_state:
+    st.session_state.migration_code = ""
+
+# Show generated code if it exists
+if st.session_state.migration_code:
+    st.success(f"Migration Code: **{st.session_state.migration_code}**")
+
+# Generate button
+if st.button("Generate Migration Code"):
+    st.session_state.migration_code = generate_migration_code(10)
+    st.rerun()
+
+st.markdown("---")
+
+
+# ----------------------------------------------------
+# SOURCE ENVIRONMENT
+# ----------------------------------------------------
+st.markdown("<div class='config-card'>", unsafe_allow_html=True)
+
+
         # ----------------------------------------------------
         # SOURCE ENVIRONMENT
         # ----------------------------------------------------
@@ -844,22 +873,6 @@ SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
 
 if st.session_state.page != "summary":
     st.success("🔐 Configuration active — ready to run migrations.")
-
-st.markdown("### Migration Code")
-
-# Ensure key exists
-if "migration_code" not in st.session_state:
-    st.session_state.migration_code = ""
-
-# Display existing code
-if st.session_state.migration_code:
-    st.success(f"Generated Code: **{st.session_state.migration_code}**")
-
-# Generate button
-if st.button("Generate Migration Code"):
-    st.session_state.migration_code = generate_migration_code(10)
-    st.rerun()
-
 
 # ============================================================
 # Ensure SUMMARY dictionary exists before any migration starts
