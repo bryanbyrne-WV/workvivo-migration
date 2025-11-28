@@ -534,6 +534,20 @@ nav_item("Environment Configuration", "config")
 nav_item("Migration Dashboard", "main")
 nav_item("Migration History", "history")
 
+# ============================================================
+# PAGE ROUTER — READS URL PARAMETERS & SWITCHES PAGES
+# ============================================================
+params = st.query_params
+
+# If sidebar updated URL → sync page state
+if "page" in params:
+    st.session_state.page = params["page"]
+else:
+    # First load fallback
+    if "page" not in st.session_state:
+        st.session_state.page = "config"
+
+
 # ============================
 # CARD SELECTION UI STYLES
 # ============================
@@ -940,6 +954,13 @@ if st.session_state.page != "summary":
     if st.button("← Edit Environment Settings"):
         if "config_saved" in st.session_state:
             del st.session_state["config_saved"]
+        # ============================================================
+        # MAKE SIDEBAR CONFIG TAB ACT LIKE "EDIT SETTINGS"
+        # ============================================================
+        if st.session_state.page == "config":
+            if "config_saved" in st.session_state:
+                del st.session_state["config_saved"]
+
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
