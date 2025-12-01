@@ -1993,30 +1993,29 @@ if st.session_state.page == "main":
     # ============================================================
     # MIGRATION CODE (REQUIRED BEFORE MIGRATION)
     # ============================================================
-    st.markdown("### 🔑 Migration Code")
+    st.markdown("### Migration Code")
     
-    # Always show the migration code (needs a stable key!)
-    st.text_input(
-        "Migration Code (required before running a migration)",
-        value=st.session_state.get("migration_code", ""),
-        key="migration_code_display",
-        disabled=True
-    )
-    
-    # Generate code
+    # Generate button
     if st.button("Generate New Migration Code", key="gen_code_btn"):
+    
         import string, random
         new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
-        st.session_state.migration_code = new_code   # updates state
-        # IMPORTANT: NO rerun here — keys handle instant UI update
     
-    # Require code before migration
-    migration_code_ready = bool(st.session_state.get("migration_code"))
+        st.session_state.migration_code = new_code
     
-    if not migration_code_ready:
+        # Show the code in a green box — NO rerun, no widget
+        st.success(f"**New Migration Code:** {new_code}")
+    
+    # If no code exists yet
+    elif not st.session_state.get("migration_code"):
         st.error("⚠️ You must generate a migration code before running a migration.")
     
+    # If a code already exists, show it plainly
+    else:
+        st.info(f"**Current Migration Code:** {st.session_state.get('migration_code')}")
+    
     st.markdown("---")
+
 
 
 
