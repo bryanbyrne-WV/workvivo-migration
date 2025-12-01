@@ -908,9 +908,23 @@ if (
     migration_code = st.session_state.get("migration_code", "")
 
     if migration_code:
-        st.markdown("🔐 Configuration active — ready to run migrations.")
-    else:
-        st.success("🔐 Configuration active — ready to run migrations.")
+        st.markdown(
+    """
+    <div style="
+        background-color:#28a745;
+        color:white;
+        padding:12px 16px;
+        border-radius:6px;
+        font-weight:600;
+        margin-bottom:15px;
+        border: 1px solid #1e7e34;
+    ">
+        🔐 Configuration active — ready to run migrations.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 
 
 
