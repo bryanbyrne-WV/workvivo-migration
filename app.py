@@ -539,6 +539,37 @@ if "config_saved" not in st.session_state:
 # Always show the config form when on config page
 if st.session_state.page == "config":
 
+    # ============================================================
+    # MIGRATION CODE GENERATOR — ALWAYS AT TOP
+    # ============================================================
+    st.markdown("## 🔑 Migration Code")
+
+    # Ensure key exists
+    if "migration_code" not in st.session_state:
+        st.session_state.migration_code = ""
+
+    # Display current migration code
+    st.text_input(
+        "Your Migration Code",
+        value=st.session_state.migration_code,
+        disabled=True,
+        key="migration_code_display",
+        placeholder="No migration code generated yet"
+    )
+
+    # Generate new code button
+    if st.button("Generate New Migration Code"):
+        import string, random
+        new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
+        st.session_state.migration_code = new_code
+        st.success(f"New migration code generated: {new_code}")
+        st.rerun()
+
+    st.markdown("---")
+
+    # ============================================================
+    # CONFIG FORM START
+    # ============================================================
     with st.form("config_form"):
 
         st.header("🔐 Environment Configuration")
