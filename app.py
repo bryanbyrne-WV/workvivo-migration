@@ -2348,28 +2348,48 @@ if st.session_state.page == "main":
 
 
     
-    st.markdown('<div id="run-mig-btn">', unsafe_allow_html=True)
-    
-    if st.button("▶ Run Migration"):
-        # Smooth scroll
-        st.components.v1.html(
-            """
-            <script>
-                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-            """,
-            height=0,
-        )
-    
-        st.session_state.start_migration = True
-        st.session_state.migration_finished = False
-        st.session_state.cancel_requested = False
-        st.session_state.progress = 0
-    
-        st.session_state.page = "running"
-        st.rerun()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+# -----------------------------------------------------------
+# RUN MIGRATION BUTTON — DISABLED UNTIL MIGRATION CODE EXISTS
+# -----------------------------------------------------------
+
+code_exists = bool(st.session_state.get("migration_code"))
+
+st.markdown('<div id="run-mig-btn">', unsafe_allow_html=True)
+
+run_disabled = not code_exists
+
+run_clicked = st.button(
+    "▶ Run Migration",
+    disabled=run_disabled,
+    key="run_migration_main"
+)
+
+if run_disabled:
+    st.warning("⚠️ You must generate a migration code before running a migration.")
+
+if run_clicked:
+    # Smooth scroll
+    st.components.v1.html(
+        """
+        <script>
+            window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+        </script>
+        """,
+        height=0,
+    )
+
+    st.session_state.start_migration = True
+    st.session_state.migration_finished = False
+    st.session_state.cancel_requested = False
+    st.session_state.progress = 0
+
+    st.session_state.page = "running"
+    st.session_state.migration_code_used = st.session_state.migration_code  # ⭐ save code used
+
+    st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
+
     
         
     
