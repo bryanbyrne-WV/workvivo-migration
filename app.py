@@ -247,6 +247,9 @@ st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 # ==========================================
 if "page" not in st.session_state:
     st.session_state.page = "config"
+else:
+    pass  # do NOT override page on rerun
+
 
 
 # ============================================================
