@@ -1763,7 +1763,7 @@ def run_phase2(start_date):
         # Fetch all updates in this space
         updates_raw = paginated_fetch(
             f"{SOURCE_API_URL}/updates?in_spaces={src_sid}",
-            pure_source_headers
+            source_headers
         )
         
         # Filter by date range
