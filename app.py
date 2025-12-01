@@ -992,10 +992,26 @@ if "phase1_console_visible" not in st.session_state:
 
 
 # =========================================================
-# GLOBAL HEADERS FOR API CALLS (ONLY WHEN CONFIG IS LOADED)
+# GLOBAL HEADERS FOR API CALLS — FULLY SAFE VERSION
 # =========================================================
+
+# Only load real config if we are on a page that requires it
 if st.session_state.page not in ["config", "history"]:
 
+    # Values guaranteed to exist because of required_keys check
+    SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
+    SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
+    SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
+    SOURCE_API_TOKEN = st.session_state["SOURCE_API_TOKEN"]
+    SOURCE_WORKVIVO_ID = st.session_state["SOURCE_WORKVIVO_ID"]
+
+    TARGET_SCIM_URL = st.session_state["TARGET_SCIM_URL"]
+    TARGET_API_URL = st.session_state["TARGET_API_URL"]
+    TARGET_SCIM_TOKEN = st.session_state["TARGET_SCIM_TOKEN"]
+    TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
+    TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
+
+    # Safe real headers
     source_scim_headers = {
         "Authorization": f"Bearer {SOURCE_SCIM_TOKEN}",
         "Accept": "application/json"
@@ -1017,6 +1033,13 @@ if st.session_state.page not in ["config", "history"]:
         "Workvivo-Id": TARGET_WORKVIVO_ID,
         "Accept": "application/json"
     }
+
+else:
+    # Supply safe empty placeholders so History + Config work without config
+    source_scim_headers = {}
+    source_headers = {}
+    target_scim_headers = {}
+    target_headers_form = {}
 
 
 # =========================================================
