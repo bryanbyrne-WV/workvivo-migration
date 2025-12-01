@@ -1710,6 +1710,17 @@ def run_phase2(start_date):
     ui_log("=== PHASE 2: CONTENT MIGRATION START ===")
     ui_log("Migrating updates, comments, and likes…")
 
+        pure_source_headers = {
+        "Authorization": f"Bearer {SOURCE_API_TOKEN}",
+        "Accept": "application/json"
+    }
+    
+    pure_target_headers = {
+        "Authorization": f"Bearer {TARGET_API_TOKEN}",
+        "Accept": "application/json"
+    }
+    
+
     # Gateway will only be used for large video uploads.
     ui_log("Using normal Workvivo API for content fetch (gateway only for large videos)")
 
@@ -1718,7 +1729,7 @@ def run_phase2(start_date):
 
     # Load spaces (match by name)
     ui_log("Fetching spaces…")
-    source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
+    source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", pure_source_headers)
     target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers_form)
 
     space_map = {
