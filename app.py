@@ -543,7 +543,7 @@ if st.session_state.page == "config":
     # ============================================================
     # MIGRATION CODE GENERATOR — ALWAYS AT TOP
     # ============================================================
-    st.markdown("## 🔑 Migration Code")
+    st.markdown("## Migration Code")
     
     # Always display from session_state
     st.text_input(
