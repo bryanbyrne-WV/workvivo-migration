@@ -908,7 +908,7 @@ if (
     migration_code = st.session_state.get("migration_code", "")
 
     if migration_code:
-        st.success(f"🔐 Configuration active (Migration Code: {migration_code}) — ready to run migrations.")
+        st.markdown("🔐 Configuration active — ready to run migrations.")
     else:
         st.success("🔐 Configuration active — ready to run migrations.")
 
