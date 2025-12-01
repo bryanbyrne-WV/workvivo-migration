@@ -992,29 +992,32 @@ if "phase1_console_visible" not in st.session_state:
 
 
 # =========================================================
-# GLOBAL HEADERS FOR API CALLS
+# GLOBAL HEADERS FOR API CALLS (ONLY WHEN CONFIG IS LOADED)
 # =========================================================
-source_scim_headers = {
-    "Authorization": f"Bearer {SOURCE_SCIM_TOKEN}",
-    "Accept": "application/json"
-}
+if st.session_state.page not in ["config", "history"]:
 
-source_headers = {
-    "Authorization": f"Bearer {SOURCE_API_TOKEN}",
-    "Workvivo-Id": SOURCE_WORKVIVO_ID,
-    "Accept": "application/json"
-}
+    source_scim_headers = {
+        "Authorization": f"Bearer {SOURCE_SCIM_TOKEN}",
+        "Accept": "application/json"
+    }
 
-target_scim_headers = {
-    "Authorization": f"Bearer {TARGET_SCIM_TOKEN}",
-    "Accept": "application/json"
-}
+    source_headers = {
+        "Authorization": f"Bearer {SOURCE_API_TOKEN}",
+        "Workvivo-Id": SOURCE_WORKVIVO_ID,
+        "Accept": "application/json"
+    }
 
-target_headers_form = {
-    "Authorization": f"Bearer {TARGET_API_TOKEN}",
-    "Workvivo-Id": TARGET_WORKVIVO_ID,
-    "Accept": "application/json"
-}
+    target_scim_headers = {
+        "Authorization": f"Bearer {TARGET_SCIM_TOKEN}",
+        "Accept": "application/json"
+    }
+
+    target_headers_form = {
+        "Authorization": f"Bearer {TARGET_API_TOKEN}",
+        "Workvivo-Id": TARGET_WORKVIVO_ID,
+        "Accept": "application/json"
+    }
+
 
 # =========================================================
 # LOGGING AREA
