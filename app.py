@@ -874,8 +874,25 @@ if st.session_state.page not in ["summary", "history"]:
     st.markdown('</div>', unsafe_allow_html=True)
 
 
+# ============================================================
+# SAFE CONFIG LOAD — ONLY IF CONFIG IS SAVED
+# ============================================================
+required_keys = [
+    "SOURCE_SCIM_URL", "SOURCE_API_URL", "SOURCE_SCIM_TOKEN",
+    "SOURCE_API_TOKEN", "SOURCE_WORKVIVO_ID",
+    "TARGET_SCIM_URL", "TARGET_API_URL", "TARGET_SCIM_TOKEN",
+    "TARGET_API_TOKEN", "TARGET_WORKVIVO_ID",
+    "SPACE_CREATOR_EXTERNAL_ID"
+]
 
+missing = [k for k in required_keys if k not in st.session_state]
 
+if missing:
+    st.warning("⚠️ Configuration is not complete. Please finish the configuration first.")
+    st.session_state.page = "config"
+    st.stop()
+
+# Safe to load config values now
 SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
 SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
 SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
@@ -889,6 +906,7 @@ TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
 TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
 
 SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
+
 
 # Show configuration active message ONLY after config is saved
 if (
