@@ -2786,3 +2786,8 @@ elif st.session_state.page == "history":
         "migration_history.csv",
         "text/csv"
     )
+
+# ============================================================
+# TRACK LAST VISITED PAGE (NEEDED FOR MIGRATION CODE RESET)
+# ============================================================
+st.session_state.last_page = st.session_state.page
