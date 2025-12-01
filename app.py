@@ -540,6 +540,11 @@ if "migration_code" not in st.session_state:
 # Always show the config UI
 if st.session_state.page == "config":
 
+    # Reset migration code whenever entering Config page
+    if "last_page" in st.session_state and st.session_state.last_page != "config":
+        st.session_state.migration_code = ""
+
+
     # ============================================================
     # MIGRATION CODE GENERATOR — ALWAYS AT TOP
     # ============================================================
