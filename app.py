@@ -529,33 +529,33 @@ sidebar_button("History", "history")
 # CLEAN CONFIG FORM — FINAL WORKING VERSION
 # ============================================================
 
-# Ensure test flag exists
-if "config_test_passed" not in st.session_state:
-    st.session_state.config_test_passed = False
-
-# ALWAYS show the form — this must NOT be inside the IF
-with st.form("config_form"):
-
-    st.header("🔐 Environment Configuration")
-
-    st.markdown("""
-    <style>
-        .config-card {
-            background: #ffffff;
-            padding: 18px 22px;
-            border-radius: 10px;
-            box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 18px;
-        }
-        summary {
-            font-size: 18px;
-            font-weight: 600;
-            color: #6203ed;
-            cursor: pointer;
-            padding: 6px 0;
-        }
-    </style>
-    """, unsafe_allow_html=True)
+    # Ensure test flag exists
+    if "config_test_passed" not in st.session_state:
+        st.session_state.config_test_passed = False
+    
+    # ALWAYS show the form — this must NOT be inside the IF
+    with st.form("config_form"):
+    
+        st.header("🔐 Environment Configuration")
+    
+        st.markdown("""
+        <style>
+            .config-card {
+                background: #ffffff;
+                padding: 18px 22px;
+                border-radius: 10px;
+                box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
+                margin-bottom: 18px;
+            }
+            summary {
+                font-size: 18px;
+                font-weight: 600;
+                color: #6203ed;
+                cursor: pointer;
+                padding: 6px 0;
+            }
+        </style>
+        """, unsafe_allow_html=True)
 
         # ----------------------------------------------------
         # SOURCE ENVIRONMENT
