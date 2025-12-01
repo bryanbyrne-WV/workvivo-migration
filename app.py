@@ -794,31 +794,44 @@ if st.session_state.page == "config":
         # Save entry
         st.session_state.config_history.append(history_entry)
 
-               # ----------------------------------------------------
-        # SUCCESS + CONTINUE BUTTON
+        # ----------------------------------------------------
+        # SUCCESS MESSAGE
         # ----------------------------------------------------
         if st.session_state.get("config_saved"):
             st.success("Configuration saved! Click Continue to proceed.")
         
-        # NEW: Require migration code before continuing
-        if not st.session_state.get("migration_code"):
-            st.error("⚠️ You must generate a Migration Code before continuing.")
-            can_continue = False
-        else:
-            can_continue = True
+        # ----------------------------------------------------
+        # REQUIRE MIGRATION CODE BEFORE CONTINUING
+        # ----------------------------------------------------
+        has_code = bool(st.session_state.get("migration_code"))
         
+        if not has_code:
+            st.error("⚠️ You must generate a Migration Code before continuing.")
+        
+        # ----------------------------------------------------
+        # CONTINUE BUTTON
+        # ----------------------------------------------------
         st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
         
-        continue_clicked = st.button("➡ CONTINUE", disabled=not can_continue)
+        continue_clicked = st.button(
+            "➡ CONTINUE",
+            disabled=not (st.session_state.get("config_saved") and has_code)
+        )
         
         if continue_clicked:
+            # Move to main dashboard
             st.session_state.page = "main"
+        
+            # Update URL router
             st.query_params.update({"page": "main"})
+        
             st.rerun()
         
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # IMPORTANT — this MUST be here so "Edit Environment Settings" never shows on config page
+        # ----------------------------------------------------
+        # CRITICAL: STOP ALL DOWNSTREAM CODE
+        # ----------------------------------------------------
         st.stop()
 
 # Allow user to visit history freely
