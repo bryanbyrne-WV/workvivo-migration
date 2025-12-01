@@ -2008,7 +2008,8 @@ if st.session_state.page == "main":
     
         new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
         st.session_state.migration_code = new_code
-        st.success(f"New migration code generated: {new_code}")
+    
+        st.rerun()   # ⭐ FIX: updates grey box immediately
     
     # Require a code before user can run migration
     if not st.session_state.get("migration_code"):
@@ -2018,6 +2019,7 @@ if st.session_state.page == "main":
         migration_code_ready = True
     
     st.markdown("---")
+
 
 
     st.markdown("## Migrate Workvivo Data")
