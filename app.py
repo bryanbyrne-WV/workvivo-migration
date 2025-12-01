@@ -1995,22 +1995,20 @@ if st.session_state.page == "main":
     # ============================================================
     st.markdown("### 🔑 Migration Code")
     
-    # Grey box always showing the current code
-    current_code = st.session_state.get("migration_code", "")
-    
+    # Always show the current migration code (grey box)
     st.text_input(
         "Migration Code (required before running a migration)",
-        value=current_code,
+        value=st.session_state.get("migration_code", ""),
         key="migration_code_display",
         disabled=True
     )
     
-    # Generate new
-    if st.button("Generate New Migration Code", key="gen_mig_code"):
+    # Generate new code - SAFE VERSION
+    if st.button("Generate New Migration Code", key="gen_code_btn"):
         st.session_state.migration_code = generate_migration_code()
-        st.rerun()   # 🔥 ensures the grey box updates immediately
+        st.experimental_rerun()  # SAFE, avoids internal state corruption
     
-    # Require code before migration
+    # Check required
     if not st.session_state.get("migration_code"):
         st.error("⚠️ You must generate a migration code before running a migration.")
         migration_code_ready = False
