@@ -2189,7 +2189,7 @@ if st.session_state.page == "main":
     
     # If company name is empty AND you're not using existing → warn
     if not company and not st.session_state.use_existing_global:
-        st.warning("Required on the first migration to create the Global Feed Space.")
+        st.warning("⚠️ Required on the first migration to create the Global Feed Space.")
     
     # --- CHECKBOX BELOW COMPANY NAME (YOUR REQUEST) ---
     use_existing = st.checkbox(
@@ -2306,7 +2306,7 @@ if st.session_state.page == "main":
             key="global_pages_org_name",
         )
         st.warning(
-            "Global Pages should only be migrated **once**. "
+            "⚠️ Global Pages should only be migrated **once**. "
             "If they were already migrated previously, delete old Global Pages first."
         )
     
