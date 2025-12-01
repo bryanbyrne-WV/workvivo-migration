@@ -794,7 +794,7 @@ if st.session_state.page == "config":
         # Save entry
         st.session_state.config_history.append(history_entry)
 
-        # ----------------------------------------------------
+               # ----------------------------------------------------
         # SUCCESS + CONTINUE BUTTON
         # ----------------------------------------------------
         if st.session_state.get("config_saved"):
@@ -809,23 +809,17 @@ if st.session_state.page == "config":
         
         st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
         
-        # Continue button (disabled until migration code exists)
         continue_clicked = st.button("➡ CONTINUE", disabled=not can_continue)
         
         if continue_clicked:
-            # Update Streamlit session page
             st.session_state.page = "main"
-        
-            # Update URL so router stays in sync
             st.query_params.update({"page": "main"})
-            
             st.rerun()
         
         st.markdown('</div>', unsafe_allow_html=True)
         
+        # IMPORTANT — this MUST be here so "Edit Environment Settings" never shows on config page
         st.stop()
-
-
 
 # Allow user to visit history freely
 if (
