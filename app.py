@@ -1934,6 +1934,26 @@ def run_phase2(start_date):
 # ============================================================
 if st.session_state.page == "main":
 
+# -----------------------------------------
+# SAFETY CHECK: Require configuration first
+# -----------------------------------------
+required_keys = [
+    "SOURCE_SCIM_URL", "SOURCE_API_URL", "SOURCE_SCIM_TOKEN",
+    "SOURCE_API_TOKEN", "SOURCE_WORKVIVO_ID",
+    "TARGET_SCIM_URL", "TARGET_API_URL", "TARGET_SCIM_TOKEN",
+    "TARGET_API_TOKEN", "TARGET_WORKVIVO_ID"
+]
+
+missing = [k for k in required_keys if k not in st.session_state]
+
+if missing:
+    st.warning("⚠️ Please complete and save your configuration before accessing the dashboard.")
+    if st.button("Go to Configuration"):
+        st.session_state.page = "config"
+        st.rerun()
+    st.stop()
+
+
     st.markdown("## Migrate Workvivo Data")
 
     # ============================================================
