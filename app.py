@@ -1995,28 +1995,41 @@ if st.session_state.page == "main":
 
 
     # ============================================================
-    # MIGRATION CODE (REQUIRED BEFORE MIGRATION)
+    # MIGRATION CODE (CONSISTENT GREEN BOX)
     # ============================================================
     st.markdown("### Migration Code")
     
+    def green_box(text):
+        st.markdown(
+            f"""
+            <div style="
+                background-color:#28a745;
+                color:white;
+                padding:12px 16px;
+                border-radius:6px;
+                font-weight:600;
+                margin-bottom:10px;
+            ">
+                {text}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    
     # Generate button
     if st.button("Generate New Migration Code", key="gen_code_btn"):
-    
         import string, random
         new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
-    
         st.session_state.migration_code = new_code
+        green_box(f"New Migration Code: {new_code}")
     
-        # Show the code in a green box — NO rerun, no widget
-        st.success(f"**New Migration Code:** {new_code}")
-    
-    # If no code exists yet
+    # If no code exists yet → still green, but with a warning message
     elif not st.session_state.get("migration_code"):
-        st.error("⚠️ You must generate a migration code before running a migration.")
+        green_box("⚠️ Please generate a migration code before running.")
     
-    # If a code already exists, show it plainly
+    # If code exists → show it in green box
     else:
-        st.info(f"**Current Migration Code:** {st.session_state.get('migration_code')}")
+        green_box(f"Current Migration Code: {st.session_state.get('migration_code')}")
     
     st.markdown("---")
 
