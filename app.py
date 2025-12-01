@@ -776,30 +776,39 @@ if st.session_state.page == "config":
     # ----------------------------------------------------
     if st.session_state.get("config_saved"):
         st.success("Configuration saved! Click Continue to proceed.")
-
+    else:
+        st.info("Please save your configuration to continue.")
+    
+    # Styled button wrapper
     st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
-    if st.button("➡ CONTINUE"):
-        # Update Streamlit session page
+    
+    continue_clicked = st.button(
+        "➡ CONTINUE",
+        disabled=not st.session_state.get("config_saved", False)
+    )
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # When clicked and enabled → go to main dashboard
+    if continue_clicked:
         st.session_state.page = "main"
-    
-        # Update URL so router stays in sync
         st.query_params.update({"page": "main"})
+        st.rerun()
     
+    st.stop()
+    
+    
+    # ----------------------------------------------------
+    # FORCE USER BACK TO CONFIG IF NOT SAVED
+    # ----------------------------------------------------
+    if (
+        not st.session_state.get("config_saved", False)
+        and st.session_state.page not in ["config", "history"]
+    ):
+        st.warning("⚠️ Please complete configuration first.")
+        st.session_state.page = "config"
         st.rerun()
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.stop()
-
-
-# Allow user to visit history freely
-if (
-    "config_saved" not in st.session_state 
-    and st.session_state.page not in ["config", "history"]
-):
-    st.warning("⚠️ Please complete configuration first.")
-    st.session_state.page = "config"
-    st.rerun()
 
 
 
