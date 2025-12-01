@@ -2592,13 +2592,35 @@ elif st.session_state.page == "summary":
         else "Migration Completed Successfully"
     )
     
-    # NEW: No subtitle when cancelled (we rely on your ⚠️ warning instead)
+    # NEW — Subtitle logic
     title_sub = (
         ""
         if is_cancelled
         else "All migration tasks completed successfully."
     )
     
+    # Green for success, red for cancelled
+    title_color = "#CC0000" if is_cancelled else "#4CAF50"
+    
+    
+    # -------------------------------------------------------
+    # DISPLAY HEADER
+    # -------------------------------------------------------
+    st.markdown(f"""
+        <h2 style="color:{title_color}; font-weight:800; margin-bottom:4px;">
+            {title_text}
+        </h2>
+    """, unsafe_allow_html=True)
+    
+    # Subtitle (only if success)
+    if title_sub:
+        st.markdown(f"<div style='color:#555; margin-bottom:15px;'>{title_sub}</div>", unsafe_allow_html=True)
+    
+    # -------------------------------------------------------
+    # SHOW MIGRATION CODE USED
+    # -------------------------------------------------------
+    st.info(f"🔑 Migration Code Used: **{st.session_state.get('migration_code_used', 'N/A')}**")
+
     # Green for success, red for cancelled
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
 
