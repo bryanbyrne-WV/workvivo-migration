@@ -806,12 +806,15 @@ if st.session_state.page == "config":
     st.stop()
 
 
-# =========================================================
-# If config not saved, stay on config page
-# =========================================================
-if "config_saved" not in st.session_state and st.session_state.page != "config":
+# Allow user to visit history freely
+if (
+    "config_saved" not in st.session_state 
+    and st.session_state.page not in ["config", "history"]
+):
     st.warning("⚠️ Please complete configuration first.")
     st.session_state.page = "config"
+    st.rerun()
+
 
 
 
