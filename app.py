@@ -878,37 +878,40 @@ if st.session_state.page not in ["summary", "history"]:
 
 
 # ============================================================
-# SAFE CONFIG LOAD — ONLY IF CONFIG IS SAVED
+# SAFE CONFIG LOAD — ONLY FOR PAGES THAT REQUIRE IT
 # ============================================================
-required_keys = [
-    "SOURCE_SCIM_URL", "SOURCE_API_URL", "SOURCE_SCIM_TOKEN",
-    "SOURCE_API_TOKEN", "SOURCE_WORKVIVO_ID",
-    "TARGET_SCIM_URL", "TARGET_API_URL", "TARGET_SCIM_TOKEN",
-    "TARGET_API_TOKEN", "TARGET_WORKVIVO_ID",
-    "SPACE_CREATOR_EXTERNAL_ID"
-]
+if st.session_state.page not in ["config", "history"]:
 
-missing = [k for k in required_keys if k not in st.session_state]
+    required_keys = [
+        "SOURCE_SCIM_URL", "SOURCE_API_URL", "SOURCE_SCIM_TOKEN",
+        "SOURCE_API_TOKEN", "SOURCE_WORKVIVO_ID",
+        "TARGET_SCIM_URL", "TARGET_API_URL", "TARGET_SCIM_TOKEN",
+        "TARGET_API_TOKEN", "TARGET_WORKVIVO_ID",
+        "SPACE_CREATOR_EXTERNAL_ID"
+    ]
 
-if missing:
-    st.warning("⚠️ Configuration is not complete. Please finish the configuration first.")
-    st.session_state.page = "config"
-    st.stop()
+    missing = [k for k in required_keys if k not in st.session_state]
 
-# Safe to load config values now
-SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
-SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
-SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
-SOURCE_API_TOKEN = st.session_state["SOURCE_API_TOKEN"]
-SOURCE_WORKVIVO_ID = st.session_state["SOURCE_WORKVIVO_ID"]
+    if missing:
+        st.warning("⚠️ Configuration is not complete. Please finish the configuration first.")
+        st.session_state.page = "config"
+        st.stop()
 
-TARGET_SCIM_URL = st.session_state["TARGET_SCIM_URL"]
-TARGET_API_URL = st.session_state["TARGET_API_URL"]
-TARGET_SCIM_TOKEN = st.session_state["TARGET_SCIM_TOKEN"]
-TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
-TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
+    # Safe to load config values now
+    SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
+    SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
+    SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
+    SOURCE_API_TOKEN = st.session_state["SOURCE_API_TOKEN"]
+    SOURCE_WORKVIVO_ID = st.session_state["SOURCE_WORKVIVO_ID"]
 
-SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
+    TARGET_SCIM_URL = st.session_state["TARGET_SCIM_URL"]
+    TARGET_API_URL = st.session_state["TARGET_API_URL"]
+    TARGET_SCIM_TOKEN = st.session_state["TARGET_SCIM_TOKEN"]
+    TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
+    TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
+
+    SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
+
 
 
 # Show configuration active message ONLY after config is saved
