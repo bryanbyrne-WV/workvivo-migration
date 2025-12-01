@@ -2399,6 +2399,10 @@ elif st.session_state.page == "running":
     scroll_anchor = st.empty()
     scroll_anchor.markdown("<div id='top'></div>", unsafe_allow_html=True)
 
+    # Fix: ensure log placeholder never becomes None during rerun
+    if "live_log_placeholder" not in st.session_state or st.session_state.live_log_placeholder is None:
+    st.session_state.live_log_placeholder = st.empty()
+
     # Force scroll to the anchor
     st.components.v1.html(
         """
