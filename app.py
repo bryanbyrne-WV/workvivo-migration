@@ -1710,42 +1710,32 @@ def run_phase2(start_date):
     ui_log("=== PHASE 2: CONTENT MIGRATION START ===")
     ui_log("Migrating updates, comments, and likes…")
 
-    # ------------------------------------------------------------
-    # CORRECT HEADERS (MATCH PYCHARM)
-    # ------------------------------------------------------------
-    pure_source_headers = {
-        "Authorization": f"Bearer {SOURCE_API_TOKEN}",
-        "Accept": "application/json"
-    }
-
-    pure_target_headers = {
-        "Authorization": f"Bearer {TARGET_API_TOKEN}",
-        "Accept": "application/json"
-    }
-
+    # Gateway used ONLY for large videos
     ui_log("Using normal Workvivo API for content fetch (gateway only for large videos)")
 
     csv_buffer, csv_writer = init_phase2_csv()
 
     # ------------------------------------------------------------
-    # SPACES
+    # FETCH SPACES
     # ------------------------------------------------------------
     ui_log("Fetching spaces…")
-    source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", pure_source_headers)
-    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", pure_target_headers)
+    source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
+    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers_form)
 
     space_map = {
-        s["id"]: t["id"] for s in source_spaces for t in target_spaces
+        s["id"]: t["id"]
+        for s in source_spaces
+        for t in target_spaces
         if s.get("name") == t.get("name")
     }
 
     ui_log(f"Mapped {len(space_map)} spaces")
 
     # ------------------------------------------------------------
-    # LOAD TARGET USERS
+    # TARGET USERS
     # ------------------------------------------------------------
     ui_log("Fetching target users…")
-    tgt_users = paginated_fetch(f"{TARGET_API_URL}/users", pure_target_headers)
+    tgt_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers_form)
     tgt_user_ids = {u.get("external_id") for u in tgt_users if u.get("external_id")}
 
     # ------------------------------------------------------------
@@ -1758,7 +1748,6 @@ def run_phase2(start_date):
         if st.session_state.use_selected_spaces and sp["name"] not in selected_spaces:
             ui_log(f"⏭ Skipping space content (not selected): {sp['name']}")
             continue
-
         if st.session_state.cancel_requested:
             break
 
@@ -1772,11 +1761,11 @@ def run_phase2(start_date):
         ui_log(f"📦 Processing space: {sp['name']}")
 
         # ------------------------------------------------------------
-        # FETCH UPDATES IN SPACE (THE FIXED VERSION)
+        # FETCH UPDATES (FULLY FIXED VERSION)
         # ------------------------------------------------------------
         updates_raw = paginated_fetch(
             f"{SOURCE_API_URL}/updates?in_spaces[]={src_sid}",
-            pure_source_headers
+            source_headers
         )
 
         # ------------------------------------------------------------
@@ -1825,14 +1814,13 @@ def run_phase2(start_date):
                 "user_external_id": ext_user,
             }
 
-            # ============================================================
-            # MEDIA: Gallery / Attachments / Video
-            # ============================================================
             gallery_files = []
             attachments = []
             video_field = None
 
-            # ----------------- GALLERY -----------------
+            # ------------------------------------------------------------
+            # GALLERY
+            # ------------------------------------------------------------
             for i, img in enumerate(upd.get("gallery") or []):
                 url = img.get("url")
                 if not url:
@@ -1842,7 +1830,9 @@ def run_phase2(start_date):
                 if fp:
                     gallery_files.append(("gallery", fp))
 
-            # ----------------- ATTACHMENTS -----------------
+            # ------------------------------------------------------------
+            # ATTACHMENTS
+            # ------------------------------------------------------------
             for i, att in enumerate(upd.get("attachments") or []):
                 url = att.get("url")
                 if not url:
@@ -1853,7 +1843,9 @@ def run_phase2(start_date):
                 if fp:
                     attachments.append((name, fp))
 
-            # ----------------- VIDEO -----------------
+            # ------------------------------------------------------------
+            # VIDEO
+            # ------------------------------------------------------------
             video = upd.get("video")
             if video and video.get("url"):
                 url = video["url"]
@@ -1869,24 +1861,23 @@ def run_phase2(start_date):
                     else:
                         ui_log(f"⚠️ Video {size_mb:.1f} MB too large — skipped")
 
-            # ============================================================
-            # CREATE UPDATE
-            # ============================================================
+            # ------------------------------------------------------------
+            # CREATE UPDATE (handles video vs normal)
+            # ------------------------------------------------------------
             new_update_id = None
 
             if video_field:
-                # Gateway call
                 r = requests.post(
                     f"{gateway_url}/updates",
                     headers=target_headers_form,
                     data=base_payload,
                     files={"video": video_field},
-                    timeout=GATEWAY_TIMEOUT
+                    timeout=GATEWAY_TIMEOUT,
                 )
                 if r.status_code in (200, 201):
                     new_update_id = r.json().get("data", {}).get("id")
                 else:
-                    # Fallback
+                    # fallback without video
                     r = requests.post(
                         f"{TARGET_API_URL}/updates",
                         headers=target_headers_form,
@@ -1894,14 +1885,13 @@ def run_phase2(start_date):
                     )
                     if r.status_code in (200, 201):
                         new_update_id = r.json().get("data", {}).get("id")
+
             else:
                 file_payload = {}
                 idx = 0
-
                 for (n, fp) in gallery_files:
                     file_payload[f"gallery[{idx}]"] = open(fp, "rb")
                     idx += 1
-
                 for (n, fp) in attachments:
                     file_payload[f"attachments[{idx}]"] = (n, open(fp, "rb"))
                     idx += 1
@@ -1919,9 +1909,7 @@ def run_phase2(start_date):
                 ui_log(f"❌ Failed update: {r.text[:200]}")
                 continue
 
-            # ------------------------------------------------------------
-            # CSV Log
-            # ------------------------------------------------------------
+            # CSV log
             csv_writer.writerow([
                 datetime.utcnow().isoformat(),
                 sp["name"],
@@ -1938,7 +1926,7 @@ def run_phase2(start_date):
             # ------------------------------------------------------------
             comments = paginated_fetch(
                 f"{SOURCE_API_URL}/updates/{src_uid}/comments",
-                pure_source_headers
+                source_headers
             )
 
             ui_log(f"💬 {len(comments)} comments…")
@@ -1965,7 +1953,7 @@ def run_phase2(start_date):
             # ------------------------------------------------------------
             likes = paginated_fetch(
                 f"{SOURCE_API_URL}/updates/{src_uid}/likes",
-                pure_source_headers
+                source_headers
             )
 
             for lk in likes:
@@ -1981,6 +1969,7 @@ def run_phase2(start_date):
 
     ui_log("=== PHASE 2 COMPLETE ===")
     return csv_buffer.getvalue()
+
 
 # ============================================================
 # MAIN PAGE (Migration Dashboard)
