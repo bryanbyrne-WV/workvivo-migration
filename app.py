@@ -2005,9 +2005,10 @@ if st.session_state.page == "main":
     # Generate button
     if st.button("Generate New Migration Code"):
         import string, random
-        new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in self))
+        new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
         st.session_state.migration_code = new_code
-        st.rerun()  # ←—— forces display to update on THIS click
+        st.rerun()  # forces immediate refresh
+
     
     # Check if migration code exists
     migration_code_ready = bool(st.session_state.get("migration_code"))
