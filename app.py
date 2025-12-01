@@ -1995,7 +1995,7 @@ if st.session_state.page == "main":
     # ============================================================
     st.markdown("### 🔑 Migration Code")
     
-    # Show the current migration code if exists
+    # Always show current code in grey box
     st.text_input(
         "Migration Code (required before running a migration)",
         value=st.session_state.get("migration_code", ""),
@@ -2005,19 +2005,18 @@ if st.session_state.page == "main":
     # Generate button
     if st.button("Generate New Migration Code"):
         import string, random
-    
         new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
         st.session_state.migration_code = new_code
-        st.success(f"New migration code generated: {new_code}")
+        # No success banner — value simply updates above
     
-    # Require a code before user can run migration
-    if not st.session_state.get("migration_code"):
+    # Check if migration code exists
+    migration_code_ready = bool(st.session_state.get("migration_code"))
+    
+    if not migration_code_ready:
         st.error("⚠️ You must generate a migration code before running a migration.")
-        migration_code_ready = False
-    else:
-        migration_code_ready = True
     
     st.markdown("---")
+
 
 
     st.markdown("## Migrate Workvivo Data")
