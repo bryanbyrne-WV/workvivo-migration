@@ -545,25 +545,6 @@ if st.session_state.page == "config":
         st.session_state.migration_code = ""
 
 
-    # ============================================================
-    # MIGRATION CODE GENERATOR — ALWAYS AT TOP
-    # ============================================================
-    st.markdown("## Migration Code")
-    
-    # Always display from session_state
-    st.text_input(
-        "Your Migration Code",
-        value=st.session_state.get("migration_code", ""),
-        disabled=True
-    )
-    
-    if st.button("Generate New Migration Code"):
-        new_code = generate_migration_code()
-        st.session_state.migration_code = new_code
-        st.success(f"New migration code generated: {new_code}")
-        st.rerun()  # Force UI refresh
-    
-    st.markdown("---")
 
 
     # ============================================================
@@ -2007,6 +1988,36 @@ if st.session_state.page == "main":
             st.session_state.page = "config"
             st.rerun()
         st.stop()
+
+
+    # ============================================================
+    # MIGRATION CODE (REQUIRED BEFORE MIGRATION)
+    # ============================================================
+    st.markdown("### 🔑 Migration Code")
+    
+    # Show the current migration code if exists
+    st.text_input(
+        "Migration Code (required before running a migration)",
+        value=st.session_state.get("migration_code", ""),
+        disabled=True
+    )
+    
+    # Generate button
+    if st.button("Generate New Migration Code"):
+        import string, random
+    
+        new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
+        st.session_state.migration_code = new_code
+        st.success(f"New migration code generated: {new_code}")
+    
+    # Require a code before user can run migration
+    if not st.session_state.get("migration_code"):
+        st.error("⚠️ You must generate a migration code before running a migration.")
+        migration_code_ready = False
+    else:
+        migration_code_ready = True
+    
+    st.markdown("---")
 
 
     st.markdown("## Migrate Workvivo Data")
