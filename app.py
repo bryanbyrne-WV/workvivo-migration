@@ -2399,7 +2399,7 @@ elif st.session_state.page == "running":
     scroll_anchor = st.empty()
     scroll_anchor.markdown("<div id='top'></div>", unsafe_allow_html=True)
 
-        # Force scroll to the anchor
+    # Force scroll to the anchor
     st.components.v1.html(
         """
         <script>
@@ -2412,7 +2412,6 @@ elif st.session_state.page == "running":
         height=0,
     )
 
-    
 
     # --------------------------------------------------------
     # HEADER LOGIC
