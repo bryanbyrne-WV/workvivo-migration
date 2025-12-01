@@ -1710,66 +1710,78 @@ def run_phase2(start_date):
     ui_log("=== PHASE 2: CONTENT MIGRATION START ===")
     ui_log("Migrating updates, comments, and likes…")
 
-        pure_source_headers = {
+    # ------------------------------------------------------------
+    # CORRECT HEADERS (MATCH PYCHARM)
+    # ------------------------------------------------------------
+    pure_source_headers = {
         "Authorization": f"Bearer {SOURCE_API_TOKEN}",
         "Accept": "application/json"
     }
-    
+
     pure_target_headers = {
         "Authorization": f"Bearer {TARGET_API_TOKEN}",
         "Accept": "application/json"
     }
-    
 
-    # Gateway will only be used for large video uploads.
     ui_log("Using normal Workvivo API for content fetch (gateway only for large videos)")
-
 
     csv_buffer, csv_writer = init_phase2_csv()
 
-    # Load spaces (match by name)
+    # ------------------------------------------------------------
+    # SPACES
+    # ------------------------------------------------------------
     ui_log("Fetching spaces…")
     source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", pure_source_headers)
-    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers_form)
+    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", pure_target_headers)
 
     space_map = {
         s["id"]: t["id"] for s in source_spaces for t in target_spaces
         if s.get("name") == t.get("name")
     }
+
     ui_log(f"Mapped {len(space_map)} spaces")
 
-    # Load target users for validation
+    # ------------------------------------------------------------
+    # LOAD TARGET USERS
+    # ------------------------------------------------------------
     ui_log("Fetching target users…")
-    tgt_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers_form)
+    tgt_users = paginated_fetch(f"{TARGET_API_URL}/users", pure_target_headers)
     tgt_user_ids = {u.get("external_id") for u in tgt_users if u.get("external_id")}
 
-    # Iterate spaces
+    # ------------------------------------------------------------
+    # SPACE LOOP
+    # ------------------------------------------------------------
     selected_spaces = parse_space_list(st.session_state.get("selected_space_names", ""))
-    
+
     for sp in source_spaces:
+
         if st.session_state.use_selected_spaces and sp["name"] not in selected_spaces:
             ui_log(f"⏭ Skipping space content (not selected): {sp['name']}")
             continue
+
         if st.session_state.cancel_requested:
             break
 
         src_sid = sp["id"]
         tgt_sid = space_map.get(src_sid)
+
         if not tgt_sid:
             ui_log(f"⚠️ Skipping unmapped space: {sp['name']}")
             continue
 
         ui_log(f"📦 Processing space: {sp['name']}")
 
-        # Fetch all updates in this space
+        # ------------------------------------------------------------
+        # FETCH UPDATES IN SPACE (THE FIXED VERSION)
+        # ------------------------------------------------------------
         updates_raw = paginated_fetch(
-            f"{SOURCE_API_URL}/updates?in_spaces[]={src_sid}"
-            source_headers
+            f"{SOURCE_API_URL}/updates?in_spaces[]={src_sid}",
+            pure_source_headers
         )
 
-
-
-        # Filter by date range
+        # ------------------------------------------------------------
+        # DATE FILTER
+        # ------------------------------------------------------------
         updates = []
         for u in updates_raw:
             created = u.get("created_at")
@@ -1785,33 +1797,21 @@ def run_phase2(start_date):
 
         ui_log(f"Found {len(updates)} updates to migrate")
 
-        # ------------------------------------------
-        # MIGRATE EACH UPDATE
-        # ------------------------------------------
+        # ------------------------------------------------------------
+        # UPDATE LOOP
+        # ------------------------------------------------------------
         for upd in updates:
+
             if st.session_state.cancel_requested:
                 break
 
             src_uid = upd["id"]
-            src_ext = upd.get("external_id")
-            creator = upd.get("creator") or {}
-            ext_user = creator.get("external_id")
+            ext_user = (upd.get("creator") or {}).get("external_id")
 
             if not ext_user or ext_user not in tgt_user_ids:
                 ui_log(f"⏭ Skipping update {src_uid} — creator missing on target")
                 continue
 
-            # Duplicate handling
-            duplicate_mode = st.session_state.get("dup_mode", "Skip duplicates (recommended)")
-            skip_duplicates = duplicate_mode.startswith("Skip")
-
-            if skip_duplicates and "summary" in st.session_state:
-                summary_log = st.session_state.summary
-                # No strict duplicate mechanism now, but placeholder
-                # Extend here later if needed
-                pass
-
-            # Prepare post payload
             text = upd.get("text") or " "
             created_at = upd.get("created_at") or datetime.utcnow().isoformat()
 
@@ -1825,10 +1825,14 @@ def run_phase2(start_date):
                 "user_external_id": ext_user,
             }
 
-            # -------------------------------
-            # GALLERY
-            # -------------------------------
+            # ============================================================
+            # MEDIA: Gallery / Attachments / Video
+            # ============================================================
             gallery_files = []
+            attachments = []
+            video_field = None
+
+            # ----------------- GALLERY -----------------
             for i, img in enumerate(upd.get("gallery") or []):
                 url = img.get("url")
                 if not url:
@@ -1838,10 +1842,7 @@ def run_phase2(start_date):
                 if fp:
                     gallery_files.append(("gallery", fp))
 
-            # -------------------------------
-            # ATTACHMENTS
-            # -------------------------------
-            attachments = []
+            # ----------------- ATTACHMENTS -----------------
             for i, att in enumerate(upd.get("attachments") or []):
                 url = att.get("url")
                 if not url:
@@ -1852,12 +1853,8 @@ def run_phase2(start_date):
                 if fp:
                     attachments.append((name, fp))
 
-            # -------------------------------
-            # VIDEO (Gateway required)
-            # -------------------------------
-            video_field = None
+            # ----------------- VIDEO -----------------
             video = upd.get("video")
-
             if video and video.get("url"):
                 url = video["url"]
                 ext = url.split('.')[-1].split('?')[0].lower()
@@ -1872,13 +1869,13 @@ def run_phase2(start_date):
                     else:
                         ui_log(f"⚠️ Video {size_mb:.1f} MB too large — skipped")
 
-            # -------------------------------
-            # POST CREATION — VIDEO FIRST
-            # -------------------------------
+            # ============================================================
+            # CREATE UPDATE
+            # ============================================================
             new_update_id = None
 
             if video_field:
-                # Gateway upload
+                # Gateway call
                 r = requests.post(
                     f"{gateway_url}/updates",
                     headers=target_headers_form,
@@ -1886,31 +1883,25 @@ def run_phase2(start_date):
                     files={"video": video_field},
                     timeout=GATEWAY_TIMEOUT
                 )
-
                 if r.status_code in (200, 201):
                     new_update_id = r.json().get("data", {}).get("id")
-                    ui_log(f"📨 Video update created → {new_update_id}")
                 else:
-                    ui_log(f"⚠️ Gateway upload failed: {r.text[:200]} — retry no-video")
-                    # Retry without video
+                    # Fallback
                     r = requests.post(
                         f"{TARGET_API_URL}/updates",
                         headers=target_headers_form,
-                        data=base_payload,
-                        files=None
+                        data=base_payload
                     )
                     if r.status_code in (200, 201):
                         new_update_id = r.json().get("data", {}).get("id")
-                        ui_log(f"📨 Update created (no video) → {new_update_id}")
             else:
-                # Normal API creation
                 file_payload = {}
-
-                # Build file dict
                 idx = 0
+
                 for (n, fp) in gallery_files:
                     file_payload[f"gallery[{idx}]"] = open(fp, "rb")
                     idx += 1
+
                 for (n, fp) in attachments:
                     file_payload[f"attachments[{idx}]"] = (n, open(fp, "rb"))
                     idx += 1
@@ -1921,15 +1912,16 @@ def run_phase2(start_date):
                     data=base_payload,
                     files=file_payload or None
                 )
-
                 if r.status_code in (200, 201):
                     new_update_id = r.json().get("data", {}).get("id")
-                    ui_log(f"📨 Update created → {new_update_id}")
-                else:
-                    ui_log(f"❌ Failed update: {r.text[:200]}")
-                    continue
 
-            # Log CSV row
+            if not new_update_id:
+                ui_log(f"❌ Failed update: {r.text[:200]}")
+                continue
+
+            # ------------------------------------------------------------
+            # CSV Log
+            # ------------------------------------------------------------
             csv_writer.writerow([
                 datetime.utcnow().isoformat(),
                 sp["name"],
@@ -1941,8 +1933,14 @@ def run_phase2(start_date):
                 ""
             ])
 
+            # ------------------------------------------------------------
             # COMMENTS
-            comments = paginated_fetch(f"{SOURCE_API_URL}/updates/{src_uid}/comments", source_headers)
+            # ------------------------------------------------------------
+            comments = paginated_fetch(
+                f"{SOURCE_API_URL}/updates/{src_uid}/comments",
+                pure_source_headers
+            )
+
             ui_log(f"💬 {len(comments)} comments…")
 
             for c in comments:
@@ -1955,14 +1953,21 @@ def run_phase2(start_date):
                     "text": c.get("text") or " ",
                     "created_at": c.get("created_at"),
                 }
-                cr = requests.post(
+
+                requests.post(
                     f"{TARGET_API_URL}/updates/{new_update_id}/comments",
                     headers=target_headers_form,
                     data=cp
                 )
 
+            # ------------------------------------------------------------
             # LIKES
-            likes = paginated_fetch(f"{SOURCE_API_URL}/updates/{src_uid}/likes", source_headers)
+            # ------------------------------------------------------------
+            likes = paginated_fetch(
+                f"{SOURCE_API_URL}/updates/{src_uid}/likes",
+                pure_source_headers
+            )
+
             for lk in likes:
                 luser = lk.get("user_external_id")
                 if not luser or luser not in tgt_user_ids:
@@ -1975,9 +1980,8 @@ def run_phase2(start_date):
                 )
 
     ui_log("=== PHASE 2 COMPLETE ===")
-
-    # Return CSV text
     return csv_buffer.getvalue()
+
 # ============================================================
 # MAIN PAGE (Migration Dashboard)
 # ============================================================
