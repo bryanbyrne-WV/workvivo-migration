@@ -1970,6 +1970,10 @@ def run_phase2(start_date):
 # ============================================================
 if st.session_state.page == "main":
 
+    # Always reset migration code when returning to the main dashboard
+    st.session_state.migration_code = ""
+
+
     # -----------------------------------------
     # SAFETY CHECK: Require configuration first
     # -----------------------------------------
