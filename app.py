@@ -529,14 +529,15 @@ sidebar_button("History", "history")
 # CLEAN CONFIG FORM — FINAL WORKING VERSION
 # ============================================================
 
-# Ensure test flag exists
+# Ensure flags exist
 if "config_test_passed" not in st.session_state:
     st.session_state.config_test_passed = False
-
 if "config_saved" not in st.session_state:
     st.session_state.config_saved = False
+if "migration_code" not in st.session_state:
+    st.session_state.migration_code = ""
 
-# Always show the config form when on config page
+# Always show the config UI
 if st.session_state.page == "config":
 
     # ============================================================
@@ -544,21 +545,15 @@ if st.session_state.page == "config":
     # ============================================================
     st.markdown("## 🔑 Migration Code")
 
-    # Ensure key exists
-    if "migration_code" not in st.session_state:
-        st.session_state.migration_code = ""
-
-    # Display current migration code
     st.text_input(
         "Your Migration Code",
         value=st.session_state.migration_code,
         disabled=True,
         key="migration_code_display",
-        placeholder="No migration code generated yet"
     )
 
-    # Generate new code button
-    if st.button("Generate New Migration Code"):
+    # This MUST be outside the form to work
+    if st.button("Generate New Migration Code", key="btn_generate_code"):
         import string, random
         new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
         st.session_state.migration_code = new_code
@@ -568,7 +563,7 @@ if st.session_state.page == "config":
     st.markdown("---")
 
     # ============================================================
-    # CONFIG FORM START
+    # CONFIG FORM STARTS HERE — BELOW THE GENERATOR
     # ============================================================
     with st.form("config_form"):
 
@@ -602,27 +597,24 @@ if st.session_state.page == "config":
             SOURCE_BASE_URL = st.text_input(
                 "Source Workvivo URL",
                 value="wv-migration2.workvivo.com",
-                help="Enter your Workvivo domain (e.g. organisation.workvivo.com)"
+                help="Enter your Workvivo domain"
             )
 
             SOURCE_SCIM_TOKEN = st.text_input(
                 "Source SCIM Token",
                 value="9BdzwvLUw0C8gZTE9ZWv6sd4K9thRMdWdUeZdSv1",
-                type="password",
-                help="Authentication token for SCIM user requests in the SOURCE tenant."
+                type="password"
             )
             
             SOURCE_API_TOKEN = st.text_input(
                 "Source API Token",
                 value="388|636f9f76e508ae9fde1530f987080c9b275a4371",
-                type="password",
-                help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
+                type="password"
             )
 
             SOURCE_WORKVIVO_ID = st.text_input(
                 "Source Workvivo ID",
-                value="1584",
-                help="Workvivo ID required for API requests on the SOURCE tenant."
+                value="1584"
             )
 
         st.markdown("</div>", unsafe_allow_html=True)
@@ -632,35 +624,30 @@ if st.session_state.page == "config":
         # ----------------------------------------------------
         st.markdown("<div class='config-card'>", unsafe_allow_html=True)
         with st.expander("Target Environment", expanded=True):
-        
+
             TARGET_BASE_URL = st.text_input(
                 "Target Workvivo URL",
-                value="migration-test-1.workvivo.com",
-                help="Enter your Workvivo domain (e.g. organisation.workvivo.com)"
+                value="migration-test-1.workvivo.com"
             )
-                
+
             TARGET_SCIM_TOKEN = st.text_input(
                 "Target SCIM Token",
                 value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
-                type="password",
-                help="Authentication token for SCIM user creation inside the TARGET tenant."
+                type="password"
             )
             
             TARGET_API_TOKEN = st.text_input(
                 "Target API Token",
                 value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
-                type="password",
-                help="Bearer token for creating spaces, uploading images and writing content to the TARGET tenant."
+                type="password"
             )
 
             TARGET_WORKVIVO_ID = st.text_input(
                 "Target Workvivo ID",
-                value="3000384",
-                help="Workvivo ID required for API requests on the TARGET tenant."
+                value="3000384"
             )
-        
-        st.markdown("</div>", unsafe_allow_html=True)
 
+        st.markdown("</div>", unsafe_allow_html=True)
         # ----------------------------------------------------
         # VALIDATION
         # ----------------------------------------------------
