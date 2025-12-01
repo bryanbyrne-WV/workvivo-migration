@@ -2005,9 +2005,9 @@ if st.session_state.page == "main":
     # Generate button
     if st.button("Generate New Migration Code"):
         import string, random
-        new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
+        new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in self))
         st.session_state.migration_code = new_code
-        # No success banner — value simply updates above
+        st.rerun()  # ←—— forces display to update on THIS click
     
     # Check if migration code exists
     migration_code_ready = bool(st.session_state.get("migration_code"))
@@ -2016,6 +2016,7 @@ if st.session_state.page == "main":
         st.error("⚠️ You must generate a migration code before running a migration.")
     
     st.markdown("---")
+
 
 
 
