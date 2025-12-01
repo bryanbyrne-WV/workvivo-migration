@@ -243,15 +243,8 @@ if not st.session_state.authenticated:
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 
-# --- URL Router ---
-params = st.query_params
-
 if "page" not in st.session_state:
-    # Use URL first
-    if "page" in params:
-        st.session_state.page = params["page"]
-    else:
-        st.session_state.page = "config"
+    st.session_state.page = "config"
 
 
 # ============================================================
@@ -798,7 +791,8 @@ if "config_saved" not in st.session_state:
     # ----------------------------------------------------
     # SUCCESS + CONTINUE BUTTON
     # ----------------------------------------------------
-    st.success("Configuration saved! Click Continue to proceed.")
+    if st.session_state.get("config_saved"):
+        st.success("Configuration saved! Click Continue to proceed.")
 
     st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
     if st.button("➡ CONTINUE"):
