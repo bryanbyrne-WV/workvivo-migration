@@ -771,35 +771,35 @@ if st.session_state.page == "config":
         # Save entry
         st.session_state.config_history.append(history_entry)
 
-    # ----------------------------------------------------
-    # SUCCESS + CONTINUE BUTTON
-    # ----------------------------------------------------
-    if st.session_state.get("config_saved"):
-        st.success("Configuration saved! Click Continue to proceed.")
-
-    st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
-    if st.button("➡ CONTINUE"):
-        # Update Streamlit session page
-        st.session_state.page = "main"
+        # ----------------------------------------------------
+        # SUCCESS + CONTINUE BUTTON
+        # ----------------------------------------------------
+        if st.session_state.get("config_saved"):
+            st.success("Configuration saved! Click Continue to proceed.")
     
-        # Update URL so router stays in sync
-        st.query_params.update({"page": "main"})
+        st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
+        if st.button("➡ CONTINUE"):
+            # Update Streamlit session page
+            st.session_state.page = "main"
+        
+            # Update URL so router stays in sync
+            st.query_params.update({"page": "main"})
+        
+            st.rerun()
     
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+        st.stop()
+    
+    
+    # Allow user to visit history freely
+    if (
+        "config_saved" not in st.session_state 
+        and st.session_state.page not in ["config", "history"]
+    ):
+        st.warning("⚠️ Please complete configuration first.")
+        st.session_state.page = "config"
         st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.stop()
-
-
-# Allow user to visit history freely
-if (
-    "config_saved" not in st.session_state 
-    and st.session_state.page not in ["config", "history"]
-):
-    st.warning("⚠️ Please complete configuration first.")
-    st.session_state.page = "config"
-    st.rerun()
 
 
 
@@ -1993,11 +1993,11 @@ if st.session_state.page == "main":
     # ============================================================
     # MIGRATION CODE (REQUIRED BEFORE MIGRATION)
     # ============================================================
-    st.markdown("### 🔑 Migration Code")
+    st.markdown("### Migration Code")
     
     # Show the current migration code if exists
     st.text_input(
-        "Migration Code (required before running a migration)",
+        "Migration Code",
         value=st.session_state.get("migration_code", ""),
         disabled=True
     )
