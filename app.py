@@ -741,7 +741,11 @@ if st.session_state.page == "config":
         st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
         submitted = st.form_submit_button(
             "Save Configuration",
-            disabled=(len(errors) > 0) or (not st.session_state.config_test_passed)
+            disabled=(
+                (len(errors) > 0)
+                or (not st.session_state.config_test_passed)
+                or (not st.session_state.get("migration_code"))
+            )
         )
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -790,25 +794,37 @@ if st.session_state.page == "config":
         # Save entry
         st.session_state.config_history.append(history_entry)
 
-    # ----------------------------------------------------
-    # SUCCESS + CONTINUE BUTTON
-    # ----------------------------------------------------
-    if st.session_state.get("config_saved"):
-        st.success("Configuration saved! Click Continue to proceed.")
+        # ----------------------------------------------------
+        # SUCCESS + CONTINUE BUTTON
+        # ----------------------------------------------------
+        if st.session_state.get("config_saved"):
+            st.success("Configuration saved! Click Continue to proceed.")
+        
+        # NEW: Require migration code before continuing
+        if not st.session_state.get("migration_code"):
+            st.error("⚠️ You must generate a Migration Code before continuing.")
+            can_continue = False
+        else:
+            can_continue = True
+        
+        st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
+        
+        # Continue button (disabled until migration code exists)
+        continue_clicked = st.button("➡ CONTINUE", disabled=not can_continue)
+        
+        if continue_clicked:
+            # Update Streamlit session page
+            st.session_state.page = "main"
+        
+            # Update URL so router stays in sync
+            st.query_params.update({"page": "main"})
+            
+            st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        st.stop()
 
-    st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
-    if st.button("➡ CONTINUE"):
-        # Update Streamlit session page
-        st.session_state.page = "main"
-    
-        # Update URL so router stays in sync
-        st.query_params.update({"page": "main"})
-    
-        st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.stop()
 
 
 # Allow user to visit history freely
@@ -2169,7 +2185,11 @@ if st.session_state.page == "main":
     )
     
     st.session_state.phase1_company = company
+
+    if not st.session_state.get("migration_code"):
+        st.error("⚠️ Please generate a Migration Code before saving or continuing.")
     
+        
     # If company name is empty AND you're not using existing → warn
     if not company and not st.session_state.use_existing_global:
         st.warning("Required on the first migration to create the Global Feed Space.")
