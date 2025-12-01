@@ -544,23 +544,22 @@ if st.session_state.page == "config":
     # MIGRATION CODE GENERATOR — ALWAYS AT TOP
     # ============================================================
     st.markdown("## 🔑 Migration Code")
-
+    
+    # Always display from session_state
     st.text_input(
         "Your Migration Code",
-        value=st.session_state.migration_code,
-        disabled=True,
-        key="migration_code_display",
+        value=st.session_state.get("migration_code", ""),
+        disabled=True
     )
-
-    # This MUST be outside the form to work
-    if st.button("Generate New Migration Code", key="btn_generate_code"):
-        import string, random
-        new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
+    
+    if st.button("Generate New Migration Code"):
+        new_code = generate_migration_code()
         st.session_state.migration_code = new_code
         st.success(f"New migration code generated: {new_code}")
-        st.rerun()
-
+        st.rerun()  # Force UI refresh
+    
     st.markdown("---")
+
 
     # ============================================================
     # CONFIG FORM STARTS HERE — BELOW THE GENERATOR
