@@ -243,6 +243,15 @@ if not st.session_state.authenticated:
 st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
 
 
+# --- URL Router ---
+params = st.query_params
+
+if "page" not in st.session_state:
+    # Use URL first
+    if "page" in params:
+        st.session_state.page = params["page"]
+    else:
+        st.session_state.page = "config"
 
 
 # ============================================================
@@ -474,10 +483,6 @@ st.markdown("""
 # ============================================
 # SIMPLE + RELIABLE SIDEBAR NAVIGATION (BUTTONS)
 # ============================================
-
-# Ensure page key
-if "page" not in st.session_state:
-    st.session_state.page = "config"
 
 # Sidebar title
 st.sidebar.markdown(
