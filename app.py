@@ -1965,32 +1965,29 @@ def run_phase2(start_date):
 
     # Return CSV text
     return csv_buffer.getvalue()
-    
 # ============================================================
 # MAIN PAGE (Migration Dashboard)
 # ============================================================
 if st.session_state.page == "main":
 
-    # Important: Do not run config safety check while switching pages
-    if not st.session_state.get("start_migration", False):
-
-        required_keys = [
-            "SOURCE_SCIM_URL", "SOURCE_API_URL", "SOURCE_SCIM_TOKEN",
-            "SOURCE_API_TOKEN", "SOURCE_WORKVIVO_ID",
-            "TARGET_SCIM_URL", "TARGET_API_URL", "TARGET_SCIM_TOKEN",
-            "TARGET_API_TOKEN", "TARGET_WORKVIVO_ID"
-        ]
-
-        missing = [k for k in required_keys if k not in st.session_state]
-
-        if missing:
-            st.warning("⚠️ Please complete and save your configuration before accessing the dashboard.")
-
-            if st.button("Go to Configuration"):
-                st.session_state.page = "config"
-                st.rerun()
-
-            st.stop()
+    # -----------------------------------------
+    # SAFETY CHECK: Require configuration first
+    # -----------------------------------------
+    required_keys = [
+        "SOURCE_SCIM_URL", "SOURCE_API_URL", "SOURCE_SCIM_TOKEN",
+        "SOURCE_API_TOKEN", "SOURCE_WORKVIVO_ID",
+        "TARGET_SCIM_URL", "TARGET_API_URL", "TARGET_SCIM_TOKEN",
+        "TARGET_API_TOKEN", "TARGET_WORKVIVO_ID"
+    ]
+    
+    missing = [k for k in required_keys if k not in st.session_state]
+    
+    if missing:
+        st.warning("⚠️ Please complete and save your configuration before accessing the dashboard.")
+        if st.button("Go to Configuration"):
+            st.session_state.page = "config"
+            st.rerun()
+        st.stop()
 
 
     # ============================================================
@@ -1998,7 +1995,7 @@ if st.session_state.page == "main":
     # ============================================================
     st.markdown("### 🔑 Migration Code")
     
-    # Always show current code in grey box
+    # Show the current migration code if exists
     st.text_input(
         "Migration Code (required before running a migration)",
         value=st.session_state.get("migration_code", ""),
@@ -2008,20 +2005,19 @@ if st.session_state.page == "main":
     # Generate button
     if st.button("Generate New Migration Code"):
         import string, random
+    
         new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
         st.session_state.migration_code = new_code
-        st.rerun()  # forces immediate refresh
-
+        st.success(f"New migration code generated: {new_code}")
     
-    # Check if migration code exists
-    migration_code_ready = bool(st.session_state.get("migration_code"))
-    
-    if not migration_code_ready:
+    # Require a code before user can run migration
+    if not st.session_state.get("migration_code"):
         st.error("⚠️ You must generate a migration code before running a migration.")
+        migration_code_ready = False
+    else:
+        migration_code_ready = True
     
     st.markdown("---")
-
-
 
 
     st.markdown("## Migrate Workvivo Data")
@@ -2397,19 +2393,12 @@ if st.session_state.page == "main":
 # MIGRATION PAGE — FINAL WORKING VERSION
 # ============================================================
 elif st.session_state.page == "running":
-
-    # Fix: ensure log placeholder never becomes None during rerun
-    if (
-        "live_log_placeholder" not in st.session_state
-        or st.session_state.live_log_placeholder is None
-    ):
-        st.session_state.live_log_placeholder = st.empty()
-
+    
     # Invisible scroll anchor
     scroll_anchor = st.empty()
     scroll_anchor.markdown("<div id='top'></div>", unsafe_allow_html=True)
 
-    # Force scroll to the anchor
+        # Force scroll to the anchor
     st.components.v1.html(
         """
         <script>
@@ -2422,6 +2411,7 @@ elif st.session_state.page == "running":
         height=0,
     )
 
+    
 
     # --------------------------------------------------------
     # HEADER LOGIC
