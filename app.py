@@ -529,15 +529,20 @@ sidebar_button("History", "history")
 # CLEAN CONFIG FORM — FINAL WORKING VERSION
 # ============================================================
 
-    # Ensure test flag exists
-    if "config_test_passed" not in st.session_state:
-        st.session_state.config_test_passed = False
-    
-    # ALWAYS show the form — this must NOT be inside the IF
+# Ensure test flag exists
+if "config_test_passed" not in st.session_state:
+    st.session_state.config_test_passed = False
+
+if "config_saved" not in st.session_state:
+    st.session_state.config_saved = False
+
+# Always show the config form when on config page
+if st.session_state.page == "config":
+
     with st.form("config_form"):
-    
+
         st.header("🔐 Environment Configuration")
-    
+
         st.markdown("""
         <style>
             .config-card {
