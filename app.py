@@ -1710,8 +1710,9 @@ def run_phase2(start_date):
     ui_log("=== PHASE 2: CONTENT MIGRATION START ===")
     ui_log("Migrating updates, comments, and likes…")
 
-    gateway_url = get_gateway_url_from_id(TARGET_WORKVIVO_ID)
-    ui_log(f"Using Gateway: {gateway_url}")
+    # Gateway will only be used for large video uploads.
+    ui_log("Using normal Workvivo API for content fetch (gateway only for large videos)")
+
 
     csv_buffer, csv_writer = init_phase2_csv()
 
