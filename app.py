@@ -2290,7 +2290,7 @@ if st.session_state.page == "main":
             placeholder="Example: Workvivo"
         )
         st.warning(
-            "⚠️ Global Pages should only be migrated **once**. "
+            "Global Pages should only be migrated **once**. "
             "If they were already migrated previously, delete old Global Pages first."
         )
     
