@@ -2143,7 +2143,7 @@ if st.session_state.page == "main":
     st.session_state.use_selected_spaces = st.checkbox(
         "Migrate only selected spaces",
         value=st.session_state.use_selected_spaces,
-        help='Enter space names separated by commas. Example: Marketing, "HR Team", Sales'
+        help='Enter space names separated by commas. Example: Marketing, HR Team, Sales'
     )
     
     # Text input (only visible when enabled)
@@ -2179,7 +2179,6 @@ if st.session_state.page == "main":
     company = st.text_input(
         "Enter the organisation name for the Global Feed",
         value=st.session_state.phase1_company,
-        placeholder="Example: Workvivo, Zoom, etc..."
     )
     
     st.session_state.phase1_company = company
@@ -2301,7 +2300,6 @@ if st.session_state.page == "main":
         st.text_input(
             "Organisation Name for Global Pages",
             key="global_pages_org_name",
-            placeholder="Example: Workvivo"
         )
         st.warning(
             "Global Pages should only be migrated **once**. "
