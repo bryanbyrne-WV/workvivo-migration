@@ -588,7 +588,6 @@ if st.session_state.page == "config":
                 help="Bearer token used for API calls to retrieve content and metadata from the SOURCE tenant."
             )
 
-
             SOURCE_WORKVIVO_ID = st.text_input(
                 "Source Workvivo ID",
                 value="1584",
