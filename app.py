@@ -2695,7 +2695,7 @@ elif st.session_state.page == "summary":
 # ============================================================
 elif st.session_state.page == "history":
 
-    st.header("📜 Migration History")
+    st.header("Migration History")
 
     history = st.session_state.migration_history
 
