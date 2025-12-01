@@ -1759,18 +1759,14 @@ def run_phase2(start_date):
             continue
 
         ui_log(f"📦 Processing space: {sp['name']}")
-
-        # ------------------------------------------------------------
-        # FETCH UPDATES (FULLY FIXED VERSION)
-        # ------------------------------------------------------------
+        
+        # Fetch all updates in this space
         updates_raw = paginated_fetch(
-            f"{SOURCE_API_URL}/updates?in_spaces[]={src_sid}",
-            source_headers
+            f"{SOURCE_API_URL}/updates?in_spaces={src_sid}",
+            pure_source_headers
         )
-
-        # ------------------------------------------------------------
-        # DATE FILTER
-        # ------------------------------------------------------------
+        
+        # Filter by date range
         updates = []
         for u in updates_raw:
             created = u.get("created_at")
@@ -1783,8 +1779,9 @@ def run_phase2(start_date):
                         updates.append(u)
                 except:
                     updates.append(u)
-
+        
         ui_log(f"Found {len(updates)} updates to migrate")
+
 
         # ------------------------------------------------------------
         # UPDATE LOOP
