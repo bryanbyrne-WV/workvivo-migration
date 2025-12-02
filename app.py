@@ -2612,30 +2612,35 @@ elif st.session_state.page == "summary":
 
     s = st.session_state.summary
 
-        # -------------------------------------------------------
-    # SUMMARY PAGE HEADER VARIABLES
+     # -------------------------------------------------------
+    # CANCEL STATUS
     # -------------------------------------------------------
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
-    
+
+    # 1) Yellow box (only once)
+    if is_cancelled:
+        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
+    else:
+        st.info("All migration tasks completed successfully.")
+
+    # 2) Header text
     title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully"
+
+    # 3) Subtitle (small text under header)
     title_sub = (
         "Results below reflect partial completion."
         if is_cancelled
         else "All migration tasks completed successfully."
     )
-    
-    # Show warning/info box once
-    if is_cancelled:
-        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
-    else:
-        st.info("All migration tasks completed successfully.")
-    
+
+    # 4) Title color
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
-    
-    # -------------------------------------------------------
-    # SAFE HTML (NO f-string braces inside `<style>`)
-    # -------------------------------------------------------
-    html = f"""
+
+    # 5) Migration code (ONLY ONCE)
+    st.info(f"🔑 Migration Code Used: **{st.session_state.get('migration_code_used', 'N/A')}**")
+
+    # 6) Render final header
+    st.markdown(f"""
     <style>
     .summary-title {{
         font-size: 32px;
@@ -2650,12 +2655,10 @@ elif st.session_state.page == "summary":
         margin-bottom: 25px;
     }}
     </style>
-    
+
     <div class="summary-title">{title_text}</div>
     <div class="summary-sub">{title_sub}</div>
-    """
-    
-    st.markdown(html, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 
     # -------------------------------------------------------
