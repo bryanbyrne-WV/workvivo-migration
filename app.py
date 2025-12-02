@@ -779,7 +779,6 @@ if st.session_state.page == "config":
     else:
         st.info("Please save your configuration to continue.")
     
-    # Styled button wrapper
     st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
     
     continue_clicked = st.button(
@@ -789,7 +788,6 @@ if st.session_state.page == "config":
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # When clicked and enabled → go to main dashboard
     if continue_clicked:
         st.session_state.page = "main"
         st.query_params.update({"page": "main"})
