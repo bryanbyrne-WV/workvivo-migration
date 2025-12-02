@@ -2762,28 +2762,28 @@ elif st.session_state.page == "summary":
     with c1:
         if st.button("✔ Finish", key="finish_button"):
 
-    keys_to_reset = [
-        # Migration progress & logs
-        "progress", "log_output", "migration_finished", "cancel_requested",
-        "start_migration", "phase1_running", "live_log_placeholder",
-        "summary", "summary_type",
-    
-        # Migration page inputs
-        "phase1_company",
-        "migration_date_choice",
-        "migration_start_date",
-        "migration_end_date",
-    
-        # Migration codes (⭐ add these two)
-        "migration_code",
-        "migration_code_used",
-    
-        # Toggles
-        "migrate_updates", "migrate_kudos", "migrate_articles",
-        "migrate_events", "migrate_comments", "migrate_likes",
-        "migrate_globalPages", "migrate_spacePages",
-        "phase1_active_only",
-    ]
+        keys_to_reset = [
+            # Migration progress & logs
+            "progress", "log_output", "migration_finished", "cancel_requested",
+            "start_migration", "phase1_running", "live_log_placeholder",
+            "summary", "summary_type",
+        
+            # Migration page inputs
+            "phase1_company",
+            "migration_date_choice",
+            "migration_start_date",
+            "migration_end_date",
+        
+            # Migration codes (⭐ add these two)
+            "migration_code",
+            "migration_code_used",
+        
+            # Toggles
+            "migrate_updates", "migrate_kudos", "migrate_articles",
+            "migrate_events", "migrate_comments", "migrate_likes",
+            "migrate_globalPages", "migrate_spacePages",
+            "phase1_active_only",
+        ]
 
 
             for key in keys_to_reset:
