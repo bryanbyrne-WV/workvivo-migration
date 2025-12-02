@@ -2613,6 +2613,28 @@ elif st.session_state.page == "summary":
     s = st.session_state.summary
     
     # -------------------------------------------------------
+    # SUMMARY PAGE HEADER LOGIC
+    # -------------------------------------------------------
+    is_cancelled = st.session_state.get("summary_type") == "cancelled"
+    
+    title_text = (
+        "Migration Cancelled"
+        if is_cancelled
+        else "Migration Completed Successfully"
+    )
+    
+    # NEW — Subtitle logic
+    title_sub = (
+        ""
+        if is_cancelled
+        else "All migration tasks completed successfully."
+    )
+    
+    # Green for success, red for cancelled
+    title_color = "#CC0000" if is_cancelled else "#4CAF50"
+    
+    
+    # -------------------------------------------------------
     # DISPLAY HEADER
     # -------------------------------------------------------
     st.markdown(f"""
