@@ -2613,31 +2613,49 @@ elif st.session_state.page == "summary":
     s = st.session_state.summary
 
     # -------------------------------------------------------
-    # SUMMARY PAGE HEADER VARIABLES (DEFINED ONCE)
+    # SUMMARY PAGE HEADER VARIABLES
     # -------------------------------------------------------
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
     
+    # Title text
     title_text = (
         "Migration Cancelled"
         if is_cancelled
         else "Migration Completed Successfully"
     )
     
-    # Subtitle text only (shown under the header)
+    # Subtitle text under the header ONLY (not in a yellow box)
     title_sub = (
-        "⚠️ Migration was cancelled — results below reflect partial completion."
+        "Results below reflect partial completion."
         if is_cancelled
         else "All migration tasks completed successfully."
     )
     
-    # Show warning/info box
+    # Show warning or info box (ONLY here)
     if is_cancelled:
         st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
     else:
         st.info("All migration tasks completed successfully.")
     
-    # Red if cancelled, green if successful
+    # Title color
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
+    
+    # -------------------------------------------------------
+    # RENDER HEADER + SUBTITLE
+    # -------------------------------------------------------
+    st.markdown(f"""
+    <style>
+    .summary-title {{
+        font-size: 32px;
+        font-weight: 800;
+        margin-top: 10px;
+        margin-bottom: 4px;
+        color: {title_color};
+    }}
+    
+    .summary-sub {{
+        font-size: 16px;
+        color: #555;
 
 
     # -------------------------------------------------------
