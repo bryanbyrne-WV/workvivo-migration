@@ -2612,38 +2612,30 @@ elif st.session_state.page == "summary":
 
     s = st.session_state.summary
 
-    # -------------------------------------------------------
+        # -------------------------------------------------------
     # SUMMARY PAGE HEADER VARIABLES
     # -------------------------------------------------------
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
     
-    # Title text
-    title_text = (
-        "Migration Cancelled"
-        if is_cancelled
-        else "Migration Completed Successfully"
-    )
-    
-    # Subtitle text under the header ONLY (not in a yellow box)
+    title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully"
     title_sub = (
         "Results below reflect partial completion."
         if is_cancelled
         else "All migration tasks completed successfully."
     )
     
-    # Show warning or info box (ONLY here)
+    # Show warning/info box once
     if is_cancelled:
         st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
     else:
         st.info("All migration tasks completed successfully.")
     
-    # Title color
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
     
     # -------------------------------------------------------
-    # RENDER HEADER + SUBTITLE
+    # SAFE HTML (NO f-string braces inside `<style>`)
     # -------------------------------------------------------
-    st.markdown(f"""
+    html = f"""
     <style>
     .summary-title {{
         font-size: 32px;
@@ -2652,10 +2644,18 @@ elif st.session_state.page == "summary":
         margin-bottom: 4px;
         color: {title_color};
     }}
-    
     .summary-sub {{
         font-size: 16px;
         color: #555;
+        margin-bottom: 25px;
+    }}
+    </style>
+    
+    <div class="summary-title">{title_text}</div>
+    <div class="summary-sub">{title_sub}</div>
+    """
+    
+    st.markdown(html, unsafe_allow_html=True)
 
 
     # -------------------------------------------------------
