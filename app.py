@@ -18,6 +18,19 @@ VERIFY_SSL = True
 if "config_test_passed" not in st.session_state:
     st.session_state.config_test_passed = False
 
+def post_with_backoff(url, headers, data=None, files=None, max_retries=5):
+    delay = 2
+    for i in range(max_retries):
+        try:
+            r = requests.post(url, headers=headers, data=data, files=files, timeout=180)
+            if r.status_code in (200, 201):
+                return r
+        except Exception:
+            pass
+        time.sleep(delay)
+        delay *= 2
+    return None
+
 def within_range(created_at, cutoff):
     if not cutoff:
         return True
@@ -1739,18 +1752,66 @@ def init_phase2_csv():
     return csv_buffer, writer
 
 
-# ===============================================================
-# PHASE 2 — CONTENT (Streamlit-safe, no prompts, PyCharm-equivalent)
-# ===============================================================
-def run_phase2(cutoff: datetime):
+# ============================================================
+# PHASE 2 — HELPERS & CONSTANTS
+# ============================================================
+
+import csv
+from io import StringIO
+import datetime as dt
+
+MAX_VIDEO_MB = 128
+GATEWAY_TIMEOUT = 180
+
+
+def safe_filename(name: str):
+    """Remove unsafe characters for filenames."""
+    return "".join(c for c in name if c.isalnum() or c in "._- ")
+
+
+def post_with_backoff(url, headers, data=None, files=None, max_retries=5):
+    """Retry POST when gateway is slow or times out."""
+    delay = 2
+    for i in range(max_retries):
+        try:
+            r = requests.post(url, headers=headers, data=data, files=files, timeout=180)
+            if r.status_code in (200, 201):
+                return r
+        except Exception:
+            pass
+        time.sleep(delay)
+        delay *= 2
+    return None
+
+
+def init_phase2_csv():
+    """In-memory CSV for content log."""
+    csv_buffer = StringIO()
+    writer = csv.writer(csv_buffer)
+    writer.writerow([
+        "timestamp", "space", "src_update_id", "tgt_update_id",
+        "user", "status", "action", "notes"
+    ])
+    return csv_buffer, writer
+
+
+# ============================================================
+# PHASE 2 — CONTENT MIGRATION
+# ============================================================
+
+def run_phase2(cutoff):
     """
     Fully functional Phase 2 migration.
-    Identical logic to PyCharm but without input() prompts.
-    Duplicate detection OFF to match your requirement.
+    Matches PyCharm behaviour but Streamlit-safe.
+    Duplicate detection is OFF (your requirement).
     """
+
     print("\n=== PHASE 2: CONTENT MIGRATION START ===")
 
-    # ALWAYS disable duplicate checking (same as choosing option 2 in PyCharm)
+    # CSV log for output
+    csv_buffer, writer = init_phase2_csv()
+
+    # Disable duplicate checking
     global ENABLE_DUPLICATE_CHECK
     ENABLE_DUPLICATE_CHECK = False
 
@@ -1758,6 +1819,10 @@ def run_phase2(cutoff: datetime):
     TARGET_BASE_URL = TARGET_API_URL
     TAKE_LIMIT = 100
     REQUEST_DELAY_S = 0.30
+
+    # Gateway URL for video uploads
+    global TARGET_GATEWAY_UPDATES
+    TARGET_GATEWAY_UPDATES = get_gateway_url_from_id(TARGET_WORKVIVO_ID) + "/updates"
 
     print("Fetching spaces...")
     source_spaces = paginated_fetch(
@@ -1767,16 +1832,17 @@ def run_phase2(cutoff: datetime):
         f"{TARGET_BASE_URL}/spaces", target_headers_form, TAKE_LIMIT, REQUEST_DELAY_S
     )
 
-    # Map by NAME
+    # Map by name
     space_map = {
         s["id"]: t["id"]
         for s in source_spaces
         for t in target_spaces
         if s.get("name") == t.get("name")
     }
+
     print(f"Mapped {len(space_map)} spaces")
 
-    # Fetch users on target (external_id only)
+    # Load all users on target (external_id only)
     target_users = set()
     skip = 0
     while True:
@@ -1797,21 +1863,21 @@ def run_phase2(cutoff: datetime):
 
     print(f"Target users loaded: {len(target_users)}")
 
-    # ===========================================================
+    # ============================================================
     # MAIN SPACE LOOP
-    # ===========================================================
+    # ============================================================
     for src_space in source_spaces:
         sid = src_space.get("id")
         sname = src_space.get("name")
         tgt_space_id = space_map.get(sid)
 
         if not tgt_space_id:
-            print(f"Skipping space '{sname}' (no matching target space)")
+            print(f"Skipping space '{sname}' (no matching target)")
             continue
 
         print(f"\n📦 SPACE: {sname}")
 
-        # Fetch updates using the WORKING PyCharm endpoint
+        # Working endpoint
         updates_all = paginated_fetch(
             f"{SOURCE_BASE_URL}/updates?in_spaces={sid}",
             source_headers,
@@ -1826,31 +1892,29 @@ def run_phase2(cutoff: datetime):
 
         print(f"Found {len(updates)} updates (filtered from {len(updates_all)})")
 
-        # ===========================================================
+        # ============================================================
         # UPDATE LOOP
-        # ===========================================================
+        # ============================================================
         for upd in updates:
             uid = upd.get("id")
             creator = upd.get("creator") or {}
             uext = creator.get("external_id")
 
-            print(f"\n--- Update {uid} ---")
-
             if not uext or uext not in target_users:
-                print(f"Skipping update {uid}: Creator {uext} missing on target")
+                print(f"Skipping update {uid}: missing creator {uext}")
                 continue
 
             text = upd.get("text") or " "
             created = upd.get("created_at")
 
+            print(f"\n--- Update {uid} ---")
+
             # -------------------------------------------------------
-            # MEDIA DOWNLOAD (subset: gallery + attach + video)
+            # MEDIA HANDLING
             # -------------------------------------------------------
             gallery_files = []
             attachment_files = []
             video_field = None
-            vfp = None
-            vext = None
 
             # GALLERY
             for i, img in enumerate(upd.get("gallery") or []):
@@ -1875,9 +1939,9 @@ def run_phase2(cutoff: datetime):
                     attachment_files.append((clean, open(fp, "rb")))
 
             # VIDEO
-            vid = upd.get("video")
-            if vid and vid.get("url"):
-                vurl = vid["url"]
+            v = upd.get("video")
+            if v and v.get("url"):
+                vurl = v["url"]
                 vext = vurl.split(".")[-1].split("?")[0]
                 vfp = download_file(vurl, f"{uext}_{uid}_vid.{vext}")
                 if vfp:
@@ -1887,7 +1951,7 @@ def run_phase2(cutoff: datetime):
                         video_field = (os.path.basename(vfp), open(vfp, "rb"), mime)
 
             # -------------------------------------------------------
-            # BUILD MULTIPART PAYLOAD
+            # BUILD PAYLOAD
             # -------------------------------------------------------
             files = {}
 
@@ -1899,10 +1963,6 @@ def run_phase2(cutoff: datetime):
             # gallery
             for i, fp in enumerate(gallery_files):
                 files[f"gallery[{i}]"] = open(fp, "rb")
-
-            # video
-            if video_field:
-                files["video"] = video_field
 
             payload = {
                 "name": text[:20],
@@ -1918,18 +1978,14 @@ def run_phase2(cutoff: datetime):
             # CREATE UPDATE ON TARGET
             # -------------------------------------------------------
             if video_field:
-                # Try via Gateway
                 r = post_with_backoff(
                     TARGET_GATEWAY_UPDATES,
                     target_headers_form,
                     data=payload,
                     files={"video": video_field}
                 )
-                if r and r.status_code in (200, 201):
-                    new_update_id = r.json().get("data", {}).get("id")
-                    print(f"Posted update {uid} → {new_update_id} (video)")
-                else:
-                    # Try without video
+                if not r or r.status_code not in (200, 201):
+                    # retry without gateway
                     r = post_with_backoff(
                         f"{TARGET_BASE_URL}/updates",
                         target_headers_form,
@@ -1937,12 +1993,12 @@ def run_phase2(cutoff: datetime):
                         files=files
                     )
                     if not r or r.status_code not in (200, 201):
-                        print(f"Update {uid} failed")
+                        print(f"Update {uid} failed completely")
                         continue
-                    new_update_id = r.json().get("data", {}).get("id")
-                    print(f"Posted update {uid} → {new_update_id} (no video)")
+
+                new_update_id = r.json()["data"]["id"]
+                print(f"Posted update {uid} → {new_update_id}")
             else:
-                # Normal
                 r = post_with_backoff(
                     f"{TARGET_BASE_URL}/updates",
                     target_headers_form,
@@ -1952,7 +2008,7 @@ def run_phase2(cutoff: datetime):
                 if not r or r.status_code not in (200, 201):
                     print(f"Update {uid} failed")
                     continue
-                new_update_id = r.json().get("data", {}).get("id")
+                new_update_id = r.json()["data"]["id"]
                 print(f"Posted update {uid} → {new_update_id}")
 
             # -------------------------------------------------------
@@ -1974,15 +2030,15 @@ def run_phase2(cutoff: datetime):
 
             for c in comments:
                 c_id = c.get("id")
-                c_user = (c.get("creator") or {}).get("external_id")
-                if not c_user or c_user not in target_users:
+                cext = (c.get("creator") or {}).get("external_id")
+                if not cext or cext not in target_users:
                     continue
 
                 c_text = c.get("text") or " "
                 c_created = c.get("created_at")
 
                 payload_c = {
-                    "external_user_id": c_user,
+                    "external_user_id": cext,
                     "text": c_text,
                     "created_at": c_created,
                 }
@@ -1996,15 +2052,19 @@ def run_phase2(cutoff: datetime):
                     print(f"  Comment {c_id} migrated")
 
             # -------------------------------------------------------
-            # LIKES (UPDATE)
+            # LIKES
             # -------------------------------------------------------
             likes_url = (
                 f"{SOURCE_BASE_URL}/updates/by-external-id/{upd.get('external_id')}/likes"
                 if upd.get("external_id")
                 else f"{SOURCE_BASE_URL}/updates/{uid}/likes"
             )
+
             likes_all = paginated_fetch(likes_url, source_headers, TAKE_LIMIT, REQUEST_DELAY_S)
-            likes = [lk for lk in likes_all if within_range(lk.get("created_at"), cutoff)]
+            likes = [
+                lk for lk in likes_all
+                if within_range(lk.get("created_at"), cutoff)
+            ]
 
             print(f"Likes: {len(likes)}")
 
@@ -2012,15 +2072,16 @@ def run_phase2(cutoff: datetime):
                 liker = lk.get("user_external_id")
                 if not liker or liker not in target_users:
                     continue
+
                 payload_like = {"user_external_id": liker}
-                lp = post_with_backoff(
+
+                post_with_backoff(
                     f"{TARGET_BASE_URL}/updates/{new_update_id}/likes",
                     target_headers_form,
                     data=payload_like
                 )
 
     print("\n=== PHASE 2 COMPLETE ===")
-
     return csv_buffer.getvalue()
 
 
