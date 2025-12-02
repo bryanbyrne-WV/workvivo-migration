@@ -2612,40 +2612,40 @@ elif st.session_state.page == "summary":
 
     s = st.session_state.summary
 
-    # -------------------------------------------------------
+     # -------------------------------------------------------
     # CANCEL STATUS
     # -------------------------------------------------------
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
     
-    # 2) Header text
+    # Title text (will NOT appear at top anymore)
     title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully"
     
-    # Subtitle (required for header display)
+    # Subtitle
     title_sub = (
-        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
+        "Results below reflect partial completion."
         if is_cancelled
         else "All migration tasks completed successfully."
     )
     
-    # 1) Yellow/Info box (ONLY once)
+    # 1) Yellow/Info box (at the top)
     if is_cancelled:
         st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
     else:
         st.info("All migration tasks completed successfully.")
     
-    # 4) Title color
-    title_color = "#CC0000" if is_cancelled else "#4CAF50"
-    
-    # 5) Migration code (ONLY ONCE)
+    # 2) Migration code (SECOND, still near top)
     st.info(f"🔑 Migration Code Used: **{st.session_state.get('migration_code_used', 'N/A')}**")
     
-    # 6) Render final header
+    # 3) Title color
+    title_color = "#CC0000" if is_cancelled else "#4CAF50"
+    
+    # 4) Render header LOWER down (not at the top)
     st.markdown(f"""
     <style>
     .summary-title {{
         font-size: 32px;
         font-weight: 800;
-        margin-top: 10px;
+        margin-top: 25px;   /* pushed down */
         margin-bottom: 4px;
         color: {title_color};
     }}
