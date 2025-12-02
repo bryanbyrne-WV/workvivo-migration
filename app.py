@@ -2203,8 +2203,12 @@ if st.session_state.page == "main":
 
     st.info(f"📌 Migrating content from **{pretty_start}** to **{pretty_end}**")
 
-    st.session_state.migration_start_date = start_date
-    st.session_state.migration_end_date = end_date
+    if isinstance(start_date, datetime):
+        st.session_state.migration_start_date = start_date
+    else:
+        # convert date → datetime at midnight UTC
+        st.session_state.migration_start_date = datetime.combine(start_date, datetime.min.time()).replace(tzinfo=dt.timezone.utc)
+        st.session_state.migration_end_date = end_date
 
     # ⭐ Add separator line (same style as other sections)
     st.markdown("---")
