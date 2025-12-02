@@ -1,7 +1,8 @@
 
 # -*- coding: utf-8 -*-
 import streamlit as st
-import requests
+import requestsResults below reflect partial completion.
+
 import time
 import io
 from datetime import datetime
@@ -2619,13 +2620,6 @@ elif st.session_state.page == "summary":
     
     # Header text
     title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully"
-    
-    # Subtitle
-    title_sub = (
-        "Results below reflect partial completion."
-        if is_cancelled
-        else "All migration tasks completed successfully."
-    )
     
     # 1) Yellow/Info box (AT THE TOP)
     if is_cancelled:
