@@ -2625,10 +2625,10 @@ elif st.session_state.page == "summary":
 
     title_sub = (
         "⚠️ Migration was cancelled — results below reflect partial completion."
-        if is_cancelled
-            st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
-
-        else "All migration tasks completed successfully."
+    if is_cancelled:
+        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
+    else:
+        st.info("All migration tasks completed successfully.")
     )
 
     # Red if cancelled, green if successful
