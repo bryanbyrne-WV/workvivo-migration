@@ -2173,64 +2173,61 @@ if st.session_state.page == "main":
     )
 
     
-    # -----------------------------------------------------------
-    # Selective User Migration
-    # -----------------------------------------------------------
-    st.markdown("##### Selective User Migration (not currently supported)")
+    # ============================================================
+    # SELECTIVE USER MIGRATION (only show if Users = ON)
+    # ============================================================
+    if st.session_state.get("migrate_users", True):
     
-    if "use_selected_users" not in st.session_state:
-        st.session_state.use_selected_users = False
-    if "selected_user_ids" not in st.session_state:
-        st.session_state.selected_user_ids = ""
+        st.markdown("##### Selective User Migration (not currently supported)")
     
-    st.session_state.use_selected_users = st.checkbox(
-        "Migrate only selected users",
-        value=st.session_state.use_selected_users,
-        help="Enable this to migrate only the users whose external IDs you input."
-    )
+        if "use_selected_users" not in st.session_state:
+            st.session_state.use_selected_users = False
+        if "selected_user_ids" not in st.session_state:
+            st.session_state.selected_user_ids = ""
     
-    if st.session_state.use_selected_users:
-        selected_ids_text = st.text_area(
-            "Enter external IDs (comma-separated)",
-            value=st.session_state.selected_user_ids,
-            placeholder="e.g. 12345, abcde-1002, ext_88991"
+        st.session_state.use_selected_users = st.checkbox(
+            "Migrate only selected users",
+            value=st.session_state.use_selected_users,
+            help="Enter external IDs separated by commas"
         )
     
-        # Store in state
-        st.session_state.selected_user_ids = selected_ids_text
-    
-        st.info("Only these users will be migrated.")
-    else:
-        st.session_state.selected_user_ids = ""
+        if st.session_state.use_selected_users:
+            st.session_state.selected_user_ids = st.text_area(
+                "Enter external IDs (comma-separated)",
+                value=st.session_state.selected_user_ids,
+                placeholder="e.g. 12345, abcde-1002, ext_88991"
+            )
+        else:
+            st.session_state.selected_user_ids = ""
 
 
-
-    st.markdown("##### Selective Space Migration (not currently supported)")
+    # ============================================================
+    # SELECTIVE SPACE MIGRATION (only show if Spaces = ON)
+    # ============================================================
+    if st.session_state.get("migrate_spaces", True):
     
-    # Ensure session keys exist
-    if "use_selected_spaces" not in st.session_state:
-        st.session_state.use_selected_spaces = False
-    if "selected_space_names" not in st.session_state:
-        st.session_state.selected_space_names = ""
+        st.markdown("##### Selective Space Migration (not currently supported)")
     
-    # Toggle
-    st.session_state.use_selected_spaces = st.checkbox(
-        "Migrate only selected spaces",
-        value=st.session_state.use_selected_spaces,
-        help='Enter space names separated by commas. Example: Marketing, HR Team, Sales'
-    )
+        if "use_selected_spaces" not in st.session_state:
+            st.session_state.use_selected_spaces = False
+        if "selected_space_names" not in st.session_state:
+            st.session_state.selected_space_names = ""
     
-    # Text input (only visible when enabled)
-    if st.session_state.use_selected_spaces:
-        names_text = st.text_area(
-            "Enter space names",
-            value=st.session_state.selected_space_names,
-            placeholder='e.g. Marketing, "HR Team", Sales'
+        st.session_state.use_selected_spaces = st.checkbox(
+            "Migrate only selected spaces",
+            value=st.session_state.use_selected_spaces,
+            help='Enter space names separated by commas. Example: Marketing, HR Team, Sales'
         )
-        st.session_state.selected_space_names = names_text
-    else:
-        st.session_state.selected_space_names = ""
-
+    
+        if st.session_state.use_selected_spaces:
+            st.session_state.selected_space_names = st.text_area(
+                "Enter space names",
+                value=st.session_state.selected_space_names,
+                placeholder='e.g. Marketing, "HR Team", Sales'
+            )
+        else:
+            st.session_state.selected_space_names = ""
+    
         st.markdown("---")
 
 
