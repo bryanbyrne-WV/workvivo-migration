@@ -2613,62 +2613,69 @@ elif st.session_state.page == "summary":
     s = st.session_state.summary
 
     # -------------------------------------------------------
-    # CANCEL STATUS
+    # SUMMARY PAGE HEADER VARIABLES (DEFINED ONCE)
     # -------------------------------------------------------
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
-    
-    # Header text only (NO subtitle)
-    title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully"
-    
-    title_sub = ""  # Remove subtitle entirely
-    
-    # 1) Yellow/Info box (AT THE TOP)
-    if is_cancelled:
-        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
-    else:
-        st.info("All migration tasks completed successfully.")
-    
-    # 2) Migration code (below warning)
-    migration_code_used = st.session_state.get("migration_code_used", "N/A")
-    st.info(f"🔑 Migration Code Used: **{migration_code_used}**")
-    
-    # 3) Title color
+
+    title_text = (
+        "Migration Cancelled"
+        if is_cancelled
+        else "Migration Completed Successfully"
+    )
+
+    title_sub = (
+        "⚠️ Migration was cancelled — results below reflect partial completion."
+        if is_cancelled
+            st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
+
+        else "All migration tasks completed successfully."
+    )
+
+    # Red if cancelled, green if successful
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
-    
-    # 4) Render header LOWER down (subtitle removed)
+
+
+    # -------------------------------------------------------
+    # SHOW MIGRATION CODE USED (KEEP THIS)
+    # -------------------------------------------------------
+    st.info(
+        f"🔑 Migration Code Used: **{st.session_state.get('migration_code_used', 'N/A')}**"
+    )
+
+
+    # -------------------------------------------------------
+    # FINAL, SINGLE HEADER (THIS IS THE ONE YOU KEEP)
+    # -------------------------------------------------------
     st.markdown(f"""
     <style>
-    
     .summary-title {{
         font-size: 32px;
         font-weight: 800;
-        margin-top: 25px;
+        text-align: left;
+        margin-top: 10px;
         margin-bottom: 4px;
         color: {title_color};
     }}
-    
+
+    .summary-sub {{
+        font-size: 16px;
+        text-align: left;
+        color: #555;
+        margin-bottom: 25px;
+    }}
+
     .purple-section-title {{
         font-size: 24px;
         font-weight: 700;
         color: #6A4FCB;
+        text-align: left;
         margin-top: 35px;
         margin-bottom: 10px;
     }}
-    
-    .summary-item {{
-        font-size: 15px;
-        margin-bottom: 6px;
-    }}
-    
-    .divider {{
-        margin: 25px 0;
-        border-bottom: 1px solid #DDD;
-    }}
-    
     </style>
-    
+
     <div class="summary-title">{title_text}</div>
-    
+    <div class="summary-sub">{title_sub}</div>
     """, unsafe_allow_html=True)
 
 
