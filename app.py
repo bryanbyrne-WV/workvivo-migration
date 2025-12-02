@@ -1711,17 +1711,21 @@ def init_phase2_csv():
 
 
 # ------------------------------------------------------------
-# MAIN PHASE 2 (MATCHES PYCHARM BEHAVIOR)
+# MAIN PHASE 2 (PYCHARM MATCH — Streamlit Adapted)
 # ------------------------------------------------------------
 def run_phase2(start_date):
+
     ui_log("=== PHASE 2: CONTENT MIGRATION START ===")
-    ui_log("Migrating updates, comments, and likes…")
-    ui_log("Using normal Workvivo API for content fetch (gateway only for large videos)")
+    ui_log("Migrating updates, comments, replies, and likes…")
+    ui_log("Video uploads via Gateway; everything else via normal API.")
+    ui_log("Media downloads disabled (as requested).")
+
+    gateway_url = get_gateway_url_from_id(TARGET_WORKVIVO_ID)
 
     csv_buffer, csv_writer = init_phase2_csv()
 
     # ------------------------------------------------------------
-    # FETCH SPACES
+    # FETCH SPACES (source + target)
     # ------------------------------------------------------------
     ui_log("Fetching spaces…")
     source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
@@ -1733,11 +1737,10 @@ def run_phase2(start_date):
         for t in target_spaces
         if s.get("name") == t.get("name")
     }
-
     ui_log(f"Mapped {len(space_map)} spaces")
 
     # ------------------------------------------------------------
-    # TARGET USERS (MATCH PYCHARM)
+    # TARGET USERS
     # ------------------------------------------------------------
     ui_log("Fetching target users…")
     tgt_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers_form)
@@ -1749,8 +1752,9 @@ def run_phase2(start_date):
     selected_spaces = parse_space_list(st.session_state.get("selected_space_names", ""))
 
     for sp in source_spaces:
+
         if st.session_state.use_selected_spaces and sp["name"] not in selected_spaces:
-            ui_log(f"⏭ Skipping space content (not selected): {sp['name']}")
+            ui_log(f"⏭ Skipping non-selected space: {sp['name']}")
             continue
 
         if st.session_state.cancel_requested:
@@ -1760,29 +1764,29 @@ def run_phase2(start_date):
         tgt_sid = space_map.get(src_sid)
 
         if not tgt_sid:
-            ui_log(f"⚠️ Skipping unmapped space: {sp['name']}")
+            ui_log(f"⚠ Skipping unmapped space: {sp['name']}")
             continue
 
         ui_log(f"📦 Processing space: {sp['name']}")
 
         # ------------------------------------------------------------
-        # CORRECT ENDPOINT (Fixes 400 Errors)
+        # CORRECT PYCHARM ENDPOINT (fixes incorrect calls)
         # ------------------------------------------------------------
         updates_raw = paginated_fetch(
-            f"{SOURCE_API_URL}/spaces/{src_sid}/updates",
+            f"{SOURCE_API_URL}/updates?in_spaces={src_sid}",
             source_headers
         )
 
-        # Filter by date
+        # Apply date filter
         updates = []
         for u in updates_raw:
-            created = u.get("created_at")
-            if not start_date or not created:
+            ts = u.get("created_at")
+            if not start_date:
                 updates.append(u)
             else:
                 try:
-                    ts = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                    if ts >= start_date:
+                    dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                    if dt >= start_date:
                         updates.append(u)
                 except:
                     updates.append(u)
@@ -1795,7 +1799,7 @@ def run_phase2(start_date):
         for upd in updates:
 
             if st.session_state.cancel_requested:
-                break
+                return csv_buffer.getvalue()
 
             src_uid = upd["id"]
             ext_user = (upd.get("creator") or {}).get("external_id")
@@ -1804,12 +1808,13 @@ def run_phase2(start_date):
                 ui_log(f"⏭ Skipping update {src_uid} — creator missing on target")
                 continue
 
-            text = upd.get("text") or " "
+            txt = upd.get("text") or " "
             created_at = upd.get("created_at") or datetime.utcnow().isoformat()
 
-            base_payload = {
-                "name": text[:20],
-                "text": text,
+            # Base payload
+            payload = {
+                "name": txt[:20],
+                "text": txt,
                 "created_at": created_at,
                 "visibility": "spaces",
                 "audience[type]": "spaces",
@@ -1817,104 +1822,77 @@ def run_phase2(start_date):
                 "user_external_id": ext_user,
             }
 
-            gallery_files = []
-            attachments = []
+            # --------------------------------------------------------
+            # VIDEO HANDLING (NO MEDIA DOWNLOADS for gallery/att)
+            # --------------------------------------------------------
+            new_update_id = None
             video_field = None
 
-            # -------------------------------
-            # GALLERY
-            # -------------------------------
-            for i, img in enumerate(upd.get("gallery") or []):
-                url = img.get("url")
-                if not url:
-                    continue
-                ext = url.split('.')[-1].split('?')[0]
-                fp = download_file(url, f"gallery_{src_uid}_{i}.{ext}")
-                if fp:
-                    gallery_files.append(("gallery", fp))
-
-            # -------------------------------
-            # ATTACHMENTS
-            # -------------------------------
-            for i, att in enumerate(upd.get("attachments") or []):
-                url = att.get("url")
-                if not url:
-                    continue
-                ext = url.split('.')[-1].split('?')[0]
-                name = att.get("name") or f"attachment_{i}.{ext}"
-                fp = download_file(url, safe_filename(name))
-                if fp:
-                    attachments.append((name, fp))
-
-            # -------------------------------
-            # VIDEO
-            # -------------------------------
             video = upd.get("video")
             if video and video.get("url"):
-                url = video["url"]
-                ext = url.split('.')[-1].split('?')[0].lower()
-                fp = download_file(url, f"video_{src_uid}.{ext}")
 
-                if fp:
+                # Try downloading video IF small enough (PyCharm behaviour)
+                # but respecting your “no media download” rule:
+                # We ONLY download video for upload — nothing else.
+                try:
+                    url = video["url"]
+                    ext = url.split('.')[-1].split('?')[0]
+                    fname = f"video_{src_uid}.{ext}"
+
+                    fp = download_file(url, fname)  # ONLY video downloads allowed
                     size_mb = os.path.getsize(fp) / (1024 * 1024)
+
                     if size_mb <= MAX_VIDEO_MB:
-                        mime_type = mimetypes.guess_type(fp)[0] or "video/mp4"
-                        video_field = (os.path.basename(fp), open(fp, "rb"), mime_type)
-                        ui_log(f"🎥 Video ok ({size_mb:.1f} MB)")
+                        mime = mimetypes.guess_type(fp)[0] or "video/mp4"
+                        video_field = (fname, open(fp, "rb"), mime)
+                        ui_log(f"🎥 Video OK ({size_mb:.1f} MB), uploading via Gateway")
                     else:
-                        ui_log(f"⚠️ Video {size_mb:.1f} MB too large — skipped")
+                        ui_log(f"⚠ Video {size_mb:.1f} MB too large — skipped")
+                except:
+                    ui_log("⚠ Video could not be downloaded — skipping")
 
-            # -------------------------------
+            # --------------------------------------------------------
             # CREATE UPDATE
-            # -------------------------------
-            new_update_id = None
+            # --------------------------------------------------------
+            r = None
 
-            # Video first
             if video_field:
+                # Try Gateway first
                 r = requests.post(
                     f"{gateway_url}/updates",
                     headers=target_headers_form,
-                    data=base_payload,
+                    data=payload,
                     files={"video": video_field},
-                    timeout=GATEWAY_TIMEOUT
+                    timeout=GATEWAY_TIMEOUT,
+                    verify=VERIFY_SSL,
                 )
-                if r.status_code in (200, 201):
-                    new_update_id = r.json().get("data", {}).get("id")
-                else:
-                    # fallback without video
+
+                if r.status_code not in (200, 201):
+                    ui_log("⚠ Gateway failed — retrying without video")
                     r = requests.post(
                         f"{TARGET_API_URL}/updates",
                         headers=target_headers_form,
-                        data=base_payload,
+                        data=payload,
+                        verify=VERIFY_SSL,
                     )
-                    if r.status_code in (200, 201):
-                        new_update_id = r.json().get("data", {}).get("id")
 
-            # Normal post
             else:
-                file_payload = {}
-                idx = 0
-                for (n, fp) in gallery_files:
-                    file_payload[f"gallery[{idx}]"] = open(fp, "rb")
-                    idx += 1
-                for (n, fp) in attachments:
-                    file_payload[f"attachments[{idx}]"] = (n, open(fp, "rb"))
-                    idx += 1
-
+                # Normal update (no attachments/galleries allowed)
                 r = requests.post(
                     f"{TARGET_API_URL}/updates",
                     headers=target_headers_form,
-                    data=base_payload,
-                    files=file_payload or None
+                    data=payload,
+                    verify=VERIFY_SSL,
                 )
-                if r.status_code in (200, 201):
-                    new_update_id = r.json().get("data", {}).get("id")
 
-            if not new_update_id:
-                ui_log(f"❌ Failed update: {r.text[:200]}")
+            if r.status_code not in (200, 201):
+                ui_log(f"❌ Update failed: {r.text[:200]}")
                 continue
 
-            # CSV Log
+            new_update_id = r.json().get("data", {}).get("id")
+            ui_log(f"✅ Update {src_uid} → {new_update_id}")
+
+            # CSV LOG
             csv_writer.writerow([
                 datetime.utcnow().isoformat(),
                 sp["name"],
@@ -1926,36 +1904,85 @@ def run_phase2(start_date):
                 ""
             ])
 
-            # -------------------------------
-            # COMMENTS
-            # -------------------------------
+            # --------------------------------------------------------
+            # COMMENTS (with full threaded replies)
+            # --------------------------------------------------------
             comments = paginated_fetch(
                 f"{SOURCE_API_URL}/updates/{src_uid}/comments",
                 source_headers
             )
-
             ui_log(f"💬 {len(comments)} comments…")
 
+            # Track mapping for replies
+            src_to_target_cid = {}
+
             for c in comments:
-                c_user = (c.get("creator") or {}).get("external_id")
-                if not c_user or c_user not in tgt_user_ids:
+
+                cu = (c.get("creator") or {}).get("external_id")
+                if not cu or cu not in tgt_user_ids:
                     continue
 
                 cp = {
-                    "external_user_id": c_user,
+                    "external_user_id": cu,
                     "text": c.get("text") or " ",
                     "created_at": c.get("created_at"),
+                    "comment_external_id": f"c_{src_uid}_{c['id']}",
                 }
 
-                requests.post(
+                cr = requests.post(
                     f"{TARGET_API_URL}/updates/{new_update_id}/comments",
                     headers=target_headers_form,
-                    data=cp
+                    data=cp,
+                    verify=VERIFY_SSL,
                 )
 
-            # -------------------------------
-            # LIKES
-            # -------------------------------
+                if cr.status_code in (200, 201):
+                    tgt_comment_id = cr.json().get("data", {}).get("comment_id")
+                    src_to_target_cid[c["id"]] = tgt_comment_id
+                    ui_log(f"   🗨 Comment {c['id']} → {tgt_comment_id}")
+
+                # ----------------------------
+                # Replies under each comment
+                # ----------------------------
+                replies = paginated_fetch(
+                    f"{SOURCE_API_URL}/updates/{src_uid}/comments/{c['id']}/replies",
+                    source_headers
+                )
+
+                for rpl in replies:
+                    ru = (rpl.get("creator") or {}).get("external_id")
+                    if not ru or ru not in tgt_user_ids:
+                        continue
+
+                    reply_payload = {
+                        "external_user_id": ru,
+                        "text": rpl.get("text") or " ",
+                        "created_at": rpl.get("created_at"),
+                        "comment_parent_id": tgt_comment_id,
+                        "comment_external_id": f"r_{src_uid}_{c['id']}_{uuid.uuid4().hex[:6]}"
+                    }
+
+                    rr = requests.post(
+                        f"{TARGET_API_URL}/updates/{new_update_id}/comments",
+                        headers=target_headers,
+                        json=reply_payload,
+                        verify=VERIFY_SSL,
+                        timeout=60
+                    )
+
+                    if rr.status_code not in (200, 201):
+                        # fallback to legacy endpoint
+                        alt = f"{TARGET_API_URL}/updates/{new_update_id}/comments/{tgt_comment_id}/replies"
+                        requests.post(
+                            alt,
+                            headers=target_headers_form,
+                            data=reply_payload,
+                            verify=VERIFY_SSL,
+                        )
+
+            # --------------------------------------------------------
+            # LIKES (updates)
+            # --------------------------------------------------------
             likes = paginated_fetch(
                 f"{SOURCE_API_URL}/updates/{src_uid}/likes",
                 source_headers
@@ -1969,11 +1996,32 @@ def run_phase2(start_date):
                 requests.post(
                     f"{TARGET_API_URL}/updates/{new_update_id}/likes",
                     headers=target_headers_form,
-                    data={"user_external_id": luser}
+                    data={"user_external_id": luser},
+                    verify=VERIFY_SSL,
                 )
+
+            # --------------------------------------------------------
+            # LIKES (comments)
+            # --------------------------------------------------------
+            for src_cid, tgt_cid in src_to_target_cid.items():
+                comment_likes = paginated_fetch(
+                    f"{SOURCE_API_URL}/updates/{src_uid}/comments/{src_cid}/likes",
+                    source_headers
+                )
+                for lk in comment_likes:
+                    luser = lk.get("user_external_id")
+                    if not luser or luser not in tgt_user_ids:
+                        continue
+                    requests.post(
+                        f"{TARGET_API_URL}/updates/{new_update_id}/comments/{tgt_cid}/likes",
+                        headers=target_headers_form,
+                        data={"user_external_id": luser},
+                        verify=VERIFY_SSL,
+                    )
 
     ui_log("=== PHASE 2 COMPLETE ===")
     return csv_buffer.getvalue()
+
 
 
 # ============================================================
