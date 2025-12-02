@@ -1710,316 +1710,288 @@ def init_phase2_csv():
     return csv_buffer, writer
 
 
-# ------------------------------------------------------------
-# MAIN PHASE 2 (PYCHARM MATCH — Streamlit Adapted)
-# ------------------------------------------------------------
-def run_phase2(start_date):
+# ===============================================================
+# PHASE 2 — CONTENT (Streamlit-safe, no prompts, PyCharm-equivalent)
+# ===============================================================
+def run_phase2(cutoff: Optional[datetime]):
+    """
+    Fully functional Phase 2 migration.
+    Identical logic to PyCharm but without input() prompts.
+    Duplicate detection OFF to match your requirement.
+    """
+    print("\n=== PHASE 2: CONTENT MIGRATION START ===")
 
-    ui_log("=== PHASE 2: CONTENT MIGRATION START ===")
-    ui_log("Migrating updates, comments, replies, and likes…")
-    ui_log("Video uploads via Gateway; everything else via normal API.")
-    ui_log("Media downloads disabled (as requested).")
+    # ALWAYS disable duplicate checking (same as choosing option 2 in PyCharm)
+    global ENABLE_DUPLICATE_CHECK
+    ENABLE_DUPLICATE_CHECK = False
 
-    gateway_url = get_gateway_url_from_id(TARGET_WORKVIVO_ID)
+    SOURCE_BASE_URL = SOURCE_API_URL
+    TARGET_BASE_URL = TARGET_API_URL
+    TAKE_LIMIT = 100
+    REQUEST_DELAY_S = 0.30
 
-    csv_buffer, csv_writer = init_phase2_csv()
+    print("Fetching spaces...")
+    source_spaces = paginated_fetch(
+        f"{SOURCE_BASE_URL}/spaces", source_headers, TAKE_LIMIT, REQUEST_DELAY_S
+    )
+    target_spaces = paginated_fetch(
+        f"{TARGET_BASE_URL}/spaces", target_headers_form, TAKE_LIMIT, REQUEST_DELAY_S
+    )
 
-    # ------------------------------------------------------------
-    # FETCH SPACES (source + target)
-    # ------------------------------------------------------------
-    ui_log("Fetching spaces…")
-    source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
-    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers_form)
-
+    # Map by NAME
     space_map = {
         s["id"]: t["id"]
         for s in source_spaces
         for t in target_spaces
         if s.get("name") == t.get("name")
     }
-    ui_log(f"Mapped {len(space_map)} spaces")
+    print(f"Mapped {len(space_map)} spaces")
 
-    # ------------------------------------------------------------
-    # TARGET USERS
-    # ------------------------------------------------------------
-    ui_log("Fetching target users…")
-    tgt_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers_form)
-    tgt_user_ids = {u.get("external_id") for u in tgt_users if u.get("external_id")}
-
-    # ------------------------------------------------------------
-    # SPACE LOOP
-    # ------------------------------------------------------------
-    selected_spaces = parse_space_list(st.session_state.get("selected_space_names", ""))
-
-    for sp in source_spaces:
-
-        if st.session_state.use_selected_spaces and sp["name"] not in selected_spaces:
-            ui_log(f"⏭ Skipping non-selected space: {sp['name']}")
-            continue
-
-        if st.session_state.cancel_requested:
+    # Fetch users on target (external_id only)
+    target_users = set()
+    skip = 0
+    while True:
+        url = f"{TARGET_BASE_URL}/users?skip={skip}&take={TAKE_LIMIT}"
+        r = requests.get(url, headers=target_headers_form, timeout=30, verify=VERIFY_SSL)
+        if r.status_code != 200:
             break
+        data = r.json().get("data", [])
+        if not data:
+            break
+        for u in data:
+            if u.get("external_id"):
+                target_users.add(str(u["external_id"]))
+        if len(data) < TAKE_LIMIT:
+            break
+        skip += TAKE_LIMIT
+        time.sleep(REQUEST_DELAY_S)
 
-        src_sid = sp["id"]
-        tgt_sid = space_map.get(src_sid)
+    print(f"Target users loaded: {len(target_users)}")
 
-        if not tgt_sid:
-            ui_log(f"⚠ Skipping unmapped space: {sp['name']}")
+    # ===========================================================
+    # MAIN SPACE LOOP
+    # ===========================================================
+    for src_space in source_spaces:
+        sid = src_space.get("id")
+        sname = src_space.get("name")
+        tgt_space_id = space_map.get(sid)
+
+        if not tgt_space_id:
+            print(f"Skipping space '{sname}' (no matching target space)")
             continue
 
-        ui_log(f"📦 Processing space: {sp['name']}")
+        print(f"\n📦 SPACE: {sname}")
 
-        # ------------------------------------------------------------
-        # CORRECT PYCHARM ENDPOINT (fixes incorrect calls)
-        # ------------------------------------------------------------
-        updates_raw = paginated_fetch(
-            f"{SOURCE_API_URL}/updates?in_spaces={src_sid}",
-            source_headers
+        # Fetch updates using the WORKING PyCharm endpoint
+        updates_all = paginated_fetch(
+            f"{SOURCE_BASE_URL}/updates?in_spaces={sid}",
+            source_headers,
+            TAKE_LIMIT,
+            REQUEST_DELAY_S
         )
 
-        # Apply date filter
-        updates = []
-        for u in updates_raw:
-            ts = u.get("created_at")
-            if not start_date:
-                updates.append(u)
-            else:
-                try:
-                    dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                    if dt >= start_date:
-                        updates.append(u)
-                except:
-                    updates.append(u)
+        updates = [
+            u for u in updates_all
+            if within_range(u.get("created_at"), cutoff)
+        ]
 
-        ui_log(f"Found {len(updates)} updates to migrate")
+        print(f"Found {len(updates)} updates (filtered from {len(updates_all)})")
 
-        # ------------------------------------------------------------
+        # ===========================================================
         # UPDATE LOOP
-        # ------------------------------------------------------------
+        # ===========================================================
         for upd in updates:
+            uid = upd.get("id")
+            creator = upd.get("creator") or {}
+            uext = creator.get("external_id")
 
-            if st.session_state.cancel_requested:
-                return csv_buffer.getvalue()
+            print(f"\n--- Update {uid} ---")
 
-            src_uid = upd["id"]
-            ext_user = (upd.get("creator") or {}).get("external_id")
-
-            if not ext_user or ext_user not in tgt_user_ids:
-                ui_log(f"⏭ Skipping update {src_uid} — creator missing on target")
+            if not uext or uext not in target_users:
+                print(f"Skipping update {uid}: Creator {uext} missing on target")
                 continue
 
-            txt = upd.get("text") or " "
-            created_at = upd.get("created_at") or datetime.utcnow().isoformat()
+            text = upd.get("text") or " "
+            created = upd.get("created_at")
 
-            # Base payload
+            # -------------------------------------------------------
+            # MEDIA DOWNLOAD (subset: gallery + attach + video)
+            # -------------------------------------------------------
+            gallery_files = []
+            attachment_files = []
+            video_field = None
+            vfp = None
+            vext = None
+
+            # GALLERY
+            for i, img in enumerate(upd.get("gallery") or []):
+                url = img.get("url")
+                if not url:
+                    continue
+                ext = url.split(".")[-1].split("?")[0]
+                fp = download_file(url, f"{uext}_{uid}_g{i}.{ext}")
+                if fp:
+                    gallery_files.append(fp)
+
+            # ATTACHMENTS
+            for j, att in enumerate(upd.get("attachments") or []):
+                url = att.get("url")
+                if not url:
+                    continue
+                base = att.get("name") or att.get("file_name") or f"Attachment_{j}"
+                ext = url.split(".")[-1].split("?")[0]
+                clean = safe_filename(f"{base}.{ext}")
+                fp = download_file(url, clean)
+                if fp:
+                    attachment_files.append((clean, open(fp, "rb")))
+
+            # VIDEO
+            vid = upd.get("video")
+            if vid and vid.get("url"):
+                vurl = vid["url"]
+                vext = vurl.split(".")[-1].split("?")[0]
+                vfp = download_file(vurl, f"{uext}_{uid}_vid.{vext}")
+                if vfp:
+                    size_mb = os.path.getsize(vfp) / (1024 * 1024)
+                    if vext.lower() in ["mp4", "m4v"] and size_mb <= MAX_VIDEO_MB:
+                        mime = mimetypes.guess_type(vfp)[0] or "video/mp4"
+                        video_field = (os.path.basename(vfp), open(vfp, "rb"), mime)
+
+            # -------------------------------------------------------
+            # BUILD MULTIPART PAYLOAD
+            # -------------------------------------------------------
+            files = {}
+
+            # attachments
+            for i, tup in enumerate(attachment_files):
+                name, fileobj = tup
+                files[f"attachments[{i}]"] = (name, fileobj)
+
+            # gallery
+            for i, fp in enumerate(gallery_files):
+                files[f"gallery[{i}]"] = open(fp, "rb")
+
+            # video
+            if video_field:
+                files["video"] = video_field
+
             payload = {
-                "name": txt[:20],
-                "text": txt,
-                "created_at": created_at,
+                "name": text[:20],
+                "text": text,
+                "created_at": created,
                 "visibility": "spaces",
                 "audience[type]": "spaces",
-                "audience[spaces][]": str(tgt_sid),
-                "user_external_id": ext_user,
+                "audience[spaces][]": str(tgt_space_id),
+                "user_external_id": uext,
             }
 
-            # --------------------------------------------------------
-            # VIDEO HANDLING (NO MEDIA DOWNLOADS for gallery/att)
-            # --------------------------------------------------------
-            new_update_id = None
-            video_field = None
-
-            video = upd.get("video")
-            if video and video.get("url"):
-
-                # Try downloading video IF small enough (PyCharm behaviour)
-                # but respecting your “no media download” rule:
-                # We ONLY download video for upload — nothing else.
-                try:
-                    url = video["url"]
-                    ext = url.split('.')[-1].split('?')[0]
-                    fname = f"video_{src_uid}.{ext}"
-
-                    fp = download_file(url, fname)  # ONLY video downloads allowed
-                    size_mb = os.path.getsize(fp) / (1024 * 1024)
-
-                    if size_mb <= MAX_VIDEO_MB:
-                        mime = mimetypes.guess_type(fp)[0] or "video/mp4"
-                        video_field = (fname, open(fp, "rb"), mime)
-                        ui_log(f"🎥 Video OK ({size_mb:.1f} MB), uploading via Gateway")
-                    else:
-                        ui_log(f"⚠ Video {size_mb:.1f} MB too large — skipped")
-                except:
-                    ui_log("⚠ Video could not be downloaded — skipping")
-
-            # --------------------------------------------------------
-            # CREATE UPDATE
-            # --------------------------------------------------------
-            r = None
-
+            # -------------------------------------------------------
+            # CREATE UPDATE ON TARGET
+            # -------------------------------------------------------
             if video_field:
-                # Try Gateway first
-                r = requests.post(
-                    f"{gateway_url}/updates",
-                    headers=target_headers_form,
+                # Try via Gateway
+                r = post_with_backoff(
+                    TARGET_GATEWAY_UPDATES,
+                    target_headers_form,
                     data=payload,
-                    files={"video": video_field},
-                    timeout=GATEWAY_TIMEOUT,
-                    verify=VERIFY_SSL,
+                    files={"video": video_field}
                 )
-
-                if r.status_code not in (200, 201):
-                    ui_log("⚠ Gateway failed — retrying without video")
-                    r = requests.post(
-                        f"{TARGET_API_URL}/updates",
-                        headers=target_headers_form,
+                if r and r.status_code in (200, 201):
+                    new_update_id = r.json().get("data", {}).get("id")
+                    print(f"Posted update {uid} → {new_update_id} (video)")
+                else:
+                    # Try without video
+                    r = post_with_backoff(
+                        f"{TARGET_BASE_URL}/updates",
+                        target_headers_form,
                         data=payload,
-                        verify=VERIFY_SSL,
+                        files=files
                     )
-
+                    if not r or r.status_code not in (200, 201):
+                        print(f"Update {uid} failed")
+                        continue
+                    new_update_id = r.json().get("data", {}).get("id")
+                    print(f"Posted update {uid} → {new_update_id} (no video)")
             else:
-                # Normal update (no attachments/galleries allowed)
-                r = requests.post(
-                    f"{TARGET_API_URL}/updates",
-                    headers=target_headers_form,
+                # Normal
+                r = post_with_backoff(
+                    f"{TARGET_BASE_URL}/updates",
+                    target_headers_form,
                     data=payload,
-                    verify=VERIFY_SSL,
+                    files=files
                 )
+                if not r or r.status_code not in (200, 201):
+                    print(f"Update {uid} failed")
+                    continue
+                new_update_id = r.json().get("data", {}).get("id")
+                print(f"Posted update {uid} → {new_update_id}")
 
-            if r.status_code not in (200, 201):
-                ui_log(f"❌ Update failed: {r.text[:200]}")
-                continue
-
-            new_update_id = r.json().get("data", {}).get("id")
-            ui_log(f"✅ Update {src_uid} → {new_update_id}")
-
-            # CSV LOG
-            csv_writer.writerow([
-                datetime.utcnow().isoformat(),
-                sp["name"],
-                src_uid,
-                new_update_id,
-                ext_user,
-                "created",
-                "update",
-                ""
-            ])
-
-            # --------------------------------------------------------
-            # COMMENTS (with full threaded replies)
-            # --------------------------------------------------------
-            comments = paginated_fetch(
-                f"{SOURCE_API_URL}/updates/{src_uid}/comments",
-                source_headers
+            # -------------------------------------------------------
+            # COMMENTS
+            # -------------------------------------------------------
+            comments_all = paginated_fetch(
+                f"{SOURCE_BASE_URL}/updates/{uid}/comments",
+                source_headers,
+                TAKE_LIMIT,
+                REQUEST_DELAY_S
             )
-            ui_log(f"💬 {len(comments)} comments…")
 
-            # Track mapping for replies
-            src_to_target_cid = {}
+            comments = [
+                c for c in comments_all
+                if within_range(c.get("created_at"), cutoff)
+            ]
+
+            print(f"Comments: {len(comments)}")
 
             for c in comments:
-
-                cu = (c.get("creator") or {}).get("external_id")
-                if not cu or cu not in tgt_user_ids:
+                c_id = c.get("id")
+                c_user = (c.get("creator") or {}).get("external_id")
+                if not c_user or c_user not in target_users:
                     continue
 
-                cp = {
-                    "external_user_id": cu,
-                    "text": c.get("text") or " ",
-                    "created_at": c.get("created_at"),
-                    "comment_external_id": f"c_{src_uid}_{c['id']}",
+                c_text = c.get("text") or " "
+                c_created = c.get("created_at")
+
+                payload_c = {
+                    "external_user_id": c_user,
+                    "text": c_text,
+                    "created_at": c_created,
                 }
 
-                cr = requests.post(
-                    f"{TARGET_API_URL}/updates/{new_update_id}/comments",
-                    headers=target_headers_form,
-                    data=cp,
-                    verify=VERIFY_SSL,
+                cr = post_with_backoff(
+                    f"{TARGET_BASE_URL}/updates/{new_update_id}/comments",
+                    target_headers_form,
+                    data=payload_c
                 )
+                if cr and cr.status_code in (200, 201):
+                    print(f"  Comment {c_id} migrated")
 
-                if cr.status_code in (200, 201):
-                    tgt_comment_id = cr.json().get("data", {}).get("comment_id")
-                    src_to_target_cid[c["id"]] = tgt_comment_id
-                    ui_log(f"   🗨 Comment {c['id']} → {tgt_comment_id}")
-
-                # ----------------------------
-                # Replies under each comment
-                # ----------------------------
-                replies = paginated_fetch(
-                    f"{SOURCE_API_URL}/updates/{src_uid}/comments/{c['id']}/replies",
-                    source_headers
-                )
-
-                for rpl in replies:
-                    ru = (rpl.get("creator") or {}).get("external_id")
-                    if not ru or ru not in tgt_user_ids:
-                        continue
-
-                    reply_payload = {
-                        "external_user_id": ru,
-                        "text": rpl.get("text") or " ",
-                        "created_at": rpl.get("created_at"),
-                        "comment_parent_id": tgt_comment_id,
-                        "comment_external_id": f"r_{src_uid}_{c['id']}_{uuid.uuid4().hex[:6]}"
-                    }
-
-                    rr = requests.post(
-                        f"{TARGET_API_URL}/updates/{new_update_id}/comments",
-                        headers=target_headers,
-                        json=reply_payload,
-                        verify=VERIFY_SSL,
-                        timeout=60
-                    )
-
-                    if rr.status_code not in (200, 201):
-                        # fallback to legacy endpoint
-                        alt = f"{TARGET_API_URL}/updates/{new_update_id}/comments/{tgt_comment_id}/replies"
-                        requests.post(
-                            alt,
-                            headers=target_headers_form,
-                            data=reply_payload,
-                            verify=VERIFY_SSL,
-                        )
-
-            # --------------------------------------------------------
-            # LIKES (updates)
-            # --------------------------------------------------------
-            likes = paginated_fetch(
-                f"{SOURCE_API_URL}/updates/{src_uid}/likes",
-                source_headers
+            # -------------------------------------------------------
+            # LIKES (UPDATE)
+            # -------------------------------------------------------
+            likes_url = (
+                f"{SOURCE_BASE_URL}/updates/by-external-id/{upd.get('external_id')}/likes"
+                if upd.get("external_id")
+                else f"{SOURCE_BASE_URL}/updates/{uid}/likes"
             )
+            likes_all = paginated_fetch(likes_url, source_headers, TAKE_LIMIT, REQUEST_DELAY_S)
+            likes = [lk for lk in likes_all if within_range(lk.get("created_at"), cutoff)]
+
+            print(f"Likes: {len(likes)}")
 
             for lk in likes:
-                luser = lk.get("user_external_id")
-                if not luser or luser not in tgt_user_ids:
+                liker = lk.get("user_external_id")
+                if not liker or liker not in target_users:
                     continue
-
-                requests.post(
-                    f"{TARGET_API_URL}/updates/{new_update_id}/likes",
-                    headers=target_headers_form,
-                    data={"user_external_id": luser},
-                    verify=VERIFY_SSL,
+                payload_like = {"user_external_id": liker}
+                lp = post_with_backoff(
+                    f"{TARGET_BASE_URL}/updates/{new_update_id}/likes",
+                    target_headers_form,
+                    data=payload_like
                 )
 
-            # --------------------------------------------------------
-            # LIKES (comments)
-            # --------------------------------------------------------
-            for src_cid, tgt_cid in src_to_target_cid.items():
-                comment_likes = paginated_fetch(
-                    f"{SOURCE_API_URL}/updates/{src_uid}/comments/{src_cid}/likes",
-                    source_headers
-                )
-                for lk in comment_likes:
-                    luser = lk.get("user_external_id")
-                    if not luser or luser not in tgt_user_ids:
-                        continue
-                    requests.post(
-                        f"{TARGET_API_URL}/updates/{new_update_id}/comments/{tgt_cid}/likes",
-                        headers=target_headers_form,
-                        data={"user_external_id": luser},
-                        verify=VERIFY_SSL,
-                    )
+    print("\n=== PHASE 2 COMPLETE ===")
 
-    ui_log("=== PHASE 2 COMPLETE ===")
     return csv_buffer.getvalue()
 
 
