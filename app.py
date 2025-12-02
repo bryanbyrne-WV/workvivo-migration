@@ -1713,7 +1713,7 @@ def init_phase2_csv():
 # ===============================================================
 # PHASE 2 — CONTENT (Streamlit-safe, no prompts, PyCharm-equivalent)
 # ===============================================================
-def run_phase2(cutoff: Optional[datetime]):
+def run_phase2(cutoff: datetime):
     """
     Fully functional Phase 2 migration.
     Identical logic to PyCharm but without input() prompts.
