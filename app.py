@@ -2611,57 +2611,73 @@ elif st.session_state.page == "running":
 elif st.session_state.page == "summary":
 
     s = st.session_state.summary
-    
+
     # -------------------------------------------------------
-    # SUMMARY PAGE HEADER LOGIC
+    # CANCEL STATUS
     # -------------------------------------------------------
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
     
-    title_text = (
-        "Migration Cancelled"
-        if is_cancelled
-        else "Migration Completed Successfully"
-    )
+    # Header text only (NO subtitle)
+    title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully"
     
-    # NEW — Subtitle logic
-    title_sub = (
-        ""
-        if is_cancelled
-        else "All migration tasks completed successfully."
-    )
+    title_sub = ""  # Remove subtitle entirely
     
-    # Green for success, red for cancelled
+    # 1) Yellow/Info box (AT THE TOP)
+    if is_cancelled:
+        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
+    else:
+        st.info("All migration tasks completed successfully.")
+    
+    # 2) Migration code (below warning)
+    migration_code_used = st.session_state.get("migration_code_used", "N/A")
+    st.info(f"🔑 Migration Code Used: **{migration_code_used}**")
+    
+    # 3) Title color
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
     
-    
-    # -------------------------------------------------------
-    # DISPLAY HEADER
-    # -------------------------------------------------------
+    # 4) Render header LOWER down (subtitle removed)
     st.markdown(f"""
-        <h2 style="color:{title_color}; font-weight:800; margin-bottom:4px;">
-            {title_text}
-        </h2>
+    <style>
+    
+    .summary-title {{
+        font-size: 32px;
+        font-weight: 800;
+        margin-top: 25px;
+        margin-bottom: 4px;
+        color: {title_color};
+    }}
+    
+    .purple-section-title {{
+        font-size: 24px;
+        font-weight: 700;
+        color: #6A4FCB;
+        margin-top: 35px;
+        margin-bottom: 10px;
+    }}
+    
+    .summary-item {{
+        font-size: 15px;
+        margin-bottom: 6px;
+    }}
+    
+    .divider {{
+        margin: 25px 0;
+        border-bottom: 1px solid #DDD;
+    }}
+    
+    </style>
+    
+    <div class="summary-title">{title_text}</div>
+    
     """, unsafe_allow_html=True)
-    
-    # Subtitle (only if success)
-    if title_sub:
-        st.markdown(f"<div style='color:#555; margin-bottom:15px;'>{title_sub}</div>", unsafe_allow_html=True)
-    
-    # -------------------------------------------------------
-    # SHOW MIGRATION CODE USED
-    # -------------------------------------------------------
-    st.info(f"🔑 Migration Code Used: **{st.session_state.get('migration_code_used', 'N/A')}**")
 
-    # Green for success, red for cancelled
-    title_color = "#CC0000" if is_cancelled else "#4CAF50"
 
-    # ------------------------------------------------------------
-    # SAVE MIGRATION HISTORY ENTRY
-    # ------------------------------------------------------------
-    
+    # -------------------------------------------------------
+    # HISTORY ENTRY SAVE
+    # -------------------------------------------------------
     history_entry = {
         "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "migration_code": st.session_state.get("migration_code", ""),
+        "migration_code": st.session_state.get("migration_code_used", ""),
         "status": "Cancelled" if is_cancelled else "Completed",
         "users_migrated": s.get("users_migrated", 0),
         "spaces_created": s.get("spaces_created", 0),
@@ -2674,57 +2690,18 @@ elif st.session_state.page == "summary":
         "start_time": s.get("start_time"),
         "end_time": s.get("end_time"),
     }
-    
-    # Prevent duplicate entries on rerun
-    if "last_history_saved" not in st.session_state or st.session_state.last_history_saved != history_entry["timestamp"]:
+
+    if "last_history_saved" not in st.session_state or \
+       st.session_state.last_history_saved != history_entry["timestamp"]:
+
         st.session_state.migration_history.append(history_entry)
         st.session_state.last_history_saved = history_entry["timestamp"]
 
 
-
-
     # -------------------------------------------------------
-    # SUMMARY PAGE CSS + HEADER
+    # USERS & SPACES SECTION
     # -------------------------------------------------------
-    st.markdown(f"""
-    <style>
-    .summary-title {{
-        font-size: 32px;
-        font-weight: 800;
-        text-align: left;
-        margin-top: 10px;
-        margin-bottom: 4px;
-        color: {title_color};
-    }}
-
-    .summary-sub {{
-        font-size: 16px;
-        text-align: left;
-        color: #555;
-        margin-bottom: 25px;
-    }}
-
-    .purple-section-title {{
-        font-size: 24px;
-        font-weight: 700;
-        color: #6A4FCB;
-        text-align: left;
-        margin-top: 35px;
-        margin-bottom: 10px;
-    }}
-    </style>
-
-    <div class="summary-title">{title_text}</div>
-    <div class="summary-sub">{title_sub}</div>
-    """, unsafe_allow_html=True)
-
-
-    if is_cancelled:
-        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
-
-    # -------- USERS & SPACES --------
     st.markdown('<div class="purple-section-title">Users & Spaces</div>', unsafe_allow_html=True)
-
 
     st.markdown(f"""
     <div class="summary-item"><strong>Users Migrated:</strong> {s['users_migrated']}</div>
@@ -2733,12 +2710,15 @@ elif st.session_state.page == "summary":
 
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
-    # -------- CONTENT MIGRATED --------
-    st.markdown('<div class="purple-section-title">Users & Spaces</div>', unsafe_allow_html=True)
+
+    # -------------------------------------------------------
+    # CONTENT MIGRATION SECTION
+    # -------------------------------------------------------
+    st.markdown('<div class="purple-section-title">Content Migrated</div>', unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-item"><strong>Updates Migrated:</strong> {s.get('updates_migrated', 0)}</div>
-    <div class="summary-item"><strong>Kudos' Migrated:</strong> {s.get('kudos_migrated', 0)}</div>
+    <div class="summary-item"><strong>Kudos Migrated:</strong> {s.get('kudos_migrated', 0)}</div>
     <div class="summary-item"><strong>Articles Migrated:</strong> {s.get('articles_migrated', 0)}</div>
     <div class="summary-item"><strong>Events Migrated:</strong> {s.get('events_migrated', 0)}</div>
     <div class="summary-item"><strong>Global Pages Migrated:</strong> {s.get('global_pages_migrated', 0)}</div>
@@ -2746,25 +2726,28 @@ elif st.session_state.page == "summary":
     """, unsafe_allow_html=True)
 
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
-    
-    # -------- TIMELINE --------
-    st.markdown('<div class="purple-section-title">Users & Spaces</div>', unsafe_allow_html=True)
 
-    
+
+    # -------------------------------------------------------
+    # TIMELINE SECTION
+    # -------------------------------------------------------
+    st.markdown('<div class="purple-section-title">Timeline</div>', unsafe_allow_html=True)
+
     start_pretty = pretty_time(s['start_time'])
     end_pretty = pretty_time(s['end_time'])
-    
+
     st.markdown(f"""
     <div class="summary-item"><strong>Start:</strong> {start_pretty}</div>
     <div class="summary-item"><strong>End:</strong> {end_pretty}</div>
     """, unsafe_allow_html=True)
-    
+
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
 
-    # -------- FULL LOG --------
-    st.markdown('<div class="purple-section-title">Users & Spaces</div>', unsafe_allow_html=True)
-
+    # -------------------------------------------------------
+    # LOG SECTION
+    # -------------------------------------------------------
+    st.markdown('<div class="purple-section-title">Console Log</div>', unsafe_allow_html=True)
 
     st.text_area(
         "Console Output",
@@ -2772,25 +2755,21 @@ elif st.session_state.page == "summary":
         height=300
     )
 
-    # ======== BUTTON ROW ========
+
+    # -------------------------------------------------------
+    # BUTTONS (FINISH + DOWNLOADS)
+    # -------------------------------------------------------
     c1, c2 = st.columns([1, 1])
 
     with c1:
         if st.button("✔ Finish", key="finish_button"):
 
             keys_to_reset = [
-                # Migration progress & logs
                 "progress", "log_output", "migration_finished", "cancel_requested",
                 "start_migration", "phase1_running", "live_log_placeholder",
                 "summary", "summary_type",
-
-                # Migration page inputs
-                "phase1_company",
-                "migration_date_choice",
-                "migration_start_date",
-                "migration_end_date",
-
-                # Toggles
+                "phase1_company", "migration_date_choice",
+                "migration_start_date", "migration_end_date",
                 "migrate_updates", "migrate_kudos", "migrate_articles",
                 "migrate_events", "migrate_comments", "migrate_likes",
                 "migrate_globalPages", "migrate_spacePages",
@@ -2803,6 +2782,7 @@ elif st.session_state.page == "summary":
 
             st.session_state.page = "main"
             st.rerun()
+
 
     with c2:
         if st.session_state.get("log_output"):
@@ -2825,6 +2805,7 @@ elif st.session_state.page == "summary":
                 file_name="MigrationContentLog.csv",
                 mime="text/csv"
             )
+
 
 # ============================================================
 # MIGRATION HISTORY PAGE
