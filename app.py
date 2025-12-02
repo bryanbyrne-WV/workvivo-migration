@@ -2612,12 +2612,12 @@ elif st.session_state.page == "summary":
 
     s = st.session_state.summary
 
-     # -------------------------------------------------------
+    # -------------------------------------------------------
     # CANCEL STATUS
     # -------------------------------------------------------
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
     
-    # Title text (will NOT appear at top anymore)
+    # Header text
     title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully"
     
     # Subtitle
@@ -2627,37 +2627,60 @@ elif st.session_state.page == "summary":
         else "All migration tasks completed successfully."
     )
     
-    # 1) Yellow/Info box (at the top)
+    # 1) Yellow/Info box (AT THE TOP)
     if is_cancelled:
         st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
     else:
         st.info("All migration tasks completed successfully.")
     
-    # 2) Migration code (SECOND, still near top)
+    # 2) Migration code (still near the top)
     st.info(f"🔑 Migration Code Used: **{st.session_state.get('migration_code_used', 'N/A')}**")
     
     # 3) Title color
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
     
-    # 4) Render header LOWER down (not at the top)
+    # 4) Render header further down + RESTORE PURPLE STYLING
     st.markdown(f"""
     <style>
+    
     .summary-title {{
         font-size: 32px;
         font-weight: 800;
-        margin-top: 25px;   /* pushed down */
+        margin-top: 25px;  /* Push header down */
         margin-bottom: 4px;
         color: {title_color};
     }}
+    
     .summary-sub {{
         font-size: 16px;
         color: #555;
         margin-bottom: 25px;
     }}
+    
+    .purple-section-title {{
+        font-size: 24px;
+        font-weight: 700;
+        color: #6A4FCB;       /* Your purple */
+        text-align: left;
+        margin-top: 35px;
+        margin-bottom: 10px;
+    }}
+    
+    .summary-item {{
+        font-size: 15px;
+        margin-bottom: 6px;
+    }}
+    
+    .divider {{
+        margin: 25px 0;
+        border-bottom: 1px solid #DDD;
+    }}
+    
     </style>
     
     <div class="summary-title">{title_text}</div>
     <div class="summary-sub">{title_sub}</div>
+    
     """, unsafe_allow_html=True)
 
 
