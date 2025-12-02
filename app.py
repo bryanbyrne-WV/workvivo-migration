@@ -1,8 +1,7 @@
 
 # -*- coding: utf-8 -*-
 import streamlit as st
-import requestsResults below reflect partial completion.
-
+import requests
 import time
 import io
 from datetime import datetime
