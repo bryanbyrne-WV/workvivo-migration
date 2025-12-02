@@ -2154,9 +2154,24 @@ if st.session_state.page == "main":
     st.markdown("### Organisation settings and information")
     st.markdown("This section migrates users, spaces and space membership.")
     
-    # Users & Spaces (always on)
-    migrate_users_flag = st.toggle("Users", value=True, disabled=True)
-    migrate_spaces_flag = st.toggle("Spaces", value=True, disabled=True)
+        # Ensure flags exist
+    if "migrate_users" not in st.session_state:
+        st.session_state.migrate_users = True
+    
+    if "migrate_spaces" not in st.session_state:
+        st.session_state.migrate_spaces = True
+    
+    # Now allow user to turn them on/off
+    st.session_state.migrate_users = st.toggle(
+        "Users",
+        value=st.session_state.migrate_users
+    )
+    
+    st.session_state.migrate_spaces = st.toggle(
+        "Spaces",
+        value=st.session_state.migrate_spaces
+    )
+
     
     # -----------------------------------------------------------
     # Selective User Migration
