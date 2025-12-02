@@ -2169,11 +2169,8 @@ if st.session_state.page == "main":
     
     st.session_state.migrate_spaces = st.toggle(
         "Spaces",
-        value=st.session_state.migrate_spaces    
-        
-        
-    st.markdown("---")
-
+        value=st.session_state.migrate_spaces
+    )
 
     
     # ============================================================
@@ -2230,6 +2227,8 @@ if st.session_state.page == "main":
             )
         else:
             st.session_state.selected_space_names = ""
+    
+        st.markdown("---")
 
 
     # -----------------------------------------------------------
