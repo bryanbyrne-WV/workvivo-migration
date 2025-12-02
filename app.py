@@ -2227,13 +2227,12 @@ if st.session_state.page == "main":
             )
         else:
             st.session_state.selected_space_names = ""
-    
-        st.markdown("---")
-
 
     # -----------------------------------------------------------
     # Global Feed Options
     # -----------------------------------------------------------
+    st.markdown("---")
+
     st.markdown("#### Global Feed Options")
     
     # Ensure keys exist
