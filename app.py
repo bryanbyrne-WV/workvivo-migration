@@ -2622,7 +2622,7 @@ elif st.session_state.page == "summary":
     
     # Subtitle
     title_sub = (
-        "Results below reflect partial completion."
+        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
         if is_cancelled
         else "All migration tasks completed successfully."
     )
