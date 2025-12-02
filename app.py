@@ -2152,7 +2152,7 @@ if st.session_state.page == "main":
     # 🏢 Organisation settings and information
     # ============================================================
     st.markdown("### Organisation settings and information")
-    st.markdown("This section migrates users, spaces and space membership.")
+    st.markdown("This section migrates active users, spaces and space membership.")
     
         # Ensure flags exist
     if "migrate_users" not in st.session_state:
