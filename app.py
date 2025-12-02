@@ -9,6 +9,7 @@ import random
 import os
 import mimetypes
 import string
+VERIFY_SSL = True
 
 
 
