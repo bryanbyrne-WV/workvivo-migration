@@ -9,6 +9,8 @@ import random
 import os
 import mimetypes
 import string
+import datetime as dt
+
 VERIFY_SSL = True
 
 
@@ -17,11 +19,6 @@ if "config_test_passed" not in st.session_state:
     st.session_state.config_test_passed = False
 
 def within_range(created_at, cutoff):
-    """
-    Return True if:
-      • cutoff is None → always True
-      • created_at >= cutoff
-    """
     if not cutoff:
         return True
 
@@ -29,10 +26,18 @@ def within_range(created_at, cutoff):
         return False
 
     try:
-        # Normalise formats like "2024-01-01T12:00:00Z"
-        created_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        created_dt = datetime.fromisoformat(
+            created_at.replace("Z", "+00:00")
+        )
     except Exception:
         return False
+
+    # Normalise timezone
+    if cutoff.tzinfo is None:
+        cutoff = cutoff.replace(tzinfo=dt.timezone.utc)
+
+    if created_dt.tzinfo is None:
+        created_dt = created_dt.replace(tzinfo=dt.timezone.utc)
 
     return created_dt >= cutoff
 
