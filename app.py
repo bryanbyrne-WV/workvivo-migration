@@ -2662,50 +2662,6 @@ elif st.session_state.page == "summary":
 
 
     # -------------------------------------------------------
-    # SHOW MIGRATION CODE USED (KEEP THIS)
-    # -------------------------------------------------------
-    st.info(
-        f"🔑 Migration Code Used: **{st.session_state.get('migration_code_used', 'N/A')}**"
-    )
-
-
-    # -------------------------------------------------------
-    # FINAL, SINGLE HEADER (THIS IS THE ONE YOU KEEP)
-    # -------------------------------------------------------
-    st.markdown(f"""
-    <style>
-    .summary-title {{
-        font-size: 32px;
-        font-weight: 800;
-        text-align: left;
-        margin-top: 10px;
-        margin-bottom: 4px;
-        color: {title_color};
-    }}
-
-    .summary-sub {{
-        font-size: 16px;
-        text-align: left;
-        color: #555;
-        margin-bottom: 25px;
-    }}
-
-    .purple-section-title {{
-        font-size: 24px;
-        font-weight: 700;
-        color: #6A4FCB;
-        text-align: left;
-        margin-top: 35px;
-        margin-bottom: 10px;
-    }}
-    </style>
-
-    <div class="summary-title">{title_text}</div>
-    <div class="summary-sub">{title_sub}</div>
-    """, unsafe_allow_html=True)
-
-
-    # -------------------------------------------------------
     # HISTORY ENTRY SAVE
     # -------------------------------------------------------
     history_entry = {
