@@ -2618,8 +2618,10 @@ elif st.session_state.page == "summary":
     # -------------------------------------------------------
     is_cancelled = st.session_state.get("summary_type") == "cancelled"
     
-    # Header text
+    # Header text only (NO subtitle)
     title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully"
+    
+    title_sub = ""  # Remove subtitle entirely
     
     # 1) Yellow/Info box (AT THE TOP)
     if is_cancelled:
@@ -2627,35 +2629,29 @@ elif st.session_state.page == "summary":
     else:
         st.info("All migration tasks completed successfully.")
     
-    # 2) Migration code (still near the top)
-    st.info(f"🔑 Migration Code Used: **{st.session_state.get('migration_code_used', 'N/A')}**")
+    # 2) Migration code (below warning)
+    migration_code_used = st.session_state.get("migration_code_used", "N/A")
+    st.info(f"🔑 Migration Code Used: **{migration_code_used}**")
     
     # 3) Title color
     title_color = "#CC0000" if is_cancelled else "#4CAF50"
     
-    # 4) Render header further down + RESTORE PURPLE STYLING
+    # 4) Render header LOWER down (subtitle removed)
     st.markdown(f"""
     <style>
     
     .summary-title {{
         font-size: 32px;
         font-weight: 800;
-        margin-top: 25px;  /* Push header down */
+        margin-top: 25px;
         margin-bottom: 4px;
         color: {title_color};
-    }}
-    
-    .summary-sub {{
-        font-size: 16px;
-        color: #555;
-        margin-bottom: 25px;
     }}
     
     .purple-section-title {{
         font-size: 24px;
         font-weight: 700;
-        color: #6A4FCB;       /* Your purple */
-        text-align: left;
+        color: #6A4FCB;
         margin-top: 35px;
         margin-bottom: 10px;
     }}
@@ -2673,7 +2669,6 @@ elif st.session_state.page == "summary":
     </style>
     
     <div class="summary-title">{title_text}</div>
-    <div class="summary-sub">{title_sub}</div>
     
     """, unsafe_allow_html=True)
 
