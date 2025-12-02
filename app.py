@@ -1071,28 +1071,31 @@ def ui_log(message):
 # =========================================================
 
 
-def paginated_fetch(url, headers, take=100):
-    """Fetch paginated results from Workvivo API."""
+def paginated_fetch(url, headers, take_limit=100, delay=0.2):
     results = []
     skip = 0
 
     while True:
-        final_url = f"{url}?skip={skip}&take={take}"
-        resp = requests.get(final_url, headers=headers)
+        paged = f"{url}&skip={skip}&take={take_limit}" if "?" in url else f"{url}?skip={skip}&take={take_limit}"
+        r = requests.get(paged, headers=headers, timeout=30, verify=VERIFY_SSL)
 
-        if resp.status_code != 200:
-            ui_log(f"❌ Failed to fetch: {resp.status_code}")
-            return results
-
-        batch = resp.json().get("data", [])
-        results.extend(batch)
-
-        if len(batch) < take:
+        if r.status_code != 200:
             break
 
-        skip += take
+        data = r.json().get("data", [])
+        if not data:
+            break
+
+        results.extend(data)
+
+        if len(data) < take_limit:
+            break
+
+        skip += take_limit
+        time.sleep(delay)
 
     return results
+
 
 def pretty_time(dt):
     if not dt:
