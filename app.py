@@ -787,7 +787,7 @@ def sidebar_config() -> tuple[ExportConfig, bool, Any]:
 
     workvivo_id = st.sidebar.text_input(
         "Workvivo tenant ID",
-        value=get_secret("WORKVIVO_ID", "1102"),
+        value="",
     )
 
     auto_detect = st.sidebar.checkbox(
@@ -795,12 +795,12 @@ def sidebar_config() -> tuple[ExportConfig, bool, Any]:
         value=True,
     )
 
-    detected_api_url = get_api_url_from_workvivo_id(workvivo_id)
+    detected_api_url = get_api_url_from_workvivo_id(workvivo_id) if workvivo_id else ""
 
     if auto_detect:
         api_base_url = st.sidebar.text_input(
             "API Base URL",
-            value=detected_api_url,
+            value=detected_api_url if detected_api_url else "",
             disabled=True,
             help="Auto-detected from Workvivo ID prefix.",
         )
@@ -822,11 +822,11 @@ def sidebar_config() -> tuple[ExportConfig, bool, Any]:
     test_result = st.sidebar.empty()
 
     st.sidebar.header("Filter")
-    use_date_from = st.sidebar.checkbox("Use Date from", value=False)
-    date_from_value = st.sidebar.date_input("Date from", value=None, disabled=not use_date_from)
+use_date_from = st.sidebar.checkbox("Use Date from")
+date_from_value = st.sidebar.date_input("Date from", value=None, disabled=not use_date_from)
 
-    use_date_to = st.sidebar.checkbox("Use Date to", value=False)
-    date_to_value = st.sidebar.date_input("Date to", value=None, disabled=not use_date_to)
+use_date_to = st.sidebar.checkbox("Use Date to")
+date_to_value = st.sidebar.date_input("Date to", value=None, disabled=not use_date_to)
 
     st.sidebar.header("Advanced")
     take = st.sidebar.number_input("Page size", min_value=1, max_value=500, value=100, step=1)
