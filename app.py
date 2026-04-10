@@ -1,157 +1,664 @@
-
 # -*- coding: utf-8 -*-
-import streamlit as st
-import requests
-import time
+import csv
 import io
-from datetime import datetime
-import random
-import os
-import mimetypes
-import string
-import datetime as dt
+import re
+import time
+import zipfile
+from dataclasses import dataclass
+from datetime import datetime, time as dt_time
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from typing import Any
+from urllib.parse import urljoin, urlparse
 
-VERIFY_SSL = True
+import pandas as pd
+import requests
+import streamlit as st
 
 
+# =========================================================
+# APP CONFIG
+# =========================================================
+st.set_page_config(
+    page_title="Workvivo Livestream Exporter",
+    page_icon="🎥",
+    layout="wide",
+)
 
-if "config_test_passed" not in st.session_state:
-    st.session_state.config_test_passed = False
+DEFAULT_API_BASE_URL = "https://api.workvivo.com/v1"
+DEFAULT_TAKE = 100
+DEFAULT_REQUEST_TIMEOUT = 60
+DEFAULT_SLEEP_BETWEEN_REQUESTS = 0.2
+DEFAULT_CHUNK_SIZE = 1024 * 256
 
-def post_with_backoff(url, headers, data=None, files=None, max_retries=5):
-    delay = 2
-    for i in range(max_retries):
-        try:
-            r = requests.post(url, headers=headers, data=data, files=files, timeout=180)
-            if r.status_code in (200, 201):
-                return r
-        except Exception:
-            pass
-        time.sleep(delay)
-        delay *= 2
-    return None
+MANIFEST_COLUMNS = [
+    "livestream_id",
+    "title",
+    "description",
+    "host_name",
+    "started_at",
+    "ended_at",
+    "created_at",
+    "audience_type",
+    "audience_names",
+    "viewers_count",
+    "recording_url",
+    "resolved_playlist_url",
+    "playlist_path",
+    "media_playlist_path",
+    "saved_path",
+    "output_type",
+    "segment_count",
+    "status",
+    "permalink",
+]
 
-def within_range(created_at, cutoff):
-    if not cutoff:
-        return True
+DEFAULT_ADMIN_USERNAME = "admin"
+DEFAULT_ADMIN_PASSWORD = "Cops123!"
 
-    if not created_at:
-        return False
 
+# =========================================================
+# HELPERS
+# =========================================================
+def get_secret(name: str, default: str = "") -> str:
     try:
-        created_dt = datetime.fromisoformat(
-            created_at.replace("Z", "+00:00")
-        )
+        if name in st.secrets:
+            return str(st.secrets[name])
     except Exception:
+        pass
+    return default
+
+
+def sanitize_filename(filename: str) -> str:
+    filename = (filename or "").strip().replace("\n", " ").replace("\r", " ")
+    filename = re.sub(r'[<>:"/\\|?*]', "_", filename)
+    return filename[:180] if filename else "livestream"
+
+
+def iso_to_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
+def within_date_range(
+    iso_value: str,
+    date_from: datetime | None,
+    date_to: datetime | None,
+) -> bool:
+    dt = iso_to_datetime(iso_value)
+    if dt is None:
         return False
 
-    # Normalise timezone
-    if cutoff.tzinfo is None:
-        cutoff = cutoff.replace(tzinfo=dt.timezone.utc)
+    dt_naive = dt.replace(tzinfo=None)
 
-    if created_dt.tzinfo is None:
-        created_dt = created_dt.replace(tzinfo=dt.timezone.utc)
+    if date_from and dt_naive < date_from:
+        return False
 
-    return created_dt >= cutoff
+    if date_to and dt_naive > date_to.replace(hour=23, minute=59, second=59):
+        return False
 
-def get_api_url_from_workvivo_id(wv_id: str):
-    """Return correct API base URL based on Workvivo ID prefix."""
-    if not wv_id or len(wv_id) < 3:
-        return "https://api.workvivo.com/v1"
+    return True
+
+
+def build_filename_base(livestream_id: str, title: str, timestamp: str) -> str:
+    safe_title = sanitize_filename(title) or f"livestream_{livestream_id}"
+    safe_timestamp = sanitize_filename((timestamp or "").replace(":", "-"))
+    if safe_timestamp:
+        return f"{livestream_id}_{safe_timestamp}_{safe_title}"
+    return f"{livestream_id}_{safe_title}"
+
+
+def dataframe_to_csv_bytes(df: pd.DataFrame) -> bytes:
+    buffer = io.StringIO()
+    df.to_csv(buffer, index=False)
+    return buffer.getvalue().encode("utf-8")
+
+
+def get_next_page(payload: dict[str, Any]):
+    return payload.get("meta", {}).get("pagination", {}).get("next_page")
+
+
+def get_api_url_from_workvivo_id(wv_id: str) -> str:
+    if not wv_id or len(str(wv_id).strip()) < 3:
+        return DEFAULT_API_BASE_URL
 
     prefix = str(wv_id).strip()[:3]
 
     if prefix == "100":
-        # US cluster
         return "https://api.workvivo.us/v1"
-
     if prefix == "300":
-        # EU2 cluster
         return "https://api.eu2.workvivo.com/v1"
-
     if prefix == "400":
-        # US2 cluster
         return "https://api.us2.workvivo.us/v1"
 
-    # Default EU cluster
-    return "https://api.workvivo.com/v1"
+    return DEFAULT_API_BASE_URL
 
 
-def test_workvivo_connection(scim_url, scim_token, api_url, api_token, wv_id):
-    """Return (ok, message) with safe, non-detailed error responses."""
+# =========================================================
+# DATA MODEL
+# =========================================================
+@dataclass
+class ExportConfig:
+    api_base_url: str
+    api_token: str
+    workvivo_id: str
+    date_from: datetime | None
+    date_to: datetime | None
+    take: int = DEFAULT_TAKE
+    request_timeout: int = DEFAULT_REQUEST_TIMEOUT
+    sleep_between_requests: float = DEFAULT_SLEEP_BETWEEN_REQUESTS
+    chunk_size: int = DEFAULT_CHUNK_SIZE
+    force_manual_api_url: bool = False
 
-    headers_scim = {
-        "Authorization": f"Bearer {scim_token}",
-        "Accept": "application/json"
+
+# =========================================================
+# SESSION / REQUESTS
+# =========================================================
+def build_session(config: ExportConfig) -> requests.Session:
+    session = requests.Session()
+    session.headers.update(
+        {
+            "Authorization": f"Bearer {config.api_token}",
+            "Accept": "application/json",
+            "Workvivo-id": config.workvivo_id,
+            "User-Agent": "Mozilla/5.0",
+        }
+    )
+    return session
+
+
+def validate_config(config: ExportConfig) -> None:
+    if not config.api_base_url:
+        raise ValueError("Set API Base URL.")
+    if not config.workvivo_id:
+        raise ValueError("Set Workvivo tenant ID.")
+    if not config.api_token:
+        raise ValueError("Set API token.")
+
+
+# =========================================================
+# LIVESTREAM HELPERS
+# =========================================================
+def get_recording_url(livestream: dict[str, Any]) -> str:
+    video = livestream.get("video") or {}
+    if isinstance(video, dict):
+        return video.get("url") or ""
+    return ""
+
+
+def get_host_name(livestream: dict[str, Any]) -> str:
+    host = livestream.get("host") or {}
+    return host.get("display_name") or host.get("name") or ""
+
+
+def get_audience_names(livestream: dict[str, Any]) -> str:
+    audience = livestream.get("audience") or {}
+    names: list[str] = []
+
+    for space in audience.get("spaces", []):
+        if isinstance(space, dict) and space.get("name"):
+            names.append(space["name"])
+
+    for team in audience.get("teams", []):
+        if isinstance(team, dict) and team.get("name"):
+            names.append(team["name"])
+
+    return " | ".join(names)
+
+
+def get_audience_type(livestream: dict[str, Any]) -> str:
+    audience = livestream.get("audience") or {}
+    if audience.get("is_global"):
+        return "global"
+    if audience.get("spaces"):
+        return "spaces"
+    if audience.get("teams"):
+        return "teams"
+    return "unknown"
+
+
+def get_timestamp_for_filter(livestream: dict[str, Any]) -> str:
+    return livestream.get("started_at") or livestream.get("created_at") or ""
+
+
+def matches_filters(livestream: dict[str, Any], config: ExportConfig) -> bool:
+    if not livestream.get("is_recorded"):
+        return False
+
+    if livestream.get("recording_status") != "done":
+        return False
+
+    timestamp = get_timestamp_for_filter(livestream)
+    if not timestamp:
+        return False
+
+    return within_date_range(timestamp, config.date_from, config.date_to)
+
+
+def livestream_to_manifest_row(livestream: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "livestream_id": str(livestream.get("id", "")),
+        "title": livestream.get("title") or "",
+        "description": livestream.get("description") or "",
+        "host_name": get_host_name(livestream),
+        "started_at": livestream.get("started_at") or "",
+        "ended_at": livestream.get("ended_at") or "",
+        "created_at": livestream.get("created_at") or "",
+        "audience_type": get_audience_type(livestream),
+        "audience_names": get_audience_names(livestream),
+        "viewers_count": livestream.get("viewers_count", ""),
+        "recording_url": get_recording_url(livestream),
+        "resolved_playlist_url": "",
+        "playlist_path": "",
+        "media_playlist_path": "",
+        "saved_path": "",
+        "output_type": "",
+        "segment_count": "",
+        "status": "pending",
+        "permalink": livestream.get("permalink", ""),
     }
 
-    headers_api = {
-        "Authorization": f"Bearer {api_token}",
-        "Workvivo-Id": wv_id,
-        "Accept": "application/json"
+
+# =========================================================
+# HLS / DOWNLOAD HELPERS
+# =========================================================
+def is_m3u8_url(url: str) -> bool:
+    return ".m3u8" in (url or "").lower()
+
+
+def fetch_text(session: requests.Session, url: str, timeout: int) -> str:
+    response = session.get(url, timeout=timeout)
+    response.raise_for_status()
+    return response.text
+
+
+def download_binary(
+    session: requests.Session,
+    url: str,
+    destination: Path,
+    timeout: int,
+    chunk_size: int,
+) -> None:
+    with session.get(url, stream=True, timeout=timeout) as response:
+        response.raise_for_status()
+        with open(destination, "wb") as f:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    f.write(chunk)
+
+
+def save_text_file(destination: Path, content: str) -> None:
+    with open(destination, "w", encoding="utf-8") as f:
+        f.write(content)
+
+
+def parse_m3u8_lines(content: str) -> list[str]:
+    return [line.strip() for line in content.splitlines() if line.strip()]
+
+
+def is_master_playlist(lines: list[str]) -> bool:
+    return any(line.startswith("#EXT-X-STREAM-INF") for line in lines)
+
+
+def resolve_playlist_target(base_url: str, line: str) -> str:
+    return urljoin(base_url, line)
+
+
+def get_variant_playlist_url(playlist_url: str, content: str) -> str:
+    lines = parse_m3u8_lines(content)
+
+    if not is_master_playlist(lines):
+        return playlist_url
+
+    for i, line in enumerate(lines):
+        if line.startswith("#EXT-X-STREAM-INF") and i + 1 < len(lines):
+            next_line = lines[i + 1]
+            if not next_line.startswith("#"):
+                return resolve_playlist_target(playlist_url, next_line)
+
+    return playlist_url
+
+
+def get_media_segment_urls(playlist_url: str, content: str) -> list[str]:
+    lines = parse_m3u8_lines(content)
+    segment_urls: list[str] = []
+
+    for line in lines:
+        if line.startswith("#"):
+            continue
+        segment_urls.append(resolve_playlist_target(playlist_url, line))
+
+    return segment_urls
+
+
+def guess_segment_extension(segment_urls: list[str]) -> str:
+    if not segment_urls:
+        return ".bin"
+
+    first_path = urlparse(segment_urls[0]).path.lower()
+
+    if first_path.endswith(".ts"):
+        return ".ts"
+    if first_path.endswith(".m4s"):
+        return ".m4s"
+    if first_path.endswith(".mp4"):
+        return ".mp4"
+
+    suffix = Path(first_path).suffix
+    return suffix if suffix else ".bin"
+
+
+def export_hls_assets(
+    session: requests.Session,
+    recording_url: str,
+    file_base: str,
+    export_folder: Path,
+    timeout: int,
+    chunk_size: int,
+    progress_callback=None,
+) -> dict[str, Any]:
+    first_playlist = fetch_text(session, recording_url, timeout)
+    first_playlist_path = export_folder / f"{file_base}_master.m3u8"
+    save_text_file(first_playlist_path, first_playlist)
+
+    media_playlist_url = get_variant_playlist_url(recording_url, first_playlist)
+
+    if media_playlist_url != recording_url:
+        media_playlist = fetch_text(session, media_playlist_url, timeout)
+        media_playlist_path = export_folder / f"{file_base}_media.m3u8"
+        save_text_file(media_playlist_path, media_playlist)
+    else:
+        media_playlist = first_playlist
+        media_playlist_path = first_playlist_path
+
+    segment_urls = get_media_segment_urls(media_playlist_url, media_playlist)
+    if not segment_urls:
+        raise ValueError("No media segments found in playlist.")
+
+    segment_ext = guess_segment_extension(segment_urls)
+    destination = export_folder / f"{file_base}{segment_ext}"
+
+    with open(destination, "wb") as outfile:
+        total = len(segment_urls)
+        for index, segment_url in enumerate(segment_urls, start=1):
+            with session.get(segment_url, stream=True, timeout=timeout) as response:
+                response.raise_for_status()
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        outfile.write(chunk)
+
+            if progress_callback:
+                progress_callback(index, total)
+
+    return {
+        "saved_path": str(destination),
+        "output_type": segment_ext.lstrip("."),
+        "segment_count": len(segment_urls),
+        "playlist_path": str(first_playlist_path),
+        "media_playlist_path": str(media_playlist_path),
+        "playlist_url": media_playlist_url,
     }
 
-    # ---- Test SCIM ----
+
+# =========================================================
+# API CALLS
+# =========================================================
+def fetch_livestreams(
+    session: requests.Session,
+    config: ExportConfig,
+    skip: int,
+    take: int,
+) -> dict[str, Any]:
+    url = f"{config.api_base_url.rstrip('/')}/livestreams"
+    params = {"skip": skip, "take": take}
+
+    response = session.get(url, params=params, timeout=config.request_timeout)
+
+    if not response.ok:
+        raise RuntimeError(
+            f"Request failed with status {response.status_code}. "
+            f"URL: {response.url}. "
+            f"Body: {response.text}"
+        )
+
+    return response.json()
+
+
+def test_connection(session: requests.Session, config: ExportConfig) -> tuple[bool, str]:
     try:
-        r = requests.get(f"{scim_url}?count=1", headers=headers_scim, timeout=6)
-
-        if r.status_code == 401 or r.status_code == 403:
-            return False, "❌ Invalid SCIM token"
-
-        if r.status_code not in (200, 201):
-            return False, "❌ SCIM authentication failed"
-    except Exception:
-        return False, "❌ SCIM connection failed"
-
-    # ---- Test API ----
-    try:
-        r = requests.get(f"{api_url}/spaces?take=1", headers=headers_api, timeout=6)
-
-        if r.status_code == 401 or r.status_code == 403:
-            return False, "❌ Invalid API token"
-
-        if r.status_code not in (200, 201):
-            return False, "❌ API authentication failed"
-    except Exception:
-        return False, "❌ API connection failed"
-
-    return True, "✅ All connectivity tests passed! API & SCIM tokens are valid."
-
-def generate_migration_code(length=10):
-    chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(length))
-
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "Workvivo2025!"
-
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-
-# ===========================================
-# GLOBAL INITIALISATION OF SESSION STATE
-# ===========================================
-
-if "config_history" not in st.session_state:
-    st.session_state.config_history = []
-
-if "migration_history" not in st.session_state:
-    st.session_state.migration_history = []
+        payload = fetch_livestreams(session, config, skip=0, take=1)
+        count = len(payload.get("data", []))
+        return True, f"Success: connection verified. Retrieved {count} record(s) from the livestreams endpoint."
+    except Exception as exc:
+        return False, f"Error: connection failed. {exc}"
 
 
-if not st.session_state.authenticated:
+def collect_all_livestreams(
+    session: requests.Session,
+    config: ExportConfig,
+    status_box,
+    progress_bar,
+) -> list[dict[str, Any]]:
+    skip = 0
+    collected: list[dict[str, Any]] = []
+    page_number = 0
 
-    st.markdown("""
+    while True:
+        page_number += 1
+        payload = fetch_livestreams(session, config, skip=skip, take=config.take)
+        livestreams = payload.get("data", [])
+
+        if not livestreams:
+            break
+
+        collected.extend(livestreams)
+        status_box.info(f"Fetched page {page_number}: {len(livestreams)} livestreams (total {len(collected)})")
+
+        next_page = get_next_page(payload)
+        if next_page is None:
+            break
+
+        skip += config.take
+        progress_bar.progress(min(0.2 + (page_number * 0.03), 0.35))
+        time.sleep(config.sleep_between_requests)
+
+    return collected
+
+
+# =========================================================
+# ZIP EXPORT
+# =========================================================
+def export_selected_livestreams_to_zip(
+    session: requests.Session,
+    config: ExportConfig,
+    selected_rows: list[dict[str, Any]],
+    status_box,
+    progress_bar,
+) -> tuple[list[dict[str, Any]], bytes]:
+    results: list[dict[str, Any]] = []
+
+    if not selected_rows:
+        raise ValueError("No rows selected for export.")
+
+    with TemporaryDirectory() as temp_dir:
+        export_root = Path(temp_dir) / f"Exported_Livestreams_{config.workvivo_id}"
+        export_root.mkdir(parents=True, exist_ok=True)
+
+        total = len(selected_rows)
+
+        for item_index, row in enumerate(selected_rows, start=1):
+            livestream_id = row["livestream_id"]
+            title = row["title"]
+            recording_url = row["recording_url"]
+            timestamp = row["started_at"] or row["created_at"]
+
+            status_box.info(f"Exporting {item_index}/{total}: {title or livestream_id}")
+            row = dict(row)
+
+            if not recording_url:
+                row["status"] = "matched but no recording URL found"
+                results.append(row)
+                progress_bar.progress(item_index / total)
+                continue
+
+            file_base = build_filename_base(
+                livestream_id=livestream_id,
+                title=title,
+                timestamp=timestamp,
+            )
+
+            try:
+                if is_m3u8_url(recording_url):
+
+                    def segment_progress(index: int, segment_total: int):
+                        segment_fraction = index / max(segment_total, 1)
+                        overall = ((item_index - 1) + segment_fraction) / total
+                        progress_bar.progress(min(overall, 1.0))
+
+                    export_info = export_hls_assets(
+                        session=session,
+                        recording_url=recording_url,
+                        file_base=file_base,
+                        export_folder=export_root,
+                        timeout=config.request_timeout,
+                        chunk_size=config.chunk_size,
+                        progress_callback=segment_progress,
+                    )
+
+                    row["saved_path"] = str(Path(export_info["saved_path"]).name)
+                    row["output_type"] = export_info["output_type"]
+                    row["segment_count"] = export_info["segment_count"]
+                    row["playlist_path"] = str(Path(export_info["playlist_path"]).name)
+                    row["media_playlist_path"] = str(Path(export_info["media_playlist_path"]).name)
+                    row["resolved_playlist_url"] = export_info["playlist_url"]
+                    row["status"] = f"hls merged to {row['output_type']} and m3u8 saved"
+
+                else:
+                    ext = Path(urlparse(recording_url).path).suffix or ".mp4"
+                    destination = export_root / f"{file_base}{ext}"
+
+                    download_binary(
+                        session=session,
+                        url=recording_url,
+                        destination=destination,
+                        timeout=config.request_timeout,
+                        chunk_size=config.chunk_size,
+                    )
+
+                    row["saved_path"] = str(destination.name)
+                    row["output_type"] = ext.lstrip(".")
+                    row["status"] = f"file downloaded as {row['output_type']}"
+                    progress_bar.progress(item_index / total)
+
+            except Exception as exc:
+                row["status"] = f"failed: {exc}"
+                progress_bar.progress(item_index / total)
+
+            results.append(row)
+
+        results_df = pd.DataFrame(results, columns=MANIFEST_COLUMNS)
+        manifest_path = export_root / f"livestream_export_manifest_{config.workvivo_id}.csv"
+        results_df.to_csv(manifest_path, index=False, quoting=csv.QUOTE_MINIMAL)
+
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            for file_path in export_root.rglob("*"):
+                if file_path.is_file():
+                    arcname = file_path.relative_to(export_root.parent)
+                    zf.write(file_path, arcname=str(arcname))
+
+        zip_buffer.seek(0)
+        return results, zip_buffer.getvalue()
+
+
+# =========================================================
+# STATE
+# =========================================================
+def init_state():
+    st.session_state.setdefault("authenticated", False)
+    st.session_state.setdefault("fetched_rows", [])
+    st.session_state.setdefault("export_results", [])
+    st.session_state.setdefault("last_fetch_count", 0)
+    st.session_state.setdefault("export_zip_bytes", None)
+    st.session_state.setdefault("export_zip_name", "")
+    st.session_state.setdefault("config_test_passed", False)
+
+
+# =========================================================
+# STYLING
+# =========================================================
+def apply_global_branding():
+    st.markdown(
+        """
         <style>
+            .stApp {
+                background: linear-gradient(
+                    180deg,
+                    #F8F5FF 0%,
+                    #F0EAFF 28%,
+                    #EAF2FF 75%,
+                    #FCFDFF 100%
+                );
+            }
 
-            /* Soft gradient background */
-            body {
+            section[data-testid="stSidebar"] {
+                background: rgba(255,255,255,0.82);
+                backdrop-filter: blur(6px);
+            }
+
+            .main-title {
+                font-size: 2.2rem;
+                color: #5A3EA6;
+                font-weight: 800;
+                margin-bottom: 0.25rem;
+            }
+
+            .main-subtitle {
+                font-size: 1rem;
+                color: #6B56B0;
+                opacity: 0.9;
+                margin-bottom: 1.2rem;
+            }
+
+            .wv-note {
+                background: rgba(255,255,255,0.7);
+                border-radius: 14px;
+                padding: 0.9rem 1rem;
+                border: 1px solid rgba(60,79,168,0.08);
+            }
+
+            .download-anchor {
+                padding: 1rem 1rem 0.4rem 1rem;
+                border-radius: 14px;
+                background: rgba(255,255,255,0.72);
+                border: 1px solid rgba(60,79,168,0.08);
+                margin-bottom: 0.8rem;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_login_screen():
+    admin_username = get_secret("APP_ADMIN_USERNAME", DEFAULT_ADMIN_USERNAME)
+    admin_password = get_secret("APP_ADMIN_PASSWORD", DEFAULT_ADMIN_PASSWORD)
+
+    st.markdown(
+        """
+        <style>
+            .stApp {
                 background: linear-gradient(
                     180deg,
                     #EFE8FF 0%,
                     #E4D9FF 30%,
                     #DBEFFF 80%,
                     #F9FCFF 100%
-                ) !important;
+                );
             }
 
             .login-wrapper {
@@ -159,14 +666,13 @@ if not st.session_state.authenticated:
                 margin: 1.5rem auto 2rem auto;
             }
 
-
-            /* Title (no logo above it) */
             .login-title {
                 font-size: 2rem;
                 color: #5A3EA6;
                 font-weight: 700;
                 margin-bottom: 0.4rem;
                 margin-top: 1rem;
+                text-align: center;
             }
 
             .login-note {
@@ -174,9 +680,9 @@ if not st.session_state.authenticated:
                 color: #6B56B0;
                 opacity: 0.8;
                 margin-bottom: 2.2rem;
+                text-align: center;
             }
 
-            /* Underline input style */
             .underline-input input {
                 background: transparent !important;
                 border: none !important;
@@ -185,6 +691,7 @@ if not st.session_state.authenticated:
                 color: #4A2F8A !important;
                 padding: 0.6rem 0 !important;
                 font-size: 1.05rem;
+                box-shadow: none !important;
             }
 
             .underline-input input::placeholder {
@@ -192,7 +699,6 @@ if not st.session_state.authenticated:
                 opacity: 0.6;
             }
 
-            /* Login button */
             .blue-btn button {
                 width: 100%;
                 background-color: #3C4FA8 !important;
@@ -205,7 +711,6 @@ if not st.session_state.authenticated:
                 margin-top: 1.8rem;
             }
 
-            /* Request access link */
             .request-button {
                 display: inline-block;
                 margin-top: 1.6rem;
@@ -215,42 +720,45 @@ if not st.session_state.authenticated:
                 opacity: 0.85;
             }
 
+            div[data-testid="stTextInput"] label p {
+                color: #3f3f46 !important;
+                font-weight: 500;
+            }
         </style>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # Centered layout
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
 
-    # Centered Workvivo logo above login form
-    st.markdown("""
-    <div style="text-align:center; margin-bottom:10px;">
-            <img src="https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png"
-             style="height:170px;">
-    </div>
-    """, unsafe_allow_html=True)
-        
+    st.markdown(
+        """
+        <div style="text-align:center; margin-bottom:10px;">
+            <img src="https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png" style="height:170px;">
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # Header text (no logo)
     st.markdown('<div class="login-title">User Login</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-note">Please sign in to access the Migration Tool</div>',
-                unsafe_allow_html=True)
+    st.markdown(
+        '<div class="login-note">Please sign in to access the Livestream Export Tool</div>',
+        unsafe_allow_html=True,
+    )
 
-    # Inputs
     st.markdown('<div class="underline-input">', unsafe_allow_html=True)
-    username = st.text_input("Username", placeholder="Username")
-    password = st.text_input("Password", placeholder="Password", type="password")
+    username = st.text_input("Username", placeholder="Username", key="login_username")
+    password = st.text_input("Password", placeholder="Password", type="password", key="login_password")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    remember = st.checkbox("Remember me")
+    st.checkbox("Remember me", disabled=True, key="remember_me")
 
-    # Login button
     st.markdown('<div class="blue-btn">', unsafe_allow_html=True)
-    login_button = st.button("LOGIN")
+    login_button = st.button("LOGIN", use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Login logic
     if login_button:
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        if username == admin_username and password == admin_password:
             st.session_state.authenticated = True
             st.success("Logged in!")
             st.rerun()
@@ -265,2700 +773,314 @@ if not st.session_state.authenticated:
             Request Access
         </a>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-
 
     st.markdown('</div>', unsafe_allow_html=True)
-    st.stop()
-
-    if "config_history" not in st.session_state:
-        st.session_state.config_history = []
-
-    if "migration_history" not in st.session_state:
-        st.session_state.migration_history = []
 
 
-st.set_page_config(page_title="Workvivo Migration Tool", layout="wide")
+# =========================================================
+# UI
+# =========================================================
+def sidebar_config() -> tuple[ExportConfig, bool, Any]:
+    st.sidebar.header("Connection")
 
-
-if "page" not in st.session_state:
-    st.session_state.page = "config"
-
-
-# ============================================================
-# WORKVIVO ADVANCED UI THEME + LOADING + BUTTONS + DARK-MODE
-# ============================================================
-WORKVIVO_LOGO_URL = "https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png"
-
-advanced_styles = f"""
-<style>
-
-    /* GLOBAL PAGE BACKGROUND */
-    .main {{
-        background-color: #F7F9FC !important;
-    }}
-
-    /* DARK MODE SUPPORT */
-    @media (prefers-color-scheme: dark) {{
-        .main {{
-            background-color: #0d1117 !important;
-        }}
-        .header-bar {{
-            background-color: #3d0199 !important;
-        }}
-        .header-title {{
-            color: #ffffff !important;
-        }}
-        section[data-testid="stSidebar"] {{
-            background-color: #1a0638 !important;
-        }}
-        .sidebar-link {{
-            color: #cbd5e1 !important;
-        }}
-        .sidebar-footer {{
-            color: #94a3b8 !important;
-        }}
-    }}
-
-    /* HEADER BAR */
-    .header-bar {{
-        background-color: #6203ed;
-        padding: 18px 28px;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        border-radius: 8px;
-        margin-bottom: 25px;
-        box-shadow: 0px 3px 12px rgba(0,0,0,0.18);
-        animation: fade-slide-down 0.6s ease-out;
-    }}
-
-    .header-logo {{
-        height: 46px;
-        margin-right: 18px;
-    }}
-
-    .header-title {{
-        color: white;
-        font-size: 42px;
-        font-weight: 650;
-        letter-spacing: -0.5px;
-        margin-top: 2px;
-    }}
-
-    @keyframes fade-slide-down {{
-        0% {{ opacity: 0; transform: translateY(-10px); }}
-        100% {{ opacity: 1; transform: translateY(0); }}
-    }}
-
-    /* SIDEBAR */
-    section[data-testid="stSidebar"] {{
-        background-color: #4502b4 !important;
-        padding: 20px 15px;
-    }}
-
-    .sidebar-logo {{
-        width: 170px;
-        margin-bottom: 20px;
-        margin-top: 10px;
-        animation: fade-in 0.8s;
-    }}
-
-    @keyframes fade-in {{
-        0% {{ opacity: 0; }}
-        100% {{ opacity: 1; }}
-    }}
-
-    .sidebar-title {{
-        color: #ffffff;
-        font-size: 20px;
-        font-weight: 600;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }}
-
-    .sidebar-link {{
-        color: #ffffff !important;
-        padding: 10px 6px;
-        display: block;
-        font-size: 17px;
-        font-weight: 500;
-        border-radius: 5px;
-        margin-bottom: 6px;
-        text-decoration: none !important;
-        transition: 0.2s;
-    }}
-
-    .sidebar-link:hover {{
-        background-color: rgba(255,255,255,0.18);
-        padding-left: 12px;
-    }}
-
-    .sidebar-footer {{
-        margin-top: 40px;
-        padding: 12px;
-        border-top: 1px solid rgba(255,255,255,0.25);
-        color: #d0d8e8;
-        font-size: 14px;
-        text-align: center;
-        line-height: 1.4;
-    }}
-
-    /* BEAUTIFUL BUTTONS */
-    .stButton > button {{
-        border-radius: 6px;
-        height: 48px;
-        background-color: #6203ed;
-        border: none;
-        color: white;
-        font-size: 17px;
-        font-weight: 550;
-        padding: 8px 20px;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-        transition: 0.2s;
-    }}
-
-    .stButton > button:hover {{
-        background-color: #4c02b5;
-        transform: translateY(-1px);
-    }}
-
-    .stButton > button:active {{
-        transform: scale(0.98);
-    }}
-
-    /* COLLAPSIBLE LOG CONTAINER */
-    details {{
-        background: #ffffff;
-        border-radius: 8px;
-        padding: 10px 14px;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.12);
-        margin-bottom: 10px;
-    }}
-
-    summary {{
-        font-size: 18px;
-        font-weight: 600;
-        cursor: pointer;
-        color: #6203ed;
-        padding: 6px;
-    }}
-
-</style>
-"""
-
-# Brand Logo (Centered)
-st.markdown("""
-<div style="text-align:center; margin-top:10px; margin-bottom:5px;">
-    <img src="https://d3lkrqe5vfp7un.cloudfront.net/images/Picture4.png" 
-         style="height:140px;">
-</div>
-""", unsafe_allow_html=True)
-
-# Cool Gradient Header (ONLY)
-st.markdown("""
-<style>
-.cool-header {
-    width: 100%;
-    background: linear-gradient(90deg, #6203ed, #8a3dfc);
-    padding: 28px 0;
-    border-radius: 14px;
-    text-align: center;
-    box-shadow: 0 4px 20px rgba(98,3,237,0.35);
-    margin-bottom: 25px;
-    animation: fadeSlide 0.6s ease-out;
-}
-
-.cool-header-title {
-    color: white;
-    font-size: 48px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    text-shadow: 0 4px 16px rgba(0,0,0,0.25);
-}
-
-@keyframes fadeSlide {
-    from { opacity: 0; transform: translateY(-10px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-</style>
-
-<div class="cool-header">
-    <div class="cool-header-title">Internal Migration Tool v1.0</div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<style>
-.custom-continue > button {
-    background-color: #6203ed !important;   /* Purple */
-    color: white !important;                /* White text */
-    border: none !important;
-    padding: 10px 26px !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-    border-radius: 6px !important;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-    transition: 0.2s;
-}
-.custom-continue > button:hover {
-    background-color: #4c02b5 !important;   /* Darker purple */
-    transform: translateY(-1px);
-}
-.custom-continue > button:active {
-    transform: scale(0.98);
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ============================================
-# SIMPLE + RELIABLE SIDEBAR NAVIGATION (BUTTONS)
-# ============================================
-
-# Sidebar title
-st.sidebar.markdown(
-    "<div style='font-size:26px; font-weight:800; color:#6203ed; margin-bottom:20px;'>Menu</div>",
-    unsafe_allow_html=True
-)
-
-def sidebar_button(label, page_key):
-    is_active = (st.session_state.page == page_key)
-
-    # Active = purple background
-    if is_active:
-        style = """
-            background-color:#e5d4ff;
-            color:#4b00d1;
-            font-weight:700;
-            border-radius:6px;
-            border:1px solid #d1b8ff;
-            width:100%;
-            text-align:left;
-            padding:10px;
-        """
-    else:
-        style = """
-            background-color:#ffffff;
-            color:#6203ed;
-            font-weight:600;
-            border-radius:6px;
-            border:1px solid #ccc;
-            width:100%;
-            text-align:left;
-            padding:10px;
-        """
-
-    if st.sidebar.button(label, key=f"nav_{page_key}"):
-        st.session_state.page = page_key
-
-    # Apply style using HTML wrapper
-    st.sidebar.markdown(
-        f"<style>#{'nav_'+page_key} {{ {style} }}</style>",
-        unsafe_allow_html=True
+    workvivo_id = st.sidebar.text_input(
+        "Workvivo tenant ID",
+        value=get_secret("WORKVIVO_ID", "1102"),
     )
 
+    auto_detect = st.sidebar.checkbox(
+        "Auto-detect API URL from Workvivo ID",
+        value=True,
+    )
 
-# Sidebar items
-sidebar_button("Configuration", "config")
-sidebar_button("Dashboard", "main")
-sidebar_button("History", "history")
+    detected_api_url = get_api_url_from_workvivo_id(workvivo_id)
 
-# ============================================================
-# CLEAN CONFIG FORM — FINAL WORKING VERSION
-# ============================================================
+    if auto_detect:
+        api_base_url = st.sidebar.text_input(
+            "API Base URL",
+            value=detected_api_url,
+            disabled=True,
+            help="Auto-detected from Workvivo ID prefix.",
+        )
+    else:
+        api_base_url = st.sidebar.text_input(
+            "API Base URL",
+            value=get_secret("WORKVIVO_API_BASE_URL", detected_api_url),
+            help="Example: https://api.workvivo.com/v1",
+        )
 
-# Ensure flags exist
-if "config_test_passed" not in st.session_state:
-    st.session_state.config_test_passed = False
-if "config_saved" not in st.session_state:
-    st.session_state.config_saved = False
-if "migration_code" not in st.session_state:
-    st.session_state.migration_code = ""
+    api_token = st.sidebar.text_input(
+        "API token",
+        type="password",
+        value=get_secret("WORKVIVO_API_TOKEN", ""),
+        help="Provide via Streamlit secrets in production.",
+    )
 
-# Always show the config UI
-if st.session_state.page == "config":
+    test_clicked = st.sidebar.button("Test connection", use_container_width=True)
+    test_result = st.sidebar.empty()
 
-    # Reset migration code whenever entering Config page
-    if "last_page" in st.session_state and st.session_state.last_page != "config":
-        st.session_state.migration_code = ""
+    st.sidebar.header("Filter")
+    use_date_from = st.sidebar.checkbox("Use Date from", value=False)
+    date_from_value = st.sidebar.date_input("Date from", value=None, disabled=not use_date_from)
 
+    use_date_to = st.sidebar.checkbox("Use Date to", value=False)
+    date_to_value = st.sidebar.date_input("Date to", value=None, disabled=not use_date_to)
 
+    st.sidebar.header("Advanced")
+    take = st.sidebar.number_input("Page size", min_value=1, max_value=500, value=100, step=1)
+    request_timeout = st.sidebar.number_input(
+        "Request timeout (seconds)",
+        min_value=5,
+        max_value=600,
+        value=60,
+        step=5,
+    )
+    sleep_between_requests = st.sidebar.number_input(
+        "Delay between API requests (seconds)",
+        min_value=0.0,
+        max_value=5.0,
+        value=0.2,
+        step=0.1,
+    )
 
+    date_from = None
+    date_to = None
 
-    # ============================================================
-    # CONFIG FORM STARTS HERE — BELOW THE GENERATOR
-    # ============================================================
-    with st.form("config_form"):
+    if use_date_from and date_from_value:
+        date_from = datetime.combine(date_from_value, dt_time.min)
 
-        st.header("🔐 Environment Configuration")
+    if use_date_to and date_to_value:
+        date_to = datetime.combine(date_to_value, dt_time.min)
 
-        st.markdown("""
-        <style>
-            .config-card {
-                background: #ffffff;
-                padding: 18px 22px;
-                border-radius: 10px;
-                box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
-                margin-bottom: 18px;
-            }
-            summary {
-                font-size: 18px;
-                font-weight: 600;
-                color: #6203ed;
-                cursor: pointer;
-                padding: 6px 0;
-            }
-        </style>
-        """, unsafe_allow_html=True)
+    config = ExportConfig(
+        api_base_url=api_base_url.strip().rstrip("/"),
+        api_token=api_token.strip(),
+        workvivo_id=workvivo_id.strip(),
+        date_from=date_from,
+        date_to=date_to,
+        take=int(take),
+        request_timeout=int(request_timeout),
+        sleep_between_requests=float(sleep_between_requests),
+        force_manual_api_url=not auto_detect,
+    )
 
-        # ----------------------------------------------------
-        # SOURCE ENVIRONMENT
-        # ----------------------------------------------------
-        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-        with st.expander("Source Environment", expanded=True):
-
-            SOURCE_BASE_URL = st.text_input(
-                "Source Workvivo URL",
-                value="wv-migration2.workvivo.com",
-                help="Enter your Workvivo domain"
-            )
-
-            SOURCE_SCIM_TOKEN = st.text_input(
-                "Source SCIM Token",
-                value="9BdzwvLUw0C8gZTE9ZWv6sd4K9thRMdWdUeZdSv1",
-                type="password"
-            )
-            
-            SOURCE_API_TOKEN = st.text_input(
-                "Source API Token",
-                value="388|636f9f76e508ae9fde1530f987080c9b275a4371",
-                type="password"
-            )
-
-            SOURCE_WORKVIVO_ID = st.text_input(
-                "Source Workvivo ID",
-                value="1584"
-            )
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        # ----------------------------------------------------
-        # TARGET ENVIRONMENT
-        # ----------------------------------------------------
-        st.markdown("<div class='config-card'>", unsafe_allow_html=True)
-        with st.expander("Target Environment", expanded=True):
-
-            TARGET_BASE_URL = st.text_input(
-                "Target Workvivo URL",
-                value="migration-test-1.workvivo.com"
-            )
-
-            TARGET_SCIM_TOKEN = st.text_input(
-                "Target SCIM Token",
-                value="nLgLGVnMHaYySx9DqCixkHx0lUZqgxTGwT7RyKMj",
-                type="password"
-            )
-            
-            TARGET_API_TOKEN = st.text_input(
-                "Target API Token",
-                value="1006|fb9c50816d6db9f14163146b8205538bdb3264e5",
-                type="password"
-            )
-
-            TARGET_WORKVIVO_ID = st.text_input(
-                "Target Workvivo ID",
-                value="3000384"
-            )
-
-        st.markdown("</div>", unsafe_allow_html=True)
-        # ----------------------------------------------------
-        # VALIDATION
-        # ----------------------------------------------------
-        errors = []
-
-        # Required source fields
-        if not SOURCE_BASE_URL:
-            errors.append("Source Workvivo URL is required.")
-        if not SOURCE_SCIM_TOKEN:
-            errors.append("Source SCIM Token is required.")
-        if not SOURCE_API_TOKEN:
-            errors.append("Source API Token is required.")
-        if not SOURCE_WORKVIVO_ID:
-            errors.append("Source Workvivo ID is required.")
-
-        # Required target fields
-        if not TARGET_BASE_URL:
-            errors.append("Target Workvivo URL is required.")
-        if not TARGET_SCIM_TOKEN:
-            errors.append("Target SCIM Token is required.")
-        if not TARGET_API_TOKEN:
-            errors.append("Target API Token is required.")
-        if not TARGET_WORKVIVO_ID:
-            errors.append("Target Workvivo ID is required.")
-
-        # Show warnings
-        if errors:
-            for e in errors:
-                st.warning("⚠️ " + e)
-
-        # ----------------------------------------------------
-        # SUPPORT NOTE
-        # ----------------------------------------------------
-        st.markdown("""
-        <div style="margin-top: 20px; padding: 12px; background: #f4ecff; 
-        border-left: 4px solid #6203ed; border-radius: 6px;">
-        <strong>Need help?</strong><br>
-        If you cannot find any of this information, please contact 
-        <a href="mailto:support@workvivo.com">support@workvivo.com</a>.
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("---")
+    return config, test_clicked, test_result
 
 
-        # ----------------------------------------------------
-        # TEST CONFIGURATION BUTTON
-        # ----------------------------------------------------
-        st.markdown("### Test Connectivity")
+def render_header(config: ExportConfig):
+    st.markdown('<div class="main-title">🎥 Workvivo Livestream Exporter</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="main-subtitle">Fetch recorded livestreams, review them, and download a ZIP export bundle.</div>',
+        unsafe_allow_html=True,
+    )
 
-        test_clicked = st.form_submit_button("Test Configuration")
+    with st.expander("Current configuration", expanded=False):
+        st.write(f"**Workvivo ID:** `{config.workvivo_id}`")
+        st.write(f"**API Base URL:** `{config.api_base_url}`")
+        st.write(f"**Date from:** `{config.date_from.date() if config.date_from else 'None'}`")
+        st.write(f"**Date to:** `{config.date_to.date() if config.date_to else 'None'}`")
 
-        if test_clicked:
 
-            clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-            clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
+def render_summary(rows: list[dict[str, Any]], exported_rows: list[dict[str, Any]]):
+    matched = len(rows)
+    exported_ok = sum(
+        1 for row in exported_rows
+        if str(row.get("status", "")).startswith(("hls merged", "file downloaded"))
+    )
+    failed = sum(
+        1 for row in exported_rows
+        if str(row.get("status", "")).startswith("failed:")
+    )
 
-            source_scim_test = f"https://{clean_source}/scim/v2/scim/Users/"
-            target_scim_test = f"https://{clean_target}/scim/v2/scim/Users/"
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Matched recorded livestreams", matched)
+    c2.metric("Successfully exported", exported_ok)
+    c3.metric("Failed exports", failed)
 
-            source_api_test = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
-            target_api_test = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
 
-            st.info("Running tests…")
+def main_app():
+    apply_global_branding()
 
-            ok1, msg1 = test_workvivo_connection(
-                source_scim_test, SOURCE_SCIM_TOKEN, source_api_test, SOURCE_API_TOKEN, SOURCE_WORKVIVO_ID
-            )
-            st.write("Source Test:", msg1)
+    config, test_clicked, test_result = sidebar_config()
+    render_header(config)
 
-            ok2, msg2 = test_workvivo_connection(
-                target_scim_test, TARGET_SCIM_TOKEN, target_api_test, TARGET_API_TOKEN, TARGET_WORKVIVO_ID
-            )
-            st.write("Target Test:", msg2)
+    status_box = st.empty()
+    progress_bar = st.progress(0.0)
 
-            if ok1 and ok2:
-                st.success("All configuration tests passed!")
+    if test_clicked:
+        try:
+            validate_config(config)
+            session = build_session(config)
+            ok, message = test_connection(session, config)
+            if ok:
+                test_result.success(message)
                 st.session_state.config_test_passed = True
             else:
-                st.error("⚠️ One or more tests failed.")
+                test_result.error(message)
                 st.session_state.config_test_passed = False
-
-
-        # ----------------------------------------------------
-        # SAVE CONFIG BUTTON — DISABLED UNTIL TEST PASSES
-        # ----------------------------------------------------
-        st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
-        submitted = st.form_submit_button(
-            "Save Configuration",
-            disabled=(len(errors) > 0) or (not st.session_state.config_test_passed)
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # ----------------------------------------------------
-    # OUTSIDE THE FORM — PROCESS SAVE
-    # ----------------------------------------------------
-    if submitted:
-    
-        clean_source = SOURCE_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-        st.session_state["SOURCE_SCIM_URL"] = f"https://{clean_source}/scim/v2/scim/Users/"
-    
-        clean_target = TARGET_BASE_URL.replace("https://", "").replace("http://", "").strip("/")
-        st.session_state["TARGET_SCIM_URL"] = f"https://{clean_target}/scim/v2/scim/Users/"
-    
-        st.session_state["SOURCE_API_URL"] = get_api_url_from_workvivo_id(SOURCE_WORKVIVO_ID)
-        st.session_state["TARGET_API_URL"] = get_api_url_from_workvivo_id(TARGET_WORKVIVO_ID)
-    
-        st.session_state["SOURCE_SCIM_TOKEN"] = SOURCE_SCIM_TOKEN
-        st.session_state["SOURCE_API_TOKEN"] = SOURCE_API_TOKEN
-        st.session_state["SOURCE_WORKVIVO_ID"] = SOURCE_WORKVIVO_ID
-    
-        st.session_state["TARGET_SCIM_TOKEN"] = TARGET_SCIM_TOKEN
-        st.session_state["TARGET_API_TOKEN"] = TARGET_API_TOKEN
-        st.session_state["TARGET_WORKVIVO_ID"] = TARGET_WORKVIVO_ID
-    
-        st.session_state["SPACE_CREATOR_EXTERNAL_ID"] = "workvivo-migration-user"
-        st.session_state["config_saved"] = True
-    
-        # ----------------------------------------------------
-        # SAVE CONFIG HISTORY ENTRY
-        # ----------------------------------------------------
-        history_entry = {
-            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-            "migration_code": st.session_state.get("migration_code", ""),
-            "source_url": SOURCE_BASE_URL,
-            "target_url": TARGET_BASE_URL,
-            "source_wv_id": SOURCE_WORKVIVO_ID,
-            "target_wv_id": TARGET_WORKVIVO_ID,
-            "note": "Configuration saved"
-        }
-    
-        # Ensure history exists
-        if "config_history" not in st.session_state:
-            st.session_state.config_history = []
-    
-        # Save entry
-        st.session_state.config_history.append(history_entry)
-
-    # ----------------------------------------------------
-    # SUCCESS + CONTINUE BUTTON
-    # ----------------------------------------------------
-    if st.session_state.get("config_saved"):
-        st.success("Configuration saved! Click Continue to proceed.")
-    else:
-        st.info("Please save your configuration to continue.")
-    
-    st.markdown('<div class="purple-btn">', unsafe_allow_html=True)
-    
-    continue_clicked = st.button(
-        "➡ CONTINUE",
-        disabled=not st.session_state.get("config_saved", False)
-    )
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    if continue_clicked:
-        st.session_state.page = "main"
-        st.query_params.update({"page": "main"})
-        st.rerun()
-    
-    st.stop()
-    
-    
-    # ----------------------------------------------------
-    # FORCE USER BACK TO CONFIG IF NOT SAVED
-    # ----------------------------------------------------
-    if (
-        not st.session_state.get("config_saved", False)
-        and st.session_state.page not in ["config", "history"]
-    ):
-        st.warning("⚠️ Please complete configuration first.")
-        st.session_state.page = "config"
-        st.rerun()
-
-
-
-
-
-# =========================================================
-# CONFIG IS NOW SAVED — LOAD VALUES FROM SESSION
-# =========================================================
-
-# Allow user to return to environment configuration
-st.markdown("""
-<div style="margin-bottom: 15px;">
-    <style>
-    .back-btn > button {
-        background-color: #6203ed !important;
-        color: white !important;
-        border: none !important;
-        padding: 6px 18px !important;
-        font-size: 15px !important;
-        font-weight: 600 !important;
-        border-radius: 6px !important;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-        transition: 0.2s;
-    }
-    .back-btn > button:hover {
-        background-color: #4c02b5 !important;
-        transform: translateY(-1px);
-    }
-    </style>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<style>
-.green-finish > button {
-    background-color: #28a745 !important;  /* Green */
-    color: white !important;
-    border: none !important;
-    padding: 10px 26px !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-    border-radius: 6px !important;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-    transition: 0.2s;
-}
-.green-finish > button:hover {
-    background-color: #1e7e34 !important;  /* Darker green */
-    transform: translateY(-1px);
-}
-.green-finish > button:active {
-    transform: scale(0.97);
-}
-</style>
-""", unsafe_allow_html=True)
-
-
-if st.session_state.page not in ["summary", "history"]:
-    st.markdown('<div class="back-btn">', unsafe_allow_html=True)
-    if st.button("← Edit Environment Settings"):
-        st.session_state.page = "config"
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-# ============================================================
-# SAFE CONFIG LOAD — ONLY FOR PAGES THAT REQUIRE IT
-# ============================================================
-if st.session_state.page not in ["config", "history"]:
-
-    required_keys = [
-        "SOURCE_SCIM_URL", "SOURCE_API_URL", "SOURCE_SCIM_TOKEN",
-        "SOURCE_API_TOKEN", "SOURCE_WORKVIVO_ID",
-        "TARGET_SCIM_URL", "TARGET_API_URL", "TARGET_SCIM_TOKEN",
-        "TARGET_API_TOKEN", "TARGET_WORKVIVO_ID",
-        "SPACE_CREATOR_EXTERNAL_ID"
-    ]
-
-    missing = [k for k in required_keys if k not in st.session_state]
-
-    if missing:
-        st.warning("⚠️ Configuration is not complete. Please finish the configuration first.")
-        st.session_state.page = "config"
-        st.stop()
-
-    # Safe to load config values now
-    SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
-    SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
-    SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
-    SOURCE_API_TOKEN = st.session_state["SOURCE_API_TOKEN"]
-    SOURCE_WORKVIVO_ID = st.session_state["SOURCE_WORKVIVO_ID"]
-
-    TARGET_SCIM_URL = st.session_state["TARGET_SCIM_URL"]
-    TARGET_API_URL = st.session_state["TARGET_API_URL"]
-    TARGET_SCIM_TOKEN = st.session_state["TARGET_SCIM_TOKEN"]
-    TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
-    TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
-
-    SPACE_CREATOR_EXTERNAL_ID = st.session_state["SPACE_CREATOR_EXTERNAL_ID"]
-
-
-
-# Show configuration active message ONLY after config is saved
-if (
-    st.session_state.get("config_saved")
-    and st.session_state.page not in ["config", "summary", "history"]
-):
-    migration_code = st.session_state.get("migration_code", "")
-
-    if migration_code:
-        st.markdown("🔐 Configuration active — ready to run migrations.")
-    else:
-        st.success("🔐 Configuration active — ready to run migrations.")
-
-
-
-# ============================================================
-# Ensure SUMMARY dictionary exists before any migration starts
-# ============================================================
-if "summary" not in st.session_state:
-    st.session_state.summary = {
-        "users_migrated": 0,
-        "users_skipped": 0,
-
-        "spaces_created": 0,
-        "spaces_skipped": 0,
-
-        "memberships_added": 0,
-
-        "updates_migrated": 0,
-        "updates_skipped": 0,
-
-        "kudos_migrated": 0,
-        "kudos_skipped": 0,
-
-        "articles_migrated": 0,
-        "articles_skipped": 0,
-
-        "events_migrated": 0,
-        "events_skipped": 0,
-
-        "global_pages_migrated": 0,
-        "space_pages_migrated": 0,
-
-        "start_time": datetime.utcnow(),
-        "end_time": None,
-    }
-
-# Track newly created users + spaces
-if "new_users" not in st.session_state:
-    st.session_state.new_users = set()
-
-if "new_spaces" not in st.session_state:
-    st.session_state.new_spaces = set()
-
-
-# ============================================================
-# Streamlit session state setup
-# ============================================================
-
-if "phase_running" not in st.session_state:
-    st.session_state.phase_running = False
-
-if "current_phase" not in st.session_state:
-    st.session_state.current_phase = None
-
-if "phase_log" not in st.session_state:
-    st.session_state.phase_log = ""
-
-if "phase1_company" not in st.session_state:
-    st.session_state.phase1_company = ""
-
-if "phase1_active_only" not in st.session_state:
-    st.session_state.phase1_active_only = True
-
-if "phase1_console_visible" not in st.session_state:
-    st.session_state.phase1_console_visible = False
-
-
-# =========================================================
-# GLOBAL HEADERS FOR API CALLS — FULLY SAFE VERSION
-# =========================================================
-
-# Only load real config if we are on a page that requires it
-if st.session_state.page not in ["config", "history"]:
-
-    # Values guaranteed to exist because of required_keys check
-    SOURCE_SCIM_URL = st.session_state["SOURCE_SCIM_URL"]
-    SOURCE_API_URL = st.session_state["SOURCE_API_URL"]
-    SOURCE_SCIM_TOKEN = st.session_state["SOURCE_SCIM_TOKEN"]
-    SOURCE_API_TOKEN = st.session_state["SOURCE_API_TOKEN"]
-    SOURCE_WORKVIVO_ID = st.session_state["SOURCE_WORKVIVO_ID"]
-
-    TARGET_SCIM_URL = st.session_state["TARGET_SCIM_URL"]
-    TARGET_API_URL = st.session_state["TARGET_API_URL"]
-    TARGET_SCIM_TOKEN = st.session_state["TARGET_SCIM_TOKEN"]
-    TARGET_API_TOKEN = st.session_state["TARGET_API_TOKEN"]
-    TARGET_WORKVIVO_ID = st.session_state["TARGET_WORKVIVO_ID"]
-
-    # Safe real headers
-    source_scim_headers = {
-        "Authorization": f"Bearer {SOURCE_SCIM_TOKEN}",
-        "Accept": "application/json"
-    }
-
-    source_headers = {
-        "Authorization": f"Bearer {SOURCE_API_TOKEN}",
-        "Workvivo-Id": SOURCE_WORKVIVO_ID,
-        "Accept": "application/json"
-    }
-
-    target_scim_headers = {
-        "Authorization": f"Bearer {TARGET_SCIM_TOKEN}",
-        "Accept": "application/json"
-    }
-
-    target_headers_form = {
-        "Authorization": f"Bearer {TARGET_API_TOKEN}",
-        "Workvivo-Id": TARGET_WORKVIVO_ID,
-        "Accept": "application/json"
-    }
-
-else:
-    # Supply safe empty placeholders so History + Config work without config
-    source_scim_headers = {}
-    source_headers = {}
-    target_scim_headers = {}
-    target_headers_form = {}
-
-
-# =========================================================
-# LOGGING AREA
-# =========================================================
-# Ensure console placeholder always exists
-if "console_placeholder" not in st.session_state:
-    st.session_state.console_placeholder = None
-
-log_buffer = io.StringIO()
-
-def ui_log(message):
-    ts = datetime.utcnow().strftime("%H:%M:%S")
-    line = f"[{ts}] {message}"
-
-    if "log_output" not in st.session_state:
-        st.session_state["log_output"] = ""
-
-    st.session_state["log_output"] += line + "\n"
-
-    if "live_log_placeholder" in st.session_state:
-
-        # Convert newlines to <br> so each log is on its own line
-        log_html = st.session_state["log_output"].replace("\n", "<br>")
-
-        st.session_state.live_log_placeholder.markdown(
-            f"<pre style='height:400px; overflow-y: scroll; background-color:#111; color:#eee; padding:10px; border-radius:6px;'>{log_html}</pre>",
-            unsafe_allow_html=True
+        except Exception as exc:
+            test_result.error(f"Error: connection failed. {exc}")
+            st.session_state.config_test_passed = False
+
+    col_left, col_right = st.columns([1, 1])
+    fetch_clicked = col_left.button("Fetch livestreams", use_container_width=True)
+    export_clicked = col_right.button("Export livestreams", use_container_width=True)
+
+    if fetch_clicked:
+        try:
+            validate_config(config)
+            session = build_session(config)
+            all_livestreams = collect_all_livestreams(session, config, status_box, progress_bar)
+
+            filtered_rows = [
+                livestream_to_manifest_row(livestream)
+                for livestream in all_livestreams
+                if matches_filters(livestream, config)
+            ]
+
+            st.session_state["fetched_rows"] = filtered_rows
+            st.session_state["last_fetch_count"] = len(all_livestreams)
+            st.session_state["export_results"] = []
+            st.session_state["export_zip_bytes"] = None
+            st.session_state["export_zip_name"] = ""
+
+            progress_bar.progress(1.0)
+            status_box.success(
+                f"Fetched {len(all_livestreams)} livestreams. "
+                f"{len(filtered_rows)} matched the recorded/date filters."
+            )
+        except Exception as exc:
+            status_box.error(str(exc))
+
+    rows = st.session_state.get("fetched_rows", [])
+    export_results = st.session_state.get("export_results", [])
+
+    if rows:
+        render_summary(rows, export_results)
+
+        st.subheader("Matched livestreams")
+        st.write(
+            f"Total livestreams fetched: **{st.session_state.get('last_fetch_count', 0)}**  \n"
+            f"Matched recorded livestreams: **{len(rows)}**"
         )
 
+        df = pd.DataFrame(rows)
+        df.insert(0, "selected", True)
 
+        edited_df = st.data_editor(
+            df,
+            use_container_width=True,
+            hide_index=True,
+            disabled=[col for col in df.columns if col != "selected"],
+            column_config={
+                "selected": st.column_config.CheckboxColumn("Export", help="Tick rows to include in the ZIP."),
+                "recording_url": st.column_config.TextColumn(width="medium"),
+                "permalink": st.column_config.TextColumn(width="medium"),
+                "description": st.column_config.TextColumn(width="large"),
+            },
+            key="livestream_editor",
+        )
 
+        selected_rows = (
+            edited_df[edited_df["selected"]]
+            .drop(columns=["selected"])
+            .to_dict(orient="records")
+        )
 
-# =========================================================
-# HELPER: Fetch users
-# =========================================================
+        manifest_csv = dataframe_to_csv_bytes(pd.DataFrame(rows, columns=MANIFEST_COLUMNS))
+        st.download_button(
+            label="Download matched manifest CSV",
+            data=manifest_csv,
+            file_name=f"livestream_export_manifest_{config.workvivo_id}.csv",
+            mime="text/csv",
+        )
 
+        if export_clicked:
+            try:
+                validate_config(config)
+                session = build_session(config)
 
-def paginated_fetch(url, headers, take_limit=100, delay=0.2):
-    results = []
-    skip = 0
+                progress_bar.progress(0.0)
+                results, zip_bytes = export_selected_livestreams_to_zip(
+                    session=session,
+                    config=config,
+                    selected_rows=selected_rows,
+                    status_box=status_box,
+                    progress_bar=progress_bar,
+                )
 
-    while True:
-        paged = f"{url}&skip={skip}&take={take_limit}" if "?" in url else f"{url}?skip={skip}&take={take_limit}"
-        r = requests.get(paged, headers=headers, timeout=30, verify=VERIFY_SSL)
+                st.session_state["export_results"] = results
+                st.session_state["export_zip_bytes"] = zip_bytes
+                st.session_state["export_zip_name"] = (
+                    f"livestream_export_{config.workvivo_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+                )
 
-        if r.status_code != 200:
-            break
+                status_box.success(
+                    f"Success: {len(results)} row(s) processed. Scroll down to download your ZIP export."
+                )
+            except Exception as exc:
+                status_box.error(str(exc))
 
-        data = r.json().get("data", [])
-        if not data:
-            break
+    if st.session_state.get("export_results"):
+        st.subheader("Export results")
+        results_df = pd.DataFrame(st.session_state["export_results"], columns=MANIFEST_COLUMNS)
+        st.dataframe(results_df, use_container_width=True, hide_index=True)
 
-        results.extend(data)
+        results_csv = dataframe_to_csv_bytes(results_df)
+        st.download_button(
+            label="Download export results CSV",
+            data=results_csv,
+            file_name=f"livestream_export_results_{config.workvivo_id}.csv",
+            mime="text/csv",
+        )
 
-        if len(data) < take_limit:
-            break
+    if st.session_state.get("export_zip_bytes"):
+        st.markdown(
+            """
+            <div class="download-anchor">
+                <h3 style="margin-bottom: 0.2rem; color: #5A3EA6;">Your export is ready</h3>
+                <p style="margin-top: 0; color: #6B56B0;">Download the ZIP bundle below.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.download_button(
+            label="Download selected to ZIP",
+            data=st.session_state["export_zip_bytes"],
+            file_name=st.session_state["export_zip_name"],
+            mime="application/zip",
+            use_container_width=True,
+        )
 
-        skip += take_limit
-        time.sleep(delay)
-
-    return results
-
-
-def pretty_time(dt):
-    if not dt:
-        return ""
-    return dt.strftime("%B %-d, %Y %H:%M")  # e.g. "November 25, 2025 14:05"
-
-def download_file(url, filename):
-    """Download a file from a URL to /tmp."""
-    try:
-        resp = requests.get(url, stream=True)
-        if resp.status_code != 200:
-            return None
-
-        path = f"/tmp/{filename}"
-        with open(path, "wb") as f:
-            f.write(resp.content)
-
-        return path
-    except:
-        return None
-
-
-def fetch_users(active_only=True):
-    """Fetch users from SCIM in pages."""
-    users = []
-    start_index = 1
-    count = 100
-
-    while True:
-        if active_only:
-            url = f"{SOURCE_SCIM_URL}?filter=active eq true&startIndex={start_index}&count={count}"
-        else:
-            url = f"{SOURCE_SCIM_URL}?startIndex={start_index}&count={count}"
-
-        resp = requests.get(url, headers=source_scim_headers)
-        if resp.status_code != 200:
-            ui_log(f"❌ Error fetching users: {resp.status_code}")
-            break
-
-        data = resp.json()
-        batch = data.get("Resources", [])
-        users.extend(batch)
-
-        if len(batch) < count:
-            break
-
-        start_index += count
-        time.sleep(0.25)
-
-    return users
-
-# ============================
-# Helper: Selectable Card Component
-# ============================
-def selectable_card(key, title, icon, subtitle):
-    selected = st.session_state.get(key, False)
-
-    card_class = "select-card selected" if selected else "select-card"
-
-    clicked = st.container().markdown(
-        f"""
-        <div class="{card_class}" onclick="document.getElementById('{key}').click()">
-            <div class="select-card-icon">{icon}</div>
-            <div class="select-card-title">{title}</div>
-            <div class="select-card-sub">{subtitle}</div>
+    st.markdown("---")
+    st.markdown(
+        """
+        <div class="wv-note">
+            <strong>Notes</strong><br>
+            - Hosted Streamlit apps cannot write directly into your laptop Downloads folder.<br>
+            - This version packages exported media, playlists, and the manifest into a ZIP for browser download.<br>
+            - Date filters are optional.<br>
+            - API URL can be auto-detected from Workvivo ID or manually overridden.
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-
-    # hidden checkbox syncing state
-    st.checkbox("hidden", key=key, value=selected, label_visibility="collapsed")
-
-    return st.session_state[key]
-
-def parse_space_list(raw_text: str):
-    if not raw_text:
-        return set()
-
-    parts = raw_text.split(",")
-    cleaned = [p.strip().strip('"').strip("'") for p in parts]
-    return {c for c in cleaned if c}
-
-# =========================================================
-# PHASE 1 — USERS
-# =========================================================
-def load_target_user_maps():
-    """Fetch all target users and return:
-    - email → externalId
-    - externalId → email
-    """
-    users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers_form)
-
-    email_map = {}
-    ext_map = {}
-
-    for u in users:
-        email = (u.get("email") or u.get("userName") or "").lower().strip()
-        ext = (u.get("external_id") or "").strip()
-
-        if email:
-            email_map[email] = ext
-        if ext:
-            ext_map[ext] = email
-
-    return email_map, ext_map
-
-
-def migrate_users(active_only):
-    ui_log("=== USER MIGRATION START ===")
-
-    # Load existing target users
-    target_email_map, target_ext_map = load_target_user_maps()
-
-    users = fetch_users(active_only)
-
-    ui_log(f"📥 Loaded {len(users)} users from source.")
-
-    migrated = skipped = 0
-
-    for u in users:
-        email = (u.get("userName") or "").lower().strip()
-        ext = u.get("externalId")
-
-        if not email:
-            skipped += 1
-            ui_log(f"⚠️ Skipped missing email → {ext}")
-            continue
-        
-                # ----------------------------------------------
-        # SKIP if email already exists in target
-        # ----------------------------------------------
-        if email in target_email_map:
-            skipped += 1
-            st.session_state.summary["users_skipped"] += 1
-            ui_log(f"⏭ Skipped {email}: already exists in target (email match)")
-            continue
-        
-        # ----------------------------------------------
-        # SKIP if externalId already exists in target
-        # ----------------------------------------------
-        if ext and ext in target_ext_map:
-            skipped += 1
-            st.session_state.summary["users_skipped"] += 1
-            ui_log(f"⏭ Skipped {email}: already exists in target (extId match)")
-            continue
-
-
-        # Auto externalId fallback
-        if not ext:
-            ext = f"WV-AUTO-{random.randint(10000000, 99999999)}"
-            ui_log(f"🪪 Generated extId {ext} for {email}")
-
-        payload = {
-            "schemas": [
-                "urn:ietf:params:scim:schemas:core:2.0:User",
-                "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
-            ],
-            "userName": email,
-            "externalId": ext,
-            "name": u.get("name", {}),
-            "active": u.get("active", True)
-        }
-
-        resp = requests.post(TARGET_SCIM_URL, headers=target_scim_headers, json=payload)
-
-        if resp.status_code in (200, 201):
-            migrated += 1
-            st.session_state.summary["users_migrated"] += 1
-            st.session_state.new_users.add(ext)      # ⭐ NEW LINE
-            ui_log(f"✅ Created {email}")
-
-        else:
-            skipped += 1
-            st.session_state.summary["spaces_skipped"] += 1
-            st.session_state.summary["users_skipped"] += 1
-            ui_log(f"⚠️ Skipped {email}: {resp.status_code}")
-
-    ui_log(f"=== USER MIGRATION END — migrated={migrated}, skipped={skipped} ===")
 
 
 # =========================================================
-# PHASE 1A — USER AVATARS
+# ENTRY
 # =========================================================
-def upload_user_avatar(external_id, file_path):
-    """Upload an avatar to the target tenant."""
-    try:
-        mime = "image/jpeg"
-        with open(file_path, "rb") as f:
-            files = {"image": (os.path.basename(file_path), f, mime)}
+def main():
+    init_state()
 
-            resp = requests.put(
-                f"{TARGET_API_URL}/users/by-external-id/{external_id}/profile-photo",
-                headers=target_headers_form,
-                files=files
-            )
+    if not st.session_state.authenticated:
+        render_login_screen()
+        return
 
-        return resp.status_code in (200, 201)
+    main_app()
 
-    except Exception as e:
-        ui_log(f"⚠️ Avatar upload error for {external_id}: {e}")
-        return False
 
-
-def migrate_user_images():
-    ui_log("=== USER IMAGE MIGRATION START ===")
-
-    users = paginated_fetch(f"{SOURCE_API_URL}/users", source_headers)
-
-    for u in users:
-        ext = (u.get("external_id") or "").strip()
-        url = u.get("avatar_url")
-
-        if not ext or not url:
-            continue
-
-        # Skip avatar upload unless user was newly created
-        if ext not in st.session_state.new_users:
-            ui_log(f"⏭ Skipping avatar: user existed already ({ext})")
-            continue
-
-
-        file_path = download_file(url, f"user_{ext}.jpg")
-        if not file_path:
-            ui_log(f"⚠️ Failed to download avatar for {ext}")
-            continue
-
-        if upload_user_avatar(ext, file_path):
-            ui_log(f"🖼️ Uploaded avatar for {ext}")
-        else:
-            ui_log(f"⚠️ Upload failed for {ext}")
-
-    ui_log("=== USER IMAGE MIGRATION END ===")
-
-
-# =========================================================
-# PHASE 1B — SPACES
-# =========================================================
-def migrate_spaces():
-    ui_log("=== SPACE MIGRATION START ===")
-
-    source_spaces = paginated_fetch(f"{SOURCE_API_URL}/spaces", source_headers)
-    target_spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers_form)
-
-    target_names = {s["name"].strip().lower(): s["id"] for s in target_spaces}
-
-    created = skipped = 0
-
-    # ------------------------------------------------------------
-    # OPTIONAL: Selective Space Migration
-    # ------------------------------------------------------------
-    selected_spaces = parse_space_list(
-        st.session_state.get("selected_space_names", "")
-    )
-
-    for s in source_spaces:
-        name = s.get("name", "").strip()
-
-        # If selective migration ON → skip unselected spaces
-        if st.session_state.use_selected_spaces and name not in selected_spaces:
-            ui_log(f"⏭ Skipping space (not selected): {name}")
-            continue
-
-        norm = name.lower()
-
-        # Skip if this space already exists on target
-        if norm in target_names:
-            skipped += 1
-            st.session_state.summary["spaces_skipped"] += 1
-            ui_log(f"⚠️ Space already exists: {name}")
-            continue
-
-        # Create space payload
-        payload = {
-            "user_external_id": SPACE_CREATOR_EXTERNAL_ID,
-            "name": name,
-            "visibility": "private",
-            "description": s.get("description", ""),
-            "is_external": False,
-        }
-
-        resp = requests.post(
-            f"{TARGET_API_URL}/spaces",
-            headers=target_headers_form,
-            json=payload
-        )
-
-        if resp.status_code in (200, 201):
-            created += 1
-            st.session_state.summary["spaces_created"] += 1
-
-            new_space_id = resp.json()["data"]["id"]
-            st.session_state.new_spaces.add(new_space_id)
-
-            ui_log(f"✅ Created space '{name}'")
-        else:
-            skipped += 1
-            ui_log(f"❌ Failed creating '{name}': {resp.text}")
-
-    ui_log(f"=== SPACE MIGRATION END — created={created}, skipped={skipped} ===")
-
-# =========================================================
-# PHASE 1C — MEMBERSHIPS
-# =========================================================
-def migrate_memberships():
-    ui_log("=== MEMBERSHIP MIGRATION START ===")
-
-    # 1) Fetch source spaces
-    source_spaces = paginated_fetch(
-        f"{SOURCE_API_URL}/spaces",
-        source_headers
-    )
-
-    # 2) Fetch target spaces
-    target_spaces = paginated_fetch(
-        f"{TARGET_API_URL}/spaces",
-        target_headers_form
-    )
-
-    name_to_target_id = {
-        s["name"].strip().lower(): s["id"]
-        for s in target_spaces
-    }
-
-    # 3) Fetch target users → ext → numeric ID
-    target_users = paginated_fetch(
-        f"{TARGET_API_URL}/users",
-        target_headers_form
-    )
-
-    ext_to_numeric = {
-        u.get("external_id"): u.get("id")
-        for u in target_users
-        if u.get("external_id")
-    }
-
-    # ------------------------------------------------------------
-    # OPTIONAL: Selective Space Migration
-    # ------------------------------------------------------------
-    selected_spaces = parse_space_list(
-        st.session_state.get("selected_space_names", "")
-    )
-
-    for space in source_spaces:
-        space_name = space.get("name", "").strip()
-
-        # Skip spaces not selected
-        if st.session_state.use_selected_spaces and space_name not in selected_spaces:
-            ui_log(f"⏭ Skipping memberships for unselected space '{space_name}'")
-            continue
-
-        norm_name = space_name.lower()
-
-        target_space_id = name_to_target_id.get(norm_name)
-        if not target_space_id:
-            ui_log(f"⚠️ No target match for space '{space_name}', skipping.")
-            continue
-
-        # 4) Fetch members of this space from source
-        members = paginated_fetch(
-            f"{SOURCE_API_URL}/spaces/{space['id']}/users",
-            source_headers
-        )
-
-        numeric_ids = []
-
-        for m in members:
-            ext = (
-                (m.get("user") or {}).get("external_id")
-                or m.get("external_id")
-            )
-
-            if not ext:
-                continue
-
-            target_uid = ext_to_numeric.get(ext)
-            if target_uid:
-                numeric_ids.append(target_uid)
-
-        ui_log(f"👥 '{space_name}': {len(numeric_ids)} members mapped")
-
-        # Skip membership unless space was newly created
-        if target_space_id not in st.session_state.new_spaces:
-            ui_log(f"⏭ Skipping memberships: existing target space '{space_name}'")
-            continue
-
-        # 5) PATCH memberships to target
-        for chunk in [numeric_ids[i:i+100] for i in range(0, len(numeric_ids), 100)]:
-            resp = requests.patch(
-                f"{TARGET_API_URL}/spaces/{target_space_id}/users",
-                headers=target_headers_form,
-                json={"ids_to_add": chunk}
-            )
-
-            if resp.status_code in (200, 201):
-                ui_log(f"   ✅ Added {len(chunk)} members to '{space_name}'")
-            else:
-                ui_log(f"   ❌ Failed adding members: {resp.text[:150]}")
-
-    ui_log("=== MEMBERSHIP MIGRATION END ===")
-
-
-# =========================================================
-# GLOBAL SPACE CREATION (PRIVATE) + ENROLLMENT
-# =========================================================
-def create_global_space_and_enroll(company_name):
-
-    # 🔹 If reusing existing Global Feed, don't recreate
-    if st.session_state.get("use_existing_global") and st.session_state.get("existing_global_id"):
-        space_id = st.session_state.existing_global_id
-        ui_log(f"🔁 Reusing existing Global Feed → Space ID {space_id}")
-        return space_id
-
-    # 🚫 Missing company name
-    if not company_name or not company_name.strip():
-        ui_log("⏭ Skipping Global Feed — no company name entered.")
-        return None
-
-    ui_log(f"🌍 Creating Global Feed: {company_name}")
-
-    global_name = f"{company_name} Global Feed"
-
-    # Check for existing space by name
-    spaces = paginated_fetch(f"{TARGET_API_URL}/spaces", target_headers_form)
-    existing = next((s for s in spaces if s["name"] == global_name), None)
-
-    if existing:
-        ui_log(f"⚠️ Global space already exists → ID {existing['id']}")
-        space_id = existing["id"]
-    else:
-        payload = {
-            "user_external_id": SPACE_CREATOR_EXTERNAL_ID,
-            "name": global_name,
-            "visibility": "private",
-            "description": f"{company_name} Global Feed",
-            "is_external": False
-        }
-
-        resp = requests.post(
-            f"{TARGET_API_URL}/spaces",
-            headers=target_headers_form,
-            json=payload
-        )
-
-        if resp.status_code not in (200, 201):
-            ui_log(f"❌ Failed to create Global Space: {resp.text}")
-            return None
-
-        space_id = resp.json()["data"]["id"]
-        ui_log(f"✅ Created Global Space (ID {space_id})")
-
-    # ----------------------------------------------------
-    # ⭐ NEW: ONLY enroll users created in this migration
-    # ----------------------------------------------------
-
-    new_user_ext_ids = st.session_state.new_users  # set of ext IDs
-
-    all_target_users = paginated_fetch(f"{TARGET_API_URL}/users", target_headers_form)
-
-    # Map external → numeric
-    ext_to_numeric = {
-        u.get("external_id"): u.get("id")
-        for u in all_target_users
-        if u.get("external_id")
-    }
-
-    # Only numeric IDs of newly created users
-    numeric_ids = [
-        ext_to_numeric[ext]
-        for ext in new_user_ext_ids
-        if ext in ext_to_numeric
-    ]
-
-    ui_log(f"👥 Enrolling {len(numeric_ids)} newly created users…")
-
-    # Chunk & enroll
-    chunks = [numeric_ids[i:i + 100] for i in range(0, len(numeric_ids), 100)]
-
-    for chunk in chunks:
-        resp = requests.patch(
-            f"{TARGET_API_URL}/spaces/{space_id}/users",
-            headers=target_headers_form,
-            json={"ids_to_add": chunk}
-        )
-
-        if resp.status_code not in (200, 201):
-            ui_log(f"⚠️ Failed to add batch: {resp.text[:200]}")
-
-    ui_log("✅ Global Space Enrollment Complete!")
-    return space_id
-
-
-
-# =========================================================
-# PHASE 1 RUNNER — FULL END-TO-END
-# =========================================================
-def run_phase_1(company_name, active_only):
-    lock_ui_for_phase()
-    ui_log("▶ Starting Phase 1…")
-
-    try:
-
-        # 2) Users
-        check_cancel()
-        migrate_users(active_only)
-
-        # 3) Avatars
-        check_cancel()
-        migrate_user_images()
-
-        # 4) Spaces
-        check_cancel()
-        migrate_spaces()
-
-        # 5) Memberships
-        check_cancel()
-        migrate_memberships()
-
-        # 1) Global Space
-        check_cancel()
-        create_global_space_and_enroll(company_name)
-
-        ui_log("🎉 Phase 1 Completed Successfully!")
-
-    except Exception as e:
-        # Cancel or error
-        ui_log(f"⚠️ Migration stopped: {str(e)}")
-
-    finally:
-        unlock_ui()
-
-# ============================================================
-# 🔒 MIGRATION PHASE LOCKING + CANCEL SUPPORT
-# ============================================================
-
-# Initialize flags
-if "phase_running" not in st.session_state:
-    st.session_state.phase_running = False
-
-if "cancel_requested" not in st.session_state:
-    st.session_state.cancel_requested = False
-
-
-def lock_ui_for_phase():
-    """Lock UI during migration."""
-    st.session_state.phase_running = True
-    st.session_state.cancel_requested = False
-    ui_log("🔒 UI locked — migration started…")
-
-
-def unlock_ui():
-    st.session_state.phase1_running = False
-    st.session_state.cancel_requested = False
-    ui_log("🔓 UI unlocked — migration stopped.")
-
-
-
-def cancel_migration():
-    st.session_state.cancel_requested = True
-    ui_log("🛑 Cancel requested… Stopping after the current item.")
-
-
-# Modify all long loops to respect cancellation
-def check_cancel():
-    """Call this inside loops to stop safely."""
-    if st.session_state.cancel_requested:
-        ui_log("⛔ Migration cancelled by user.")
-        unlock_ui()
-        raise Exception("Migration Cancelled")
-
-
-# ============================================================
-# PHASE 2 — CONTENT MIGRATION (Updates, Comments, Likes)
-# ============================================================
-import csv
-import uuid
-from io import StringIO
-
-MAX_VIDEO_MB = 128  # max supported
-GATEWAY_TIMEOUT = 180
-
-def get_gateway_url_from_id(wv_id: str):
-    """Return correct Gateway base URL based on Workvivo ID prefix."""
-    if not wv_id or len(wv_id) < 3:
-        return "https://gateway.workvivo.com/v1"
-
-    prefix = str(wv_id).strip()[:3]
-
-    if prefix == "100":
-        # US cluster
-        return "https://api-gateway.workvivo.us/v1"
-
-    if prefix == "300":
-        # EU2 cluster
-        return "https://api-gateway.eu2.workvivo.com/v1"
-
-    if prefix == "400":
-        # US2 cluster
-        return "https://api-gateway.us2.workvivo.us/v1"
-
-    # Default EU cluster
-    return "https://api-gateway.workvivo.com/v1"
-
-
-# ------------------------------------------------------------
-# In-memory CSV builder
-# ------------------------------------------------------------
-def init_phase2_csv():
-    csv_buffer = StringIO()
-    writer = csv.writer(csv_buffer)
-    writer.writerow([
-        "timestamp", "space", "src_update_id", "tgt_update_id",
-        "user", "status", "action", "notes"
-    ])
-    return csv_buffer, writer
-
-
-# ============================================================
-# PHASE 2 — HELPERS & CONSTANTS
-# ============================================================
-
-import csv
-from io import StringIO
-import datetime as dt
-
-MAX_VIDEO_MB = 128
-GATEWAY_TIMEOUT = 180
-
-
-def safe_filename(name: str):
-    """Remove unsafe characters for filenames."""
-    return "".join(c for c in name if c.isalnum() or c in "._- ")
-
-
-def post_with_backoff(url, headers, data=None, files=None, max_retries=5):
-    """Retry POST when gateway is slow or times out."""
-    delay = 2
-    for i in range(max_retries):
-        try:
-            r = requests.post(url, headers=headers, data=data, files=files, timeout=180)
-            if r.status_code in (200, 201):
-                return r
-        except Exception:
-            pass
-        time.sleep(delay)
-        delay *= 2
-    return None
-
-
-def init_phase2_csv():
-    """In-memory CSV for content log."""
-    csv_buffer = StringIO()
-    writer = csv.writer(csv_buffer)
-    writer.writerow([
-        "timestamp", "space", "src_update_id", "tgt_update_id",
-        "user", "status", "action", "notes"
-    ])
-    return csv_buffer, writer
-
-
-# ============================================================
-# PHASE 2 — CONTENT MIGRATION
-# ============================================================
-
-def run_phase2(cutoff):
-    """
-    Fully functional Phase 2 migration.
-    Matches PyCharm behaviour but Streamlit-safe.
-    Duplicate detection is OFF (your requirement).
-    """
-
-    print("\n=== PHASE 2: CONTENT MIGRATION START ===")
-
-    # CSV log for output
-    csv_buffer, writer = init_phase2_csv()
-
-    # Disable duplicate checking
-    global ENABLE_DUPLICATE_CHECK
-    ENABLE_DUPLICATE_CHECK = False
-
-    SOURCE_BASE_URL = SOURCE_API_URL
-    TARGET_BASE_URL = TARGET_API_URL
-    TAKE_LIMIT = 100
-    REQUEST_DELAY_S = 0.30
-
-    # Gateway URL for video uploads
-    global TARGET_GATEWAY_UPDATES
-    TARGET_GATEWAY_UPDATES = get_gateway_url_from_id(TARGET_WORKVIVO_ID) + "/updates"
-
-    print("Fetching spaces...")
-    source_spaces = paginated_fetch(
-        f"{SOURCE_BASE_URL}/spaces", source_headers, TAKE_LIMIT, REQUEST_DELAY_S
-    )
-    target_spaces = paginated_fetch(
-        f"{TARGET_BASE_URL}/spaces", target_headers_form, TAKE_LIMIT, REQUEST_DELAY_S
-    )
-
-    # Map by name
-    space_map = {
-        s["id"]: t["id"]
-        for s in source_spaces
-        for t in target_spaces
-        if s.get("name") == t.get("name")
-    }
-
-    print(f"Mapped {len(space_map)} spaces")
-
-    # Load all users on target (external_id only)
-    target_users = set()
-    skip = 0
-    while True:
-        url = f"{TARGET_BASE_URL}/users?skip={skip}&take={TAKE_LIMIT}"
-        r = requests.get(url, headers=target_headers_form, timeout=30, verify=VERIFY_SSL)
-        if r.status_code != 200:
-            break
-        data = r.json().get("data", [])
-        if not data:
-            break
-        for u in data:
-            if u.get("external_id"):
-                target_users.add(str(u["external_id"]))
-        if len(data) < TAKE_LIMIT:
-            break
-        skip += TAKE_LIMIT
-        time.sleep(REQUEST_DELAY_S)
-
-    print(f"Target users loaded: {len(target_users)}")
-
-    # ============================================================
-    # MAIN SPACE LOOP
-    # ============================================================
-    for src_space in source_spaces:
-        sid = src_space.get("id")
-        sname = src_space.get("name")
-        tgt_space_id = space_map.get(sid)
-
-        if not tgt_space_id:
-            print(f"Skipping space '{sname}' (no matching target)")
-            continue
-
-        print(f"\n📦 SPACE: {sname}")
-
-        # Working endpoint
-        updates_all = paginated_fetch(
-            f"{SOURCE_BASE_URL}/updates?in_spaces={sid}",
-            source_headers,
-            TAKE_LIMIT,
-            REQUEST_DELAY_S
-        )
-
-        updates = [
-            u for u in updates_all
-            if within_range(u.get("created_at"), cutoff)
-        ]
-
-        print(f"Found {len(updates)} updates (filtered from {len(updates_all)})")
-
-        # ============================================================
-        # UPDATE LOOP
-        # ============================================================
-        for upd in updates:
-            uid = upd.get("id")
-            creator = upd.get("creator") or {}
-            uext = creator.get("external_id")
-
-            if not uext or uext not in target_users:
-                print(f"Skipping update {uid}: missing creator {uext}")
-                continue
-
-            text = upd.get("text") or " "
-            created = upd.get("created_at")
-
-            print(f"\n--- Update {uid} ---")
-
-            # -------------------------------------------------------
-            # MEDIA HANDLING
-            # -------------------------------------------------------
-            gallery_files = []
-            attachment_files = []
-            video_field = None
-
-            # GALLERY
-            for i, img in enumerate(upd.get("gallery") or []):
-                url = img.get("url")
-                if not url:
-                    continue
-                ext = url.split(".")[-1].split("?")[0]
-                fp = download_file(url, f"{uext}_{uid}_g{i}.{ext}")
-                if fp:
-                    gallery_files.append(fp)
-
-            # ATTACHMENTS
-            for j, att in enumerate(upd.get("attachments") or []):
-                url = att.get("url")
-                if not url:
-                    continue
-                base = att.get("name") or att.get("file_name") or f"Attachment_{j}"
-                ext = url.split(".")[-1].split("?")[0]
-                clean = safe_filename(f"{base}.{ext}")
-                fp = download_file(url, clean)
-                if fp:
-                    attachment_files.append((clean, open(fp, "rb")))
-
-            # VIDEO
-            v = upd.get("video")
-            if v and v.get("url"):
-                vurl = v["url"]
-                vext = vurl.split(".")[-1].split("?")[0]
-                vfp = download_file(vurl, f"{uext}_{uid}_vid.{vext}")
-                if vfp:
-                    size_mb = os.path.getsize(vfp) / (1024 * 1024)
-                    if vext.lower() in ["mp4", "m4v"] and size_mb <= MAX_VIDEO_MB:
-                        mime = mimetypes.guess_type(vfp)[0] or "video/mp4"
-                        video_field = (os.path.basename(vfp), open(vfp, "rb"), mime)
-
-            # -------------------------------------------------------
-            # BUILD PAYLOAD
-            # -------------------------------------------------------
-            files = {}
-
-            # attachments
-            for i, tup in enumerate(attachment_files):
-                name, fileobj = tup
-                files[f"attachments[{i}]"] = (name, fileobj)
-
-            # gallery
-            for i, fp in enumerate(gallery_files):
-                files[f"gallery[{i}]"] = open(fp, "rb")
-
-            payload = {
-                "name": text[:20],
-                "text": text,
-                "created_at": created,
-                "visibility": "spaces",
-                "audience[type]": "spaces",
-                "audience[spaces][]": str(tgt_space_id),
-                "user_external_id": uext,
-            }
-
-            # -------------------------------------------------------
-            # CREATE UPDATE ON TARGET
-            # -------------------------------------------------------
-            if video_field:
-                r = post_with_backoff(
-                    TARGET_GATEWAY_UPDATES,
-                    target_headers_form,
-                    data=payload,
-                    files={"video": video_field}
-                )
-                if not r or r.status_code not in (200, 201):
-                    # retry without gateway
-                    r = post_with_backoff(
-                        f"{TARGET_BASE_URL}/updates",
-                        target_headers_form,
-                        data=payload,
-                        files=files
-                    )
-                    if not r or r.status_code not in (200, 201):
-                        print(f"Update {uid} failed completely")
-                        continue
-
-                new_update_id = r.json()["data"]["id"]
-                print(f"Posted update {uid} → {new_update_id}")
-            else:
-                r = post_with_backoff(
-                    f"{TARGET_BASE_URL}/updates",
-                    target_headers_form,
-                    data=payload,
-                    files=files
-                )
-                if not r or r.status_code not in (200, 201):
-                    print(f"Update {uid} failed")
-                    continue
-                new_update_id = r.json()["data"]["id"]
-                print(f"Posted update {uid} → {new_update_id}")
-
-            # -------------------------------------------------------
-            # COMMENTS
-            # -------------------------------------------------------
-            comments_all = paginated_fetch(
-                f"{SOURCE_BASE_URL}/updates/{uid}/comments",
-                source_headers,
-                TAKE_LIMIT,
-                REQUEST_DELAY_S
-            )
-
-            comments = [
-                c for c in comments_all
-                if within_range(c.get("created_at"), cutoff)
-            ]
-
-            print(f"Comments: {len(comments)}")
-
-            for c in comments:
-                c_id = c.get("id")
-                cext = (c.get("creator") or {}).get("external_id")
-                if not cext or cext not in target_users:
-                    continue
-
-                c_text = c.get("text") or " "
-                c_created = c.get("created_at")
-
-                payload_c = {
-                    "external_user_id": cext,
-                    "text": c_text,
-                    "created_at": c_created,
-                }
-
-                cr = post_with_backoff(
-                    f"{TARGET_BASE_URL}/updates/{new_update_id}/comments",
-                    target_headers_form,
-                    data=payload_c
-                )
-                if cr and cr.status_code in (200, 201):
-                    print(f"  Comment {c_id} migrated")
-
-            # -------------------------------------------------------
-            # LIKES
-            # -------------------------------------------------------
-            likes_url = (
-                f"{SOURCE_BASE_URL}/updates/by-external-id/{upd.get('external_id')}/likes"
-                if upd.get("external_id")
-                else f"{SOURCE_BASE_URL}/updates/{uid}/likes"
-            )
-
-            likes_all = paginated_fetch(likes_url, source_headers, TAKE_LIMIT, REQUEST_DELAY_S)
-            likes = [
-                lk for lk in likes_all
-                if within_range(lk.get("created_at"), cutoff)
-            ]
-
-            print(f"Likes: {len(likes)}")
-
-            for lk in likes:
-                liker = lk.get("user_external_id")
-                if not liker or liker not in target_users:
-                    continue
-
-                payload_like = {"user_external_id": liker}
-
-                post_with_backoff(
-                    f"{TARGET_BASE_URL}/updates/{new_update_id}/likes",
-                    target_headers_form,
-                    data=payload_like
-                )
-
-    print("\n=== PHASE 2 COMPLETE ===")
-    return csv_buffer.getvalue()
-
-
-
-# ============================================================
-# MAIN PAGE (Migration Dashboard)
-# ============================================================
-if st.session_state.page == "main":
-
-    # Always reset migration code when returning to the main dashboard
-    st.session_state.migration_code = ""
-
-
-    # -----------------------------------------
-    # SAFETY CHECK: Require configuration first
-    # -----------------------------------------
-    required_keys = [
-        "SOURCE_SCIM_URL", "SOURCE_API_URL", "SOURCE_SCIM_TOKEN",
-        "SOURCE_API_TOKEN", "SOURCE_WORKVIVO_ID",
-        "TARGET_SCIM_URL", "TARGET_API_URL", "TARGET_SCIM_TOKEN",
-        "TARGET_API_TOKEN", "TARGET_WORKVIVO_ID"
-    ]
-    
-    missing = [k for k in required_keys if k not in st.session_state]
-    
-    if missing:
-        st.warning("⚠️ Please complete and save your configuration before accessing the dashboard.")
-        if st.button("Go to Configuration"):
-            st.session_state.page = "config"
-            st.rerun()
-        st.stop()
-
-
-    # ============================================================
-    # MIGRATION CODE (REQUIRED BEFORE MIGRATION)
-    # ============================================================
-    st.markdown("### Migration Code")
-    
-    # Generate button
-    if st.button("Generate New Migration Code", key="gen_code_btn"):
-    
-        import string, random
-        new_code = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
-    
-        st.session_state.migration_code = new_code
-    
-        # Show the code in a green box — NO rerun, no widget
-        st.success(f"**New Migration Code:** {new_code}")
-    
-    # If no code exists yet
-    elif not st.session_state.get("migration_code"):
-        st.error("⚠️ You must generate a migration code before running a migration.")
-    
-    # If a code already exists, show it plainly
-    else:
-        st.info(f"**Current Migration Code:** {st.session_state.get('migration_code')}")
-    
-    st.markdown("---")
-
-
-
-
-    st.markdown("## Migrate Workvivo Data")
-
-    # ============================================================
-    # 📅 Date Range for Content Migration
-    # ============================================================
-    st.markdown("#### 📅 Date Range")
-
-    date_options = [
-        "Last 6 months",
-        "Last 1 year",
-        "Last 2 years",
-        "Last 3 years",
-        "All time",
-        "Custom range",
-    ]
-
-    if "migration_date_choice" not in st.session_state:
-        st.session_state.migration_date_choice = "Last 1 year"
-
-    date_choice = st.selectbox(
-        "Select date range",
-        date_options,
-        index=date_options.index(st.session_state.migration_date_choice),
-        key="migration_date_choice",
-    )
-
-    from datetime import datetime, timedelta
-
-    today = datetime.utcnow()
-    start_date = None
-    end_date = today
-
-    if date_choice == "Last 6 months":
-        start_date = today - timedelta(days=182)
-    elif date_choice == "Last 1 year":
-        start_date = today - timedelta(days=365)
-    elif date_choice == "Last 2 years":
-        start_date = today - timedelta(days=365 * 2)
-    elif date_choice == "Last 3 years":
-        start_date = today - timedelta(days=365 * 3)
-    elif date_choice == "All time":
-        start_date = None
-    elif date_choice == "Custom range":
-        st.markdown("##### Custom Range")
-        start_date = st.date_input("Start date")
-        end_date = st.date_input("End date")
-
-    def fmt(d):
-        if d is None:
-            return "All time"
-        if hasattr(d, "strftime"):
-            return d.strftime("%b %d, %Y")
-        return str(d)
-
-    pretty_start = fmt(start_date)
-    pretty_end = fmt(end_date)
-
-    st.info(f"📌 Migrating content from **{pretty_start}** to **{pretty_end}**")
-
-    if isinstance(start_date, datetime):
-        st.session_state.migration_start_date = start_date
-    else:
-        # convert date → datetime at midnight UTC
-        st.session_state.migration_start_date = datetime.combine(start_date, datetime.min.time()).replace(tzinfo=dt.timezone.utc)
-        st.session_state.migration_end_date = end_date
-
-    # ⭐ Add separator line (same style as other sections)
-    st.markdown("---")
-
-    
-    # ============================================================
-    # 🏢 Organisation settings and information
-    # ============================================================
-    st.markdown("### Organisation settings and information")
-    st.markdown("This section migrates active users, spaces and space membership.")
-    
-        # Ensure flags exist
-    if "migrate_users" not in st.session_state:
-        st.session_state.migrate_users = True
-    
-    if "migrate_spaces" not in st.session_state:
-        st.session_state.migrate_spaces = True
-    
-    # Now allow user to turn them on/off
-    st.session_state.migrate_users = st.toggle(
-        "Users",
-        value=st.session_state.migrate_users
-    )
-    
-    st.session_state.migrate_spaces = st.toggle(
-        "Spaces",
-        value=st.session_state.migrate_spaces
-    )
-
-    
-    # ============================================================
-    # SELECTIVE USER MIGRATION (only show if Users = ON)
-    # ============================================================
-    if st.session_state.get("migrate_users", True):
-    
-        st.markdown("##### Selective User Migration (not currently supported)")
-    
-        if "use_selected_users" not in st.session_state:
-            st.session_state.use_selected_users = False
-        if "selected_user_ids" not in st.session_state:
-            st.session_state.selected_user_ids = ""
-    
-        st.session_state.use_selected_users = st.checkbox(
-            "Migrate only selected users",
-            value=st.session_state.use_selected_users,
-            help="Enter external IDs separated by commas"
-        )
-    
-        if st.session_state.use_selected_users:
-            st.session_state.selected_user_ids = st.text_area(
-                "Enter external IDs (comma-separated)",
-                value=st.session_state.selected_user_ids,
-                placeholder="e.g. 12345, abcde-1002, ext_88991"
-            )
-        else:
-            st.session_state.selected_user_ids = ""
-
-
-    # ============================================================
-    # SELECTIVE SPACE MIGRATION (only show if Spaces = ON)
-    # ============================================================
-    if st.session_state.get("migrate_spaces", True):
-    
-        st.markdown("##### Selective Space Migration (not currently supported)")
-    
-        if "use_selected_spaces" not in st.session_state:
-            st.session_state.use_selected_spaces = False
-        if "selected_space_names" not in st.session_state:
-            st.session_state.selected_space_names = ""
-    
-        st.session_state.use_selected_spaces = st.checkbox(
-            "Migrate only selected spaces",
-            value=st.session_state.use_selected_spaces,
-            help='Enter space names separated by commas. Example: Marketing, HR Team, Sales'
-        )
-    
-        if st.session_state.use_selected_spaces:
-            st.session_state.selected_space_names = st.text_area(
-                "Enter space names",
-                value=st.session_state.selected_space_names,
-                placeholder='e.g. Marketing, "HR Team", Sales'
-            )
-        else:
-            st.session_state.selected_space_names = ""
-
-    # -----------------------------------------------------------
-    # Global Feed Options
-    # -----------------------------------------------------------
-    st.markdown("---")
-
-    st.markdown("#### Global Feed Options")
-    
-    # Ensure keys exist
-    if "phase1_company" not in st.session_state:
-        st.session_state.phase1_company = ""
-    
-    if "use_existing_global" not in st.session_state:
-        st.session_state.use_existing_global = False
-    
-    if "existing_global_id" not in st.session_state:
-        st.session_state.existing_global_id = ""
-    
-    # --- ORGANISATION NAME INPUT (ALWAYS SHOWN FIRST) ---
-    company = st.text_input(
-        "Enter the organisation name for the Global Feed",
-        value=st.session_state.phase1_company,
-    )
-    
-    st.session_state.phase1_company = company
-    
-    # If company name is empty AND you're not using existing → warn
-    if not company and not st.session_state.use_existing_global:
-        st.warning("⚠️ Required on the first migration to create the Global Feed Space.")
-    
-    # --- CHECKBOX BELOW COMPANY NAME (YOUR REQUEST) ---
-    use_existing = st.checkbox(
-        "Use existing Global Feed Space from a previous migration?",
-        value=st.session_state.use_existing_global
-    )
-    
-    # --- GLOBAL FEED SPACE ID INPUT (ONLY WHEN REUSING) ---
-    if use_existing:
-        new_id = st.text_input(
-            "Enter the Global Feed Space ID",
-            value=st.session_state.existing_global_id,
-            placeholder="Example: 279184"
-        )
-        st.session_state.existing_global_id = new_id
-    else:
-        # If not reusing, clear any old value
-        st.session_state.existing_global_id = ""
-    
-    # Update session state after UI renders
-    st.session_state.use_existing_global = use_existing
-    
-    st.markdown("---")
-
-
-
-    # ============================================================
-    # 👥 User activity on Workvivo
-    # ============================================================
-    st.markdown("### User activity on Workvivo")
-    st.markdown("Migrate content & user interactions.")
-
-      # ------------------------------------------------------------
-    # SELECT / DESELECT ALL BUTTON (PRIMARY TOGGLES ONLY)
-    # ------------------------------------------------------------
-    
-    # Only consider the main Phase 2 content items
-    primary_on = all([
-        st.session_state.get("migrate_updates", True),
-        st.session_state.get("migrate_kudos", True),
-        st.session_state.get("migrate_articles", True),
-    ])
-    
-    btn_label = "Deselect All Content Toggles" if primary_on else "Select All Content Toggles"
-    
-    if st.button(btn_label):
-    
-        if primary_on:
-            # --- DESELECT ALL ---
-            st.session_state["migrate_updates"] = False
-            st.session_state["migrate_kudos"] = False
-            st.session_state["migrate_articles"] = False
-            st.session_state["migrate_events"] = False
-            st.session_state["migrate_globalPages"] = False
-            st.session_state["migrate_spacePages"] = False
-    
-        else:
-            # --- SELECT ALL ---
-            st.session_state["migrate_updates"] = True
-            st.session_state["migrate_kudos"] = True
-            st.session_state["migrate_articles"] = True
-            st.session_state["migrate_events"] = True
-            st.session_state["migrate_globalPages"] = True
-            st.session_state["migrate_spacePages"] = True
-    
-        st.rerun()
-
-
-        
-    # ---- UPDATES ----
-    st.markdown("##### Updates")
-    st.toggle(
-        "Enable Updates Migration",
-        key="migrate_updates",
-        value=True
-    )
-    st.markdown("""
-    *Includes space posts, comments, and likes.*  
-    *All Activity Feed posts will be migrated into the chosen Global Feed space.*
-    """)
-    
-    # ---- KUDOS ----
-    st.markdown("##### Kudos")
-    st.toggle(
-        "Enable Kudos Migration",
-        key="migrate_kudos",
-        value=True
-    )
-    st.markdown("*Includes kudos posts, comments, and likes.*")
-    
-    # ---- ARTICLES ----
-    st.markdown("##### Articles")
-    st.toggle(
-        "Enable Articles Migration",
-        key="migrate_articles",
-        value=True
-    )
-    st.markdown("""
-    *Historic articles are migrated under a temporary 'Migration User'.  
-    This user will be deactivated after migration.*
-    """)
-    
-    # ---- GLOBAL PAGES ----
-    st.markdown("##### Global Pages")
-    st.toggle(
-        "Enable Global Pages Migration",
-        key="migrate_globalPages",
-        value=True
-    )
-    
-    if st.session_state.get("migrate_globalPages"):
-        st.text_input(
-            "Organisation Name for Global Pages",
-            key="global_pages_org_name",
-        )
-        st.warning(
-            "⚠️ Global Pages should only be migrated **once**. "
-            "If they were already migrated previously, delete old Global Pages first."
-        )
-    
-    # ---- SPACE PAGES ----
-    st.markdown("##### Space Pages (not supported)")
-    st.toggle(
-        "Enable Space Pages Migration",
-        key="migrate_spacePages",
-        value=True
-    )
-
-    st.markdown("""
-    <style>
-    
-    /* Unique override for the RUN MIGRATION button only */
-    #run-mig-btn button {
-        background-color: #28a745 !important;   /* Green */
-        color: white !important;
-        border: none !important;
-        padding: 12px 28px !important;
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        border-radius: 8px !important;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.20);
-        transition: 0.2s;
-    }
-    
-    #run-mig-btn button:hover {
-        background-color: #218838 !important;  /* darker green */
-        transform: translateY(-1px);
-    }
-    
-    #run-mig-btn button:active {
-        transform: scale(0.97);
-    }
-    
-    </style>
-    """, unsafe_allow_html=True)
-
-
-    
-    # -----------------------------------------------------------
-    # RUN MIGRATION BUTTON — DISABLED UNTIL MIGRATION CODE EXISTS
-    # -----------------------------------------------------------
-    
-    code_exists = bool(st.session_state.get("migration_code"))
-    
-    st.markdown('<div id="run-mig-btn">', unsafe_allow_html=True)
-    
-    run_disabled = not code_exists
-    
-    run_clicked = st.button(
-        "▶ Run Migration",
-        disabled=run_disabled,
-        key="run_migration_main"
-    )
-    
-    if run_disabled:
-        st.warning("⚠️ You must generate a migration code before running a migration.")
-    
-    if run_clicked:
-        # Smooth scroll
-        st.components.v1.html(
-            """
-            <script>
-                window.parent.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-            """,
-            height=0,
-        )
-    
-        st.session_state.start_migration = True
-        st.session_state.migration_finished = False
-        st.session_state.cancel_requested = False
-        st.session_state.progress = 0
-    
-        st.session_state.page = "running"
-        st.session_state.migration_code_used = st.session_state.migration_code  # ⭐ save code used
-    
-        st.rerun()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    
-        
-    
-    
-
-    # ============================================================
-    # LIVE LOG OUTPUT (optional)
-    # ============================================================
-    if "live_log_placeholder" not in st.session_state:
-        st.session_state.live_log_placeholder = st.empty()
-
-    if st.session_state.get("phase1_running") or st.session_state.get("log_output"):
-
-        st.markdown("<div id='_logs'></div>", unsafe_allow_html=True)
-        st.header("Migration Console")
-
-        st.session_state.live_log_placeholder.text_area(
-            "Live Console Output",
-            st.session_state.get("log_output", ""),
-            height=400,
-            disabled=True
-        )
-
-
-# ============================================================
-# MIGRATION PAGE — FINAL WORKING VERSION
-# ============================================================
-elif st.session_state.page == "running":
-    
-    # Invisible scroll anchor
-    scroll_anchor = st.empty()
-    scroll_anchor.markdown("<div id='top'></div>", unsafe_allow_html=True)
-
-        # Force scroll to the anchor
-    st.components.v1.html(
-        """
-        <script>
-            var topElement = window.parent.document.querySelector("div[id='top']");
-            if (topElement) {
-                topElement.scrollIntoView({behavior: 'smooth', block: 'start'});
-            }
-        </script>
-        """,
-        height=0,
-    )
-
-    
-
-    # --------------------------------------------------------
-    # HEADER LOGIC
-    # --------------------------------------------------------
-    if st.session_state.get("migration_finished", False):
-        st.header("Migration Finished!")
-    
-    elif st.session_state.cancel_requested:
-        st.header("Migration Cancelled")
-    
-    else:
-        st.header("Migration In Progress...")
-    
-        # 🔥 Create the live log placeholder once on the running page
-        if "live_log_placeholder" not in st.session_state:
-            st.session_state.live_log_placeholder = st.empty()
-
-
-
-
-    # --------------------------------------------------------
-    # CANCEL vs FINISH BUTTON
-    # --------------------------------------------------------
-    if not st.session_state.get("migration_finished", False) and not st.session_state.cancel_requested:
-        # Migration is still running
-        if st.button("CANCEL"):
-            st.session_state.cancel_requested = True
-            st.session_state.summary_type = "cancelled"
-            ui_log("🛑 Cancel requested by user…")
-        
-            # Store end time
-            st.session_state.summary["end_time"] = datetime.utcnow()
-        
-            # Redirect to summary page
-            st.session_state.page = "summary"
-            st.rerun()
-
-    else:
-        # Migration complete or cancelled → show FINISH
-        if st.button("✔ FINISH"):
-    
-            # Fully clear old migration state
-            keys_to_clear = [
-                "progress",
-                "log_output",
-                "migration_finished",
-                "cancel_requested",
-                "start_migration",
-                "phase1_running",
-                "live_log_placeholder"
-            ]
-    
-            for k in keys_to_clear:
-                if k in st.session_state:
-                    del st.session_state[k]
-    
-            # Navigate back to main
-            st.session_state.page = "main"
-            st.rerun()
-    
-
-    # --------------------------------------------------------
-    # PROGRESS BAR
-    # --------------------------------------------------------
-    progress_bar = st.progress(st.session_state.progress)
-
-    # --------------------------------------------------------
-    # LOADING ANIMATION (MIGRATING DATA…)
-    # --------------------------------------------------------
-    loading_placeholder = st.empty()
-
-    def animate_loading():
-        dots = ["", ".", "..", "..."]
-        for d in dots:
-            # Stop animation if done or cancelled
-            if st.session_state.get("migration_finished", False) or st.session_state.cancel_requested:
-                loading_placeholder.empty()
-                return
-            loading_placeholder.markdown(f"### ⏳ Migrating{d}")
-            time.sleep(0.25)
-
-    # --------------------------------------------------------
-    # RUN MIGRATION (ONLY ON FIRST VISIT)
-    # --------------------------------------------------------
-    if st.session_state.get("start_migration", False):
-
-        st.session_state.start_migration = False
-        st.session_state.migration_finished = False   # Reset finish flag
-
-        ui_log("Starting migration...")
-
-        steps = [
-            ("Migrating users…", lambda: migrate_users(st.session_state.phase1_active_only)),
-            ("Migrating user avatars…", migrate_user_images),
-            ("Migrating spaces…", migrate_spaces),
-            ("Migrating memberships…", migrate_memberships),
-            ("Creating Global Feed…", lambda: create_global_space_and_enroll(st.session_state.phase1_company)),
-        ]
-        
-        # ------------------------------------------------------------
-        # Only run PHASE 2 if ANY Phase 2 toggle is enabled
-        phase2_enabled = any([
-            st.session_state.get("migrate_updates", False),
-            st.session_state.get("migrate_kudos", False),
-            st.session_state.get("migrate_articles", False),
-            st.session_state.get("migrate_events", False),
-            st.session_state.get("migrate_comments", False),
-            st.session_state.get("migrate_likes", False),
-            st.session_state.get("migrate_globalPages", False),
-            st.session_state.get("migrate_spacePages", False),
-        ])
-    
-                
-        if phase2_enabled:
-            steps.append(
-                ("Migrating updates, comments & likes…",
-                 lambda: run_phase2(st.session_state.migration_start_date))
-            )
-        else:
-            ui_log("⏭ Skipping Phase 2 (all Phase 2 toggles are OFF)")
-
-
-        total_steps = len(steps)
-        pct = int(100 / total_steps)
-
-        # Run step-by-step
-        for i, (label, fn) in enumerate(steps):
-            if st.session_state.cancel_requested:
-                break
-
-            ui_log(label)
-            animate_loading()  # visual animation
-            fn()  # actual migration work
-
-            st.session_state.progress = (i + 1) * pct
-            progress_bar.progress(st.session_state.progress)
-
-        # FINISHED SUCCESSFULLY
-        if not st.session_state.cancel_requested:
-            st.session_state.progress = 100
-            progress_bar.progress(100)
-            ui_log("Migration Complete!")
-        
-            # Store end time
-            st.session_state.summary["end_time"] = datetime.utcnow()
-        
-            # Navigate to summary page
-            st.session_state.page = "summary"
-            st.rerun()
-
-
-    # --------------------------------------------------------
-    # SHOW CONSOLE OUTPUT
-    # --------------------------------------------------------
-    st.subheader("Live Console Output")
-
-    st.text_area(
-        "Console",
-        st.session_state.get("log_output", ""),
-        height=400,
-        disabled=True
-    )
-
-
-elif st.session_state.page == "summary":
-
-    s = st.session_state.summary
-
-    # -------------------------------------------------------
-    # CANCEL STATUS
-    # -------------------------------------------------------
-    is_cancelled = st.session_state.get("summary_type") == "cancelled"
-    
-    # Header text only (NO subtitle)
-    title_text = "Migration Cancelled" if is_cancelled else "Migration Completed Successfully"
-    
-    title_sub = ""  # Remove subtitle entirely
-    
-    # 1) Yellow/Info box (AT THE TOP)
-    if is_cancelled:
-        st.warning("⚠️ Migration was cancelled — results below reflect partial completion.")
-    else:
-        st.info("All migration tasks completed successfully.")
-    
-    # 2) Migration code (below warning)
-    migration_code_used = st.session_state.get("migration_code_used", "N/A")
-    st.info(f"🔑 Migration Code Used: **{migration_code_used}**")
-    
-    # 3) Title color
-    title_color = "#CC0000" if is_cancelled else "#4CAF50"
-    
-    # 4) Render header LOWER down (subtitle removed)
-    st.markdown(f"""
-    <style>
-    
-    .summary-title {{
-        font-size: 32px;
-        font-weight: 800;
-        margin-top: 25px;
-        margin-bottom: 4px;
-        color: {title_color};
-    }}
-    
-    .purple-section-title {{
-        font-size: 24px;
-        font-weight: 700;
-        color: #6A4FCB;
-        margin-top: 35px;
-        margin-bottom: 10px;
-    }}
-    
-    .summary-item {{
-        font-size: 15px;
-        margin-bottom: 6px;
-    }}
-    
-    .divider {{
-        margin: 25px 0;
-        border-bottom: 1px solid #DDD;
-    }}
-    
-    </style>
-    
-    <div class="summary-title">{title_text}</div>
-    
-    """, unsafe_allow_html=True)
-
-
-    # -------------------------------------------------------
-    # HISTORY ENTRY SAVE
-    # -------------------------------------------------------
-    history_entry = {
-        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "migration_code": st.session_state.get("migration_code_used", ""),
-        "status": "Cancelled" if is_cancelled else "Completed",
-        "users_migrated": s.get("users_migrated", 0),
-        "spaces_created": s.get("spaces_created", 0),
-        "updates_migrated": s.get("updates_migrated", 0),
-        "kudos_migrated": s.get("kudos_migrated", 0),
-        "articles_migrated": s.get("articles_migrated", 0),
-        "events_migrated": s.get("events_migrated", 0),
-        "global_pages_migrated": s.get("global_pages_migrated", 0),
-        "space_pages_migrated": s.get("space_pages_migrated", 0),
-        "start_time": s.get("start_time"),
-        "end_time": s.get("end_time"),
-    }
-
-    if "last_history_saved" not in st.session_state or \
-       st.session_state.last_history_saved != history_entry["timestamp"]:
-
-        st.session_state.migration_history.append(history_entry)
-        st.session_state.last_history_saved = history_entry["timestamp"]
-
-
-    # -------------------------------------------------------
-    # USERS & SPACES SECTION
-    # -------------------------------------------------------
-    st.markdown('<div class="purple-section-title">Users & Spaces</div>', unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div class="summary-item"><strong>Users Migrated:</strong> {s['users_migrated']}</div>
-    <div class="summary-item"><strong>Spaces Created:</strong> {s['spaces_created']}</div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
-
-
-    # -------------------------------------------------------
-    # CONTENT MIGRATION SECTION
-    # -------------------------------------------------------
-    st.markdown('<div class="purple-section-title">Content Migrated</div>', unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div class="summary-item"><strong>Updates Migrated:</strong> {s.get('updates_migrated', 0)}</div>
-    <div class="summary-item"><strong>Kudos Migrated:</strong> {s.get('kudos_migrated', 0)}</div>
-    <div class="summary-item"><strong>Articles Migrated:</strong> {s.get('articles_migrated', 0)}</div>
-    <div class="summary-item"><strong>Events Migrated:</strong> {s.get('events_migrated', 0)}</div>
-    <div class="summary-item"><strong>Global Pages Migrated:</strong> {s.get('global_pages_migrated', 0)}</div>
-    <div class="summary-item"><strong>Space Pages Migrated:</strong> {s.get('space_pages_migrated', 0)}</div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
-
-
-    # -------------------------------------------------------
-    # TIMELINE SECTION
-    # -------------------------------------------------------
-    st.markdown('<div class="purple-section-title">Timeline</div>', unsafe_allow_html=True)
-
-    start_pretty = pretty_time(s['start_time'])
-    end_pretty = pretty_time(s['end_time'])
-
-    st.markdown(f"""
-    <div class="summary-item"><strong>Start:</strong> {start_pretty}</div>
-    <div class="summary-item"><strong>End:</strong> {end_pretty}</div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
-
-
-    # -------------------------------------------------------
-    # LOG SECTION
-    # -------------------------------------------------------
-    st.markdown('<div class="purple-section-title">Console Log</div>', unsafe_allow_html=True)
-
-    st.text_area(
-        "Console Output",
-        st.session_state.get("log_output", ""),
-        height=300
-    )
-
-
-    # -------------------------------------------------------
-    # BUTTONS (FINISH + DOWNLOADS)
-    # -------------------------------------------------------
-    c1, c2 = st.columns([1, 1])
-
-    with c1:
-        if st.button("✔ Finish", key="finish_button"):
-
-            keys_to_reset = [
-                "progress", "log_output", "migration_finished", "cancel_requested",
-                "start_migration", "phase1_running", "live_log_placeholder",
-                "summary", "summary_type",
-                "phase1_company", "migration_date_choice",
-                "migration_start_date", "migration_end_date",
-                "migrate_updates", "migrate_kudos", "migrate_articles",
-                "migrate_events", "migrate_comments", "migrate_likes",
-                "migrate_globalPages", "migrate_spacePages",
-                "phase1_active_only",
-            ]
-
-            for key in keys_to_reset:
-                if key in st.session_state:
-                    del st.session_state[key]
-
-            st.session_state.page = "main"
-            st.rerun()
-
-
-    with c2:
-        if st.session_state.get("log_output"):
-            st.download_button(
-                "⬇ Download Logs",
-                st.session_state["log_output"],
-                file_name="migration_logs.txt",
-                mime="text/plain"
-            )
-        else:
-            st.markdown(
-                "<div style='opacity:0.4;'>No logs available</div>",
-                unsafe_allow_html=True
-            )
-
-        if "phase2_csv" in st.session_state:
-            st.download_button(
-                "⬇ Download Content Migration Log (CSV)",
-                st.session_state.phase2_csv,
-                file_name="MigrationContentLog.csv",
-                mime="text/csv"
-            )
-
-
-# ============================================================
-# MIGRATION HISTORY PAGE
-# ============================================================
-elif st.session_state.page == "history":
-
-    st.header("Migration History")
-
-    history = st.session_state.migration_history
-
-    if not history:
-        st.info("No migration history available yet.")
-        st.stop()
-
-    import pandas as pd
-    df = pd.DataFrame(history)
-
-    st.dataframe(df, use_container_width=True)
-
-    csv = df.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        "⬇️ Download Migration History CSV",
-        csv,
-        "migration_history.csv",
-        "text/csv"
-    )
-
-# ============================================================
-# TRACK LAST VISITED PAGE (NEEDED FOR MIGRATION CODE RESET)
-# ============================================================
-st.session_state.last_page = st.session_state.page
+if __name__ == "__main__":
+    main()
